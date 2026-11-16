@@ -16,5 +16,6 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["api", "server", "scripts", "src/types", "src/lib", "vitest.config.ts"]
+  "include": ["api", "server", "scripts", "src/types", "src/lib", "vitest.config.ts"],
+  "exclude": ["src/lib/utils.ts"]
 }

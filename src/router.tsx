@@ -3,6 +3,8 @@ import { AppShell } from '@/components/layout/AppShell'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
+import { ListCounts } from '@/features/data/ListCounts'
+import { ThemePreview } from '@/themes/ThemePreview'
 
 function AuthLayout() {
   return (
@@ -31,10 +33,11 @@ export const router = createBrowserRouter([
           {
             element: <AppShell />,
             children: [
-              { path: '/', element: <Page title="Home" /> },
+              { path: '/', element: <ListCounts /> },
               { path: '/lists', element: <Page title="My Lists" /> },
               { path: '/lists/:listId', element: <Page title="List" /> },
               { path: '/picks', element: <Page title="Picks" /> },
+              { path: '/_theme', element: <ThemePreview /> },
               { path: '*', element: <Page title="Not found" /> },
             ],
           },

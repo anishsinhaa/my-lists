@@ -11,11 +11,12 @@
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
   "include": ["api", "server", "scripts", "src/types", "src/lib", "vitest.config.ts"],
-  "exclude": ["src/lib/utils.ts"]
+  "exclude": ["src/lib/utils.ts", "src/lib/storage.ts", "src/lib/__tests__"]
 }

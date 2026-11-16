@@ -1,0 +1,53 @@
+﻿---
+description: My Lists coding conventions
+alwaysApply: true
+---
+# My Lists conventions
+
+## General
+- Follow PLAN.md. Implement exactly one numbered step per task; do not start the next step.
+- Strict TypeScript. No `any` (use `unknown` + narrowing), no `@ts-ignore` without a comment explaining why. No non-null `!` on external data.
+- Prefer named exports. One React component per file, file name = component name (PascalCase). Hooks `useX.ts`. Pure logic in plain `.ts` files with unit tests.
+- Never add a dependency not listed in PLAN.md section 2 without asking. Pin exact versions (`--save-exact`).
+- Windows/PowerShell: use `npm run` scripts; no bash-only syntax.
+
+## Structure
+- Feature-based: `src/features/<feature>/`. Shared UI in `src/components/`. Pure helpers in `src/lib/`. Types in `src/types/`.
+- `src/` must never import from `server/` or `api/`. `server/` and `api/` may import only `src/types/*`, `src/lib/{normalize,dates,rating}.ts`, using relative paths WITH `.js` extension. No `@/` alias in `server/`, `api/`, `scripts/`.
+- `api/*.ts` files are thin: validate method/auth, call `server/**`, return via `ok()`/`fail()`. No business logic there.
+- Do not edit `src/components/ui/*` by hand; regenerate with the shadcn CLI.
+
+## Data and Sheets
+- Never rely on row indexes or fixed column letters. Map columns by header via `buildColumnMap`. Identify items by `titleKey` (+year/+because), never by row.
+- The only sheet write path is `writeCells` guarded by `WRITE_POLICY`. Never add delete/clear/sort/insert/append calls (append only in Phase 2 `appendRow`).
+- Always re-read the sheet immediately before writing. Writes are single-cell and compare-and-set with `expectedCurrent`.
+- Never write Title, Status (main tabs), Year, Genre, Why, Updated at, My Rating, Platform. Writable = Poster, Director/Creator, Franchise, IMDb Rating (fill-only, only into empty cells) and picks-tab Status (only values in `PICK_STATUS_OPTIONS`).
+- Fetch once: external provider calls (TMDB/OMDb/RAWG/Jikan/Open Library) happen ONLY inside `POST /api/posters/fill` for fields whose sheet cell is empty. Never call a provider from page load, search, list read, filters or picks. After a value is written to the sheet, read it from the sheet.
+- Picks "Skip" is local to the browser session and must never be sent to the API or written to the sheet.
+- Ratings: sort/filter/top-rated use `effectiveRating` (`myRating ?? imdbRating`); always show both ratings with `RatingBadge`; label the external one with `externalRatingLabel(listId)`.
+- No Google protected ranges and no sheet-side permission tricks: safety is in `WRITE_POLICY` and `writeCells` only.
+- Treat all sheet/API data as untrusted: parse with the helpers in `src/lib`, validate request bodies with zod, only accept `https://` poster URLs.
+
+## Secrets and auth
+- Secrets only from `process.env` inside `server/config/env.ts`. Never read `process.env` elsewhere; never use `import.meta.env` for secrets; no secret in any `VITE_` var.
+- Never log passwords, hashes, tokens, API keys, or private keys. Never commit `.env`. Update `.env.example` (names only, no values) whenever an env var is added.
+- Auth goes through `AuthProvider` (server) and `AuthService` (client) only.
+
+## API
+- Every endpoint returns `ApiResponse<T>` (`{ok:true,data}` | `{ok:false,error:{code,message}}`). Use the shared codes in `src/types/api.ts`. Client calls go through `apiFetch`.
+- External API calls go through a `Throttle`, have an 8 s timeout, and failures degrade gracefully (return null / typed error), never crash a request.
+
+## UI
+- Mobile-first: write base styles for 390px, then `sm:`/`md:`/`lg:`. Use `100dvh`, 44px min touch targets, safe-area padding.
+- Styling: Tailwind utility classes + CSS variables from `src/themes/themes.css`. No inline hex colors in components; use theme vars. No CSS-in-JS.
+- Use shadcn components for controls. Icons from `lucide-react` only.
+- Animation: `motion/react` only, durations/easings from `src/themes/motion.ts`, animate `transform`/`opacity` only, stagger max 12 items, respect reduced motion. Page transitions via `PageTransition`.
+- Every data view has loading (skeleton), empty, and error states. Images always go through `PosterImage` (lazy + fallback).
+- Filter/sort/view state lives in the URL (`useSearchParams`); view preference in localStorage via `useLocalStorage`.
+- Accessibility: semantic elements, labels on inputs/buttons, visible focus rings, contrast >= 4.5:1.
+
+## Testing and quality
+- Add Vitest tests for every pure function and every server module (mock `fetch`/SheetsClient; no real network in tests).
+- Before finishing a step run `npm run typecheck && npm run lint && npm run test` and report the checklist pass/fail.
+- No `console.log` left in committed code (use `console.warn`/`error` sparingly on the server, never with secrets).
+- Small commits: one per step, message `step N: <name>`.

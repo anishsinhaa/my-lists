@@ -113,9 +113,9 @@ export function SettingsPage() {
           </select>
         </label>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={running} onClick={() => void run(false)}>Fill missing posters & ratings</Button>
-          <Button type="button" variant="outline" disabled={running || tab === 'all'} onClick={() => void run(true)}>Force refetch</Button>
-          <Button type="button" variant="outline" onClick={() => void reloadFromSheet()}>Reload from sheet</Button>
+          <Button type="button" className="min-h-11" disabled={running} onClick={() => void run(false)}>Fill missing posters & ratings</Button>
+          <Button type="button" className="min-h-11" variant="outline" disabled={running || tab === 'all'} onClick={() => void run(true)}>Force refetch</Button>
+          <Button type="button" className="min-h-11" variant="outline" onClick={() => void reloadFromSheet()}>Reload from sheet</Button>
         </div>
         {running && status.data !== undefined ? (
           <p>

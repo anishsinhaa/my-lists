@@ -20,7 +20,7 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
     <main className="space-y-3 p-4">
       <h2 className="font-(--font-display) text-3xl">{TAB_NAME[listId]}</h2>
       <Input aria-label="Search this list" value={query} onChange={(event) => setQuery(event.target.value)} />
-      {shown.length === 0 ? <EmptyState title="Nothing here" /> : null}
+      {shown.length === 0 ? <EmptyState title={listId === 'other' ? 'This drawer is empty' : 'Nothing curious yet'} /> : null}
       <ul className="space-y-2">
         {shown.map((item) => (
           <li key={item.id} className="rounded-lg border p-3">

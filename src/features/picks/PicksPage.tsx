@@ -19,6 +19,7 @@ export function PicksPage() {
   }
   return (
     <main className="mx-auto max-w-lg space-y-4 p-4">
+      <h1 className="font-['Cinzel',serif] text-2xl">Recommended for you</h1>
       <div className="flex flex-wrap gap-2">
         {picks.visible.map((id) => (
           <button key={id} type="button" className={`min-h-11 rounded-full border px-4 text-sm ${id === picksId ? 'bg-accent text-(--bg)' : ''}`} onClick={() => setParams({ tab: id })}>{TAB_NAME[id]}</button>

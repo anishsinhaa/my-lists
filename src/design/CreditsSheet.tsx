@@ -4,7 +4,7 @@ import { BRAND, copyrightLine } from '@/config/branding'
 const LINKS = [
   { href: BRAND.tmdb, label: 'TMDB', note: 'Posters and movie/TV data. This product uses the TMDB API but is not endorsed or certified by TMDB.' },
   { href: BRAND.omdb, label: 'OMDb', note: 'IMDb ratings.' },
-  { href: BRAND.rawg, label: 'RAWG', note: 'Game data and Metacritic scores.' },
+  { href: BRAND.rawg, label: 'RAWG', note: 'Game data from RAWG.' },
   { href: BRAND.openLibrary, label: 'Open Library', note: 'Book covers and ratings.' },
 ]
 

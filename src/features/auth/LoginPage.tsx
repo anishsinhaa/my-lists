@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { BRAND } from '@/config/branding'
 import { useAuth } from './AuthContext'
 
 export function LoginPage() {
@@ -27,11 +28,12 @@ export function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-background p-6 text-foreground">
-      <form onSubmit={(event) => void onSubmit(event)} className="w-full max-w-sm space-y-4 rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
+    <main data-theme="home" className="relative flex min-h-dvh items-center justify-center bg-[#100e0c] p-6 text-[#f4ead8]">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,#b08d5744,transparent_42%)]" />
+      <form onSubmit={(event) => void onSubmit(event)} className="relative w-full max-w-sm space-y-4 rounded-xl border border-[#b08d57] bg-[#17130f] p-6 shadow-sm">
         <div>
-          <h1 className="text-2xl font-semibold">My Lists</h1>
-          <p className="text-sm text-muted-foreground">Sign in on this device.</p>
+          <h1 className="font-['Fraunces',serif] text-3xl">{BRAND.name}</h1>
+          <p className="text-sm text-[#cbbfa8] italic">{BRAND.tagline}</p>
         </div>
         <label className="block space-y-1 text-sm">
           Username

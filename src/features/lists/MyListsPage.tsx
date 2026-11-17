@@ -4,8 +4,8 @@ import curiousSeal from '@/assets/wax-seal-curious.png'
 import otherSeal from '@/assets/wax-seal-other.png'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Skeletons } from '@/components/common/Skeletons'
-import { Plaque } from '@/design/Plaque'
 import { Rail } from '@/design/Rail'
+import { ListSign } from '@/features/lists/ListSign'
 import { thumbnailUrl } from '@/design/archive'
 import { listCounts } from '@/features/data/selectors'
 import { useLists } from '@/features/data/useLists'
@@ -55,13 +55,14 @@ function ArchiveCard({ listId, items, count, active }: { listId: PortraitId; ite
       data-active={active ? 'true' : 'false'}
       className="archive-slot flex shrink-0 snap-center flex-col items-center gap-2 text-[#f6edd8] focus-visible:outline-2 focus-visible:outline-[#b08d57]"
     >
-      <Plaque className="w-full">{TAB_NAME[listId]}</Plaque>
-      <span
-        data-list={listId}
-        className="archive-card relative block aspect-2/3 w-full overflow-hidden"
-        onPointerMove={tilt}
-        onPointerLeave={untilt}
-      >
+      <span className="archive-face">
+        <ListSign listId={listId}>{TAB_NAME[listId]}</ListSign>
+        <span
+          data-list={listId}
+          className="archive-card relative block aspect-2/3 w-full overflow-hidden"
+          onPointerMove={tilt}
+          onPointerLeave={untilt}
+        >
         <span className="absolute inset-0 grid grid-cols-2 grid-rows-2">
           {posters.length === 0 ? <span className={`col-span-2 row-span-2 ${listId === 'books' ? 'bg-[#6b3e2a]' : listId === 'anime' ? 'bg-[#fff4d6]' : listId === 'games' ? 'bg-[#100e21]' : listId === 'series' ? 'bg-[#2a1f1a]' : 'bg-[#14110e]'}`} /> : posters.map((item, index) => (
             <img key={item.id} alt="" className={`h-full min-h-0 w-full object-cover ${cellClass(posters.length, index)}`} decoding="async" loading="lazy" src={thumbnailUrl(item.poster, 'w342') ?? ''} />
@@ -69,6 +70,7 @@ function ArchiveCard({ listId, items, count, active }: { listId: PortraitId; ite
         </span>
         <span aria-hidden="true" className={`archive-skin archive-skin-${listId}`} />
         <span aria-hidden="true" className="archive-gloss" />
+        </span>
       </span>
       <span className="w-full text-center text-sm">
         <span className="block">{count} titles{inProgress > 0 ? ` · ${inProgress} in progress` : ''}</span>
@@ -116,7 +118,7 @@ export function MyListsPage() {
     <ArchiveCard key={id} active={mobileActive && index === active} count={counts[id]} items={data.lists[id]} listId={id} />
   ))
   return (
-    <main className="edge flex w-full max-w-full flex-col justify-center overflow-x-clip py-4 max-md:pb-24 md:min-h-[calc(100dvh-8.5rem)]">
+    <main className="edge flex w-full max-w-full flex-col justify-center overflow-x-clip py-4 max-md:pb-24 md:min-h-[calc(100dvh-9.25rem)]">
       {desktop ? <Rail label="My lists">{cards(false)}</Rail> : (
         <div ref={carousel} className="list-carousel">
           {cards(true)}

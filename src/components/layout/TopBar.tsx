@@ -20,16 +20,16 @@ export function TopBar() {
   const inner = location.pathname !== '/'
   const item = 'inline-flex min-h-11 items-center gap-1.5 border-b-2 border-transparent px-2 text-sm whitespace-nowrap xl:px-3 aria-[current=page]:border-[#b08d57]'
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-(--brass)/30 bg-[#100e0c]/80 backdrop-blur-md">
+    <header className="app-topbar sticky top-0 z-40 w-full overflow-visible border-b border-(--brass)/30 bg-[#100e0c]/80 backdrop-blur-md">
       <a href="#content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-black focus:px-3 focus:py-2">Skip to content</a>
-      <div className="edge grid h-14 w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 md:h-16">
+      <div className="app-topbar-row edge grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
         <div className="flex min-w-0 items-center gap-1 justify-self-start">
           {inner ? (
             <button type="button" aria-label="Back" className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-[#f4ead8] hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-[#b08d57]" onClick={() => void navigate(-1)}>
               <ArrowLeft className="size-5" aria-hidden="true" />
             </button>
           ) : null}
-          <Link to="/" className="truncate font-['Fraunces',serif] text-[clamp(1.05rem,2vw,1.35rem)] tracking-wide text-[#f4ead8]" style={{ textShadow: '0 1px 0 #000' }}>{BRAND.name}</Link>
+          <Link to="/" className="truncate py-1 font-['Fraunces',serif] text-[clamp(1.05rem,2vw,1.35rem)] leading-tight tracking-wide text-[#f4ead8]" style={{ textShadow: '0 1px 0 #000' }}>{BRAND.name}</Link>
         </div>
         <nav aria-label="Primary" className="justify-self-center">
           <div className="hidden items-center md:flex">

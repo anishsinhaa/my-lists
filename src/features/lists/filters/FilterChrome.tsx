@@ -281,7 +281,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
   }, [])
 
   return (
-    <div className="sticky top-14 z-30 space-y-2 bg-(--bg)/90 py-2 backdrop-blur md:top-16" onMouseEnter={() => setHot(true)} onMouseLeave={() => setHot(false)}>
+    <div className="filter-sticky space-y-2 bg-(--bg)/90 py-2 backdrop-blur" onMouseEnter={() => setHot(true)} onMouseLeave={() => setHot(false)}>
       <div className="flex flex-wrap items-center gap-2">
         <input id="list-search" value={query.q} onChange={(event) => onChange({ q: event.target.value })} placeholder="Search this list" aria-label="Search this list" className="h-11 w-full min-w-0 flex-1 rounded-md border border-border bg-(--surface) px-3 sm:w-auto sm:min-w-40" />
         <button type="button" className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 px-3 text-sm md:hidden" onClick={() => setDrawer(true)}>

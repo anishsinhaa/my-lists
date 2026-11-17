@@ -1,26 +1,30 @@
+import { ArrowDownUp } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import { externalRatingLabel } from '@/lib/rating'
 import type { ListId } from '@/types/lists'
+import type { MediaItem } from '@/types/media'
 import type { SortKey } from './filters/listQuery'
+import { hasFinishedColumn, sortOptions } from './sortOptions'
 
-export function SortMenu({ listId, value, dir, onChange }: { listId: ListId; value: SortKey; dir: 'asc' | 'desc'; onChange: (sort: SortKey, dir: 'asc' | 'desc') => void }) {
-  const options: Array<{ key: SortKey; label: string }> = [
-    { key: 'title', label: 'Title' },
-    { key: 'year', label: 'Year' },
-    { key: 'rating', label: 'Rating (best)' },
-    { key: 'myRating', label: 'My Rating' },
-    { key: 'imdbRating', label: `${externalRatingLabel(listId)} Rating` },
-    { key: 'updated', label: 'Updated' },
-    { key: 'status', label: 'Status' },
-  ]
-  const current = options.find((option) => option.key === value)?.label ?? 'Updated'
+export function SortMenu({ listId, items, value, dir, onChange }: {
+  listId: ListId
+  items: MediaItem[]
+  value: SortKey
+  dir: 'asc' | 'desc'
+  onChange: (sort: SortKey, dir: 'asc' | 'desc') => void
+}) {
+  const options = sortOptions(listId, hasFinishedColumn(listId, items))
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild><Button type="button" variant="outline">{current} {dir === 'desc' ? '↓' : '↑'}</Button></DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
+        <button type="button" aria-label="Sort" className="inline-flex size-11 items-center justify-center rounded-md border border-(--brass)/40">
+          <ArrowDownUp aria-hidden="true" className="size-4" />
+        </button>
+      </DropdownMenuTrigger>
       <DropdownMenuContent>
         {options.map((option) => (
-          <DropdownMenuItem key={option.key} onClick={() => onChange(option.key, option.key === value && dir === 'desc' ? 'asc' : 'desc')}>{option.label}</DropdownMenuItem>
+          <DropdownMenuItem key={option.key} onClick={() => onChange(option.key, option.key === value ? (dir === 'asc' ? 'desc' : 'asc') : option.dir)}>
+            {option.label}{option.key === value ? (dir === 'asc' ? ' ↑' : ' ↓') : ''}
+          </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

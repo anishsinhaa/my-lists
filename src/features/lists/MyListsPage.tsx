@@ -18,7 +18,7 @@ type PortraitId = (typeof ORDER)[number]
 const SEAL: Record<'other' | 'curious', string> = { other: otherSeal, curious: curiousSeal }
 
 function covers(items: MediaItem[]): MediaItem[] {
-  return [...items].filter((item) => item.poster !== null).sort((left, right) => (right.updatedAt ?? '').localeCompare(left.updatedAt ?? '')).slice(0, 4)
+  return items.filter((item) => item.poster !== null).slice(0, 4)
 }
 
 function cellClass(count: number, index: number): string {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PosterImage } from '@/components/common/PosterImage'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { StatusBadge } from '@/design/StatusBadge'
@@ -42,11 +42,18 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave }: {
   onSave: (item: MediaItem, patch: ItemPatch) => Promise<void>
 }) {
   const [draft, setDraft] = useState<{ id: string; text: string; editing: boolean } | null>(null)
+  const [savedId, setSavedId] = useState<string | null>(null)
   const note = draft !== null && draft.id === item?.id ? draft.text : (item?.why ?? '')
   const editingNote = draft !== null && draft.id === item?.id && draft.editing
   const index = item === null ? -1 : items.findIndex((entry) => entry.id === item.id)
   const previous = index > 0 ? items[index - 1] : undefined
   const next = index >= 0 && index < items.length - 1 ? items[index + 1] : undefined
+
+  useEffect(() => {
+    if (savedId === null) return undefined
+    const timer = window.setTimeout(() => setSavedId(null), 1600)
+    return () => window.clearTimeout(timer)
+  }, [savedId])
 
   useEffect(() => {
     if (item === null) return undefined
@@ -62,7 +69,9 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave }: {
 
   function save(patch: ItemPatch) {
     if (item === null) return
-    void onSave(item, patch).catch(() => setDraft(null))
+    const id = item.id
+    setSavedId(id)
+    void onSave(item, patch).catch(() => setSavedId((current) => current === id ? null : current))
   }
 
   const finished = shown(item?.extra['date finished'])
@@ -71,7 +80,14 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave }: {
 
   return (
     <Dialog open={item !== null} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="item-modal gap-0 border-(--border) bg-(--bg) p-0 text-(--ink)">
+      <DialogContent
+        className="item-modal gap-0 border-(--border) bg-(--bg) p-0 text-(--ink)"
+        onCloseAutoFocus={(event) => event.preventDefault()}
+        onInteractOutside={(event) => {
+          const target = event.target
+          if (!(target instanceof Element) || !target.isConnected) event.preventDefault()
+        }}
+      >
         {item === null ? <DialogTitle className="sr-only">Item</DialogTitle> : (
           <div className="flex min-h-0 flex-col md:grid md:max-h-[min(92dvh,900px)] md:grid-cols-[minmax(220px,280px)_minmax(0,1fr)]">
             <div className="bg-(--surface) p-4">
@@ -85,6 +101,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave }: {
                 <div className="min-w-0 flex-1">
                   <DialogTitle className="font-(--font-display) text-2xl leading-tight">{displayTitle(item.title, item.year)}</DialogTitle>
                   <DialogDescription className="sr-only">{displayTitle(item.title, item.year)}</DialogDescription>
+                  {savedId === item.id ? <p aria-live="polite" className="mt-1 inline-flex items-center gap-1 text-sm text-(--accent)"><Check aria-hidden="true" className="size-4" />Saved</p> : null}
                 </div>
                 <button type="button" aria-label="Next" className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-(--border) disabled:opacity-30" disabled={next === undefined} onClick={() => { if (next !== undefined) onOpen(next) }}>
                   <ChevronRight aria-hidden="true" className="size-5" />

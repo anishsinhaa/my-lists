@@ -29,11 +29,15 @@ function topRated(items: MediaItem[]): MediaItem[] {
     .map((row) => row.item)
 }
 
-function recent(items: MediaItem[], now: Date): MediaItem[] {
-  const cutoff = now.getTime() - 30 * 24 * 60 * 60 * 1000
-  const fresh = items.filter((item) => item.updatedAt !== null && Date.parse(item.updatedAt) >= cutoff)
-  if (fresh.length > 0) return fresh
-  return [...items].sort((left, right) => (right.updatedAt ?? '').localeCompare(left.updatedAt ?? '')).slice(0, 20)
+export function finishedOn(item: MediaItem): string | null {
+  const value = (item.extra['date finished'] ?? '').trim()
+  return value.length === 0 ? null : value
+}
+
+function recentlyFinished(items: MediaItem[]): MediaItem[] {
+  return items
+    .filter((item) => finishedOn(item) !== null)
+    .sort((left, right) => (finishedOn(right) ?? '').localeCompare(finishedOn(left) ?? '') || left.titleKey.localeCompare(right.titleKey))
 }
 
 function statusIs(status: string) {
@@ -42,7 +46,7 @@ function statusIs(status: string) {
 
 const shared = {
   topRated: { id: 'top-rated', label: 'Top rated', apply: (items: MediaItem[]) => topRated(items) },
-  recent: { id: 'recent', label: 'Recent', apply: (items: MediaItem[], ctx: { now: Date }) => recent(items, ctx.now) },
+  recent: { id: 'recent', label: 'Recently finished', apply: (items: MediaItem[]) => recentlyFinished(items) },
 }
 
 const nolan = normalizeKey(PINNED_DIRECTORS[0] ?? '')

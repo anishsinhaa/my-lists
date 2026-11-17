@@ -39,7 +39,7 @@ function titles(listId: ListId, items: MediaItem[], query: Partial<ListQuery>) {
 }
 
 function shelves(listId: ListId, items: MediaItem[], query: Partial<ListQuery>) {
-  return shelfGroups(listId, shown(listId, items, query), query.smart === 'top-rated' ? 'given' : 'rating').map((group) => group.status)
+  return shelfGroups(listId, shown(listId, items, query), 'given').map((group) => group.status)
 }
 
 const movies = [
@@ -53,13 +53,13 @@ const movies = [
 
 const movieCases: { name: string; query: Partial<ListQuery>; titles: string[]; shelves: string[] }[] = [
   { name: 'status', query: { statuses: ['Maybe'] }, titles: ['Maybe One'], shelves: ['Maybe'] },
-  { name: 'genre', query: { genres: ['Sci-Fi'] }, titles: ['Tenet', 'Inception'], shelves: ['Want to', 'Watched'] },
-  { name: 'year', query: { yearMin: 2010, yearMax: 2020 }, titles: ['Tenet', 'Maybe One', 'Inception'], shelves: ['Want to', 'Maybe', 'Watched'] },
-  { name: 'creator', query: { creator: 'Christopher Nolan' }, titles: ['Tenet', 'Inception'], shelves: ['Want to', 'Watched'] },
+  { name: 'genre', query: { genres: ['Sci-Fi'] }, titles: ['Inception', 'Tenet'], shelves: ['Want to', 'Watched'] },
+  { name: 'year', query: { yearMin: 2010, yearMax: 2020 }, titles: ['Inception', 'Maybe One', 'Tenet'], shelves: ['Want to', 'Maybe', 'Watched'] },
+  { name: 'creator', query: { creator: 'Christopher Nolan' }, titles: ['Inception', 'Tenet'], shelves: ['Want to', 'Watched'] },
   { name: 'franchise', query: { franchise: 'Marvel' }, titles: ['Iron Man'], shelves: ['Watched'] },
-  { name: 'rating', query: { ratingMin: 8 }, titles: ['Iron Man', 'Inception'], shelves: ['Watched'] },
+  { name: 'rating', query: { ratingMin: 8 }, titles: ['Inception', 'Iron Man'], shelves: ['Watched'] },
   { name: 'search', query: { q: 'tenet' }, titles: ['Tenet'], shelves: ['Want to'] },
-  { name: 'nolan', query: { smart: 'nolan' }, titles: ['Tenet', 'Inception'], shelves: ['Want to', 'Watched'] },
+  { name: 'nolan', query: { smart: 'nolan' }, titles: ['Inception', 'Tenet'], shelves: ['Want to', 'Watched'] },
   { name: 'marvel', query: { smart: 'marvel' }, titles: ['Iron Man'], shelves: ['Watched'] },
   { name: 'top rated', query: { smart: 'top-rated' }, titles: ['Crowd', 'Inception', 'Iron Man'], shelves: ['Want to', 'Watched'] },
 ]

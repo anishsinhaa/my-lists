@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { PosterImage } from '@/components/common/PosterImage'
 import { Rail } from '@/design/Rail'
@@ -44,6 +45,7 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
 }) {
   const [shuffled, setShuffled] = useState<MediaItem[] | null>(null)
   const [openId, setOpenId] = useState<string | null>(openItemId)
+  const [modalOrder, setModalOrder] = useState<string[] | null>(null)
   const [trackedItem, setTrackedItem] = useState(openItemId)
   if (openItemId !== trackedItem) {
     setTrackedItem(openItemId)
@@ -53,9 +55,33 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
   const source = shuffled ?? items
   const visible = useMemo(() => selectItems(listId, source, query, QUERY_NOW), [listId, source, query])
   const current = useMemo(() => currentItems(listId, visible), [visible, listId])
-  const groups = useMemo(() => shelfGroups(listId, visible, query.smart === 'top-rated' ? 'given' : 'rating'), [visible, listId, query.smart])
+  const groups = useMemo(() => shelfGroups(listId, visible, 'given'), [visible, listId])
 
   const open = openId === null ? null : items.find((item) => item.id === openId) ?? source.find((item) => item.id === openId) ?? null
+  const modalItems = useMemo(() => {
+    if (modalOrder === null) return visible
+    const byId = new Map(items.map((item) => [item.id, item]))
+    return modalOrder.flatMap((id) => {
+      const found = byId.get(id)
+      return found === undefined ? [] : [found]
+    })
+  }, [items, modalOrder, visible])
+
+  function show(entry: MediaItem) {
+    setOpenId(entry.id)
+    setModalOrder((current) => {
+      if (current !== null) return current
+      const ids = visible.map((item) => item.id)
+      if (!ids.includes(entry.id)) ids.push(entry.id)
+      return ids
+    })
+  }
+
+  function hide() {
+    setOpenId(null)
+    setModalOrder(null)
+    onItemClose?.()
+  }
 
   function patch(partial: Partial<ListQuery>) {
     onChange({ ...query, ...partial })
@@ -80,7 +106,7 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
           <h2 className="mb-2 font-['Cinzel',serif]">Currently</h2>
           <Rail align={current.length === 1 ? 'start' : 'center'} label="Currently">
             {current.map((item) => (
-              <button key={item.id} type="button" data-rail-card="true" className="w-[clamp(7.5rem,20cqi,11rem)] shrink-0 snap-start text-left" onClick={() => setOpenId(item.id)}>
+              <button key={item.id} type="button" data-rail-card="true" className="w-[clamp(7.5rem,20cqi,11rem)] shrink-0 snap-start text-left" onClick={() => show(item)}>
                 <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
                 <StatusBadge listId={item.listId} status={item.status} />
               </button>
@@ -89,10 +115,16 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
         </section>
       ) : null}
       {visible.length === 0 ? <p className="p-8 text-center text-(--ink-muted)">The shelf is empty.</p> : null}
-      {query.view === 'table' ? <ListTable items={visible} listId={listId} onOpen={(item) => setOpenId(item.id)} /> : null}
+      {query.view === 'table' ? <ListTable items={visible} listId={listId} onOpen={show} /> : null}
       {query.view === 'grid' ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {visible.map((item, index) => <PosterCard key={item.id} index={index} item={item} onOpen={(entry) => setOpenId(entry.id)} />)}
+          <AnimatePresence initial={false}>
+            {visible.map((item, index) => (
+              <motion.div key={item.id} className="min-w-0" exit={{ opacity: 0 }} initial={false} transition={{ duration: 0.22 }}>
+                <PosterCard index={index} item={item} onOpen={show} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       ) : null}
       {query.view === 'shelves' ? groups.map((group) => (
@@ -104,16 +136,18 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
             </div>
             <p className="text-xs text-(--ink-muted)">{group.flavour}</p>
             <Rail align={group.items.length === 1 ? 'start' : 'center'} label={group.status}>
-              {group.items.map((item, index) => (
-                <div key={item.id} data-rail-card="true" className="w-[clamp(9rem,22cqi,13.5rem)] shrink-0 snap-start">
-                  <PosterCard index={index} item={item} onOpen={(entry) => setOpenId(entry.id)} />
-                </div>
-              ))}
+              <AnimatePresence initial={false}>
+                {group.items.map((item, index) => (
+                  <motion.div key={item.id} className="w-[clamp(9rem,22cqi,13.5rem)] shrink-0 snap-start" data-rail-card="true" exit={{ opacity: 0 }} initial={false} transition={{ duration: 0.22 }}>
+                    <PosterCard index={index} item={item} onOpen={show} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </Rail>
           </section>
         </LazyBlock>
       )) : null}
-      <ItemModal item={open} items={visible} listId={listId} onClose={() => { setOpenId(null); onItemClose?.() }} onOpen={(entry) => setOpenId(entry.id)} onSave={save} />
+      <ItemModal item={open} items={modalItems} listId={listId} onClose={hide} onOpen={show} onSave={save} />
     </div>
   )
 }

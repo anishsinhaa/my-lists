@@ -14,8 +14,12 @@ function statusIs(items: MediaItem[], listId: ListId, values: string[]): MediaIt
   return items.filter((item) => wanted.has(matchStatus(listId, item.status).value.toLowerCase()))
 }
 
-function byUpdated(items: MediaItem[]): MediaItem[] {
-  return [...items].sort((left, right) => (right.updatedAt ?? '').localeCompare(left.updatedAt ?? ''))
+function finishedOn(item: MediaItem): string {
+  return (item.extra['date finished'] ?? '').trim()
+}
+
+function byFinished(items: MediaItem[]): MediaItem[] {
+  return items.filter((item) => finishedOn(item).length > 0).sort((left, right) => finishedOn(right).localeCompare(finishedOn(left)) || left.titleKey.localeCompare(right.titleKey))
 }
 
 export function wallTiles(payload: ListsPayload): WallTile[] {
@@ -25,8 +29,7 @@ export function wallTiles(payload: ListsPayload): WallTile[] {
   const reading = statusIs(lists.books, 'books', ['Reading'])
   const nextSeason = [...statusIs(lists.series, 'series', ['Next season out']), ...statusIs(lists.anime, 'anime', ['Next season out'])]
   const parked = LIST_IDS.flatMap((id) => statusIs(lists[id], id, ['Paused', 'On hold']))
-  const recent = byUpdated(LIST_IDS.flatMap((id) => lists[id])).slice(0, 8)
-  const finished = byUpdated(LIST_IDS.flatMap((id) => statusIs(lists[id], id, ['Watched', 'Completed', 'Read']))).slice(0, 8)
+  const finished = byFinished(LIST_IDS.flatMap((id) => lists[id])).slice(0, 8)
   const rated = LIST_IDS.flatMap((id) => lists[id]).filter((item) => item.myRating !== null && item.myRating > 0).sort((left, right) => (right.myRating ?? 0) - (left.myRating ?? 0)).slice(0, 8)
   const tiles: WallTile[] = [
     { id: 'watching', title: 'Now watching', href: '/lists/movies?status=In%20progress', items: watching },
@@ -34,8 +37,7 @@ export function wallTiles(payload: ListsPayload): WallTile[] {
     { id: 'reading', title: 'Now reading', href: '/lists/books?status=Reading', items: reading },
     { id: 'next', title: 'Next season out', href: '/lists/series?status=Next%20season%20out', items: nextSeason },
     { id: 'paused', title: 'Paused / On hold', href: '/lists/series?status=Paused', items: parked },
-    { id: 'updated', title: 'Recently updated', href: '/lists/movies?sort=updated', items: recent },
-    { id: 'finished', title: 'Recently finished', href: '/lists/movies?status=Watched', items: finished },
+    { id: 'finished', title: 'Recently finished', href: '/lists/movies?sort=finished&dir=desc', items: finished },
     { id: 'rated', title: 'Top rated', href: '/lists/movies?sort=myRating', items: rated },
   ]
   return tiles.filter((tile) => tile.items.length > 0)

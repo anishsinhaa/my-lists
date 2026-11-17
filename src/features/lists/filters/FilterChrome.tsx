@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useDismiss } from '@/hooks/useDismiss'
-import { ArrowDownUp, Calendar, Check, Eraser, Gamepad2, Layers, LayoutGrid, Rows3, SlidersHorizontal, Sparkles, Star, Table2, Tags, UserRound, X } from 'lucide-react'
+import { Calendar, Check, Eraser, Gamepad2, Layers, LayoutGrid, Rows3, SlidersHorizontal, Sparkles, Star, Table2, Tags, UserRound, X } from 'lucide-react'
 import { IconButton } from '@/design/IconButton'
 import { StatusGlyph } from '@/design/icons'
 import { matchStatus, shelfOrder } from '@/design/statusConfig'
 import { externalRatingLabel } from '@/lib/rating'
 import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
-import { SMART_VIEWS } from '../smart/smartViews'
+import { SortMenu } from '../SortMenu'
+import { finishedOn, SMART_VIEWS } from '../smart/smartViews'
 import { FILTER_CONFIG } from './filterConfig'
 import type { ListQuery, RatingBy } from './listQuery'
 
@@ -89,7 +90,11 @@ function FilterSections({ listId, items, query, onChange }: {
   const creators = useMemo(() => frequent(items.map((item) => item.creator)), [items])
   const franchises = useMemo(() => frequent(items.map((item) => item.franchise)), [items])
   const platforms = useMemo(() => frequent(items.map((item) => item.platform)), [items])
-  const views = SMART_VIEWS[listId].filter((view) => KEPT_VIEWS.has(view.id))
+  const views = SMART_VIEWS[listId].filter((view) => {
+    if (!KEPT_VIEWS.has(view.id)) return false
+    if (view.id !== 'recent') return true
+    return items.some((item) => finishedOn(item) !== null)
+  })
   const label = externalRatingLabel(listId)
   return (
     <div className="space-y-1">
@@ -309,7 +314,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
             </div>
           ) : null}
         </div>
-        <IconButton label="Sort" onClick={() => onChange({ sort: query.sort === 'title' ? 'updated' : query.sort === 'updated' ? 'year' : query.sort === 'year' ? 'myRating' : 'title' })}><ArrowDownUp className="size-4" /></IconButton>
+        <SortMenu dir={query.dir} items={items} listId={listId} value={query.sort} onChange={(sort, dir) => onChange({ sort, dir })} />
         <div role="radiogroup" aria-label="View" className="flex gap-1">
           {([['shelves', Rows3, 'Shelves'], ['grid', LayoutGrid, 'Grid'], ['table', Table2, 'Table']] as const).map(([value, Icon, name]) => (
             <IconButton key={value} aria-pressed={query.view === value} className={query.view === value ? 'bg-accent text-(--bg)' : ''} label={name} onClick={() => onChange({ view: value })}><Icon className="size-4" /></IconButton>

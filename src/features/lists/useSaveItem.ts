@@ -58,6 +58,25 @@ function apply(item: MediaItem, patch: Desired): MediaItem {
   return { ...item, status: patch.status, statusGroup: statusGroupOf(patch.status), myRating: patch.myRating, why: patch.why ?? item.why, extra }
 }
 
+function holdScroll(applyChange: () => void): void {
+  const top = window.scrollY
+  const rails = [...document.querySelectorAll<HTMLElement>('[data-rail-scroller]')].map((node) => ({ node, left: node.scrollLeft }))
+  applyChange()
+  requestAnimationFrame(() => {
+    if (typeof window.scrollTo === 'function' && Math.abs(window.scrollY - top) > 1) window.scrollTo(0, top)
+    for (const rail of rails) {
+      if (rail.node.isConnected) rail.node.scrollLeft = rail.left
+    }
+  })
+}
+
+function writeCache(queryClient: QueryClient, next: ListsPayload): void {
+  holdScroll(() => {
+    queryClient.setQueryData(['lists'], next)
+    listsCache.save(next)
+  })
+}
+
 function publish(queryClient: QueryClient, item: MediaItem, patch: Desired): void {
   const previous = queryClient.getQueryData<ListsPayload>(['lists'])
   if (previous === undefined) return
@@ -65,8 +84,19 @@ function publish(queryClient: QueryClient, item: MediaItem, patch: Desired): voi
     ...previous,
     lists: { ...previous.lists, [item.listId]: previous.lists[item.listId].map((current) => current.id === item.id ? apply(current, patch) : current) },
   }
-  queryClient.setQueryData(['lists'], next)
-  listsCache.save(next)
+  writeCache(queryClient, next)
+}
+
+function reconcile(current: ListsPayload, fresh: ListsPayload, item: MediaItem): ListsPayload {
+  const server = fresh.lists[item.listId].find((row) => row.id === item.id)
+  if (server === undefined) return current
+  return {
+    ...current,
+    lists: {
+      ...current.lists,
+      [item.listId]: current.lists[item.listId].map((row) => row.id === item.id ? server : row),
+    },
+  }
 }
 
 async function drain(item: MediaItem, queryClient: QueryClient): Promise<void> {
@@ -93,24 +123,21 @@ async function drain(item: MediaItem, queryClient: QueryClient): Promise<void> {
     const epoch = lane.epoch
     const fresh = await fetchLists({ refresh: true })
     const latest = lanes.get(item.id)
-    if (latest !== undefined && latest.epoch === epoch && latest.pending === null) {
-      queryClient.setQueryData(['lists'], fresh)
-      listsCache.save(fresh)
-      toast.success('Saved')
+    const current = queryClient.getQueryData<ListsPayload>(['lists'])
+    if (latest !== undefined && current !== undefined && latest.epoch === epoch && latest.pending === null) {
+      writeCache(queryClient, reconcile(current, fresh, item))
     }
   } catch (error) {
     if (phase === 'refresh') {
-      toast.success('Saved')
+      return
     } else {
       const latest = lanes.get(item.id)
       if (latest !== undefined) {
         latest.pending = null
-        if (latest.hasBase && latest.base !== undefined) {
-          queryClient.setQueryData(['lists'], latest.base)
-          listsCache.save(latest.base)
-        }
+        if (latest.hasBase && latest.base !== undefined) writeCache(queryClient, latest.base)
       }
       toast.error(error instanceof Error ? error.message : 'Could not save')
+      throw error
     }
   } finally {
     const latest = lanes.get(item.id)
@@ -137,6 +164,6 @@ export function useSaveItem() {
     lane.pending = desired
     lane.epoch += 1
     publish(queryClient, current, desired)
-    void drain(item, queryClient)
+    return drain(item, queryClient)
   }, [queryClient])
 }

@@ -59,4 +59,15 @@ describe('smart views and stats', () => {
     expect(stats.externalRatedCount).toBe(3)
     expect(stats.total).toBe(4)
   })
+
+  it('orders Recently finished by Date finished', () => {
+    const rows = [
+      item({ title: 'Old', extra: { 'date finished': '2020-01-01' }, updatedAt: '2026-01-01T00:00:00.000Z' }),
+      item({ title: 'New', extra: { 'date finished': '2024-06-01' }, updatedAt: '2019-01-01T00:00:00.000Z' }),
+      item({ title: 'Blank', extra: { 'date finished': '' }, updatedAt: '2026-02-01T00:00:00.000Z' }),
+    ]
+    const view = SMART_VIEWS.movies.find((entry) => entry.id === 'recent')
+    expect(view?.label).toBe('Recently finished')
+    expect(view?.apply(rows, { now: new Date('2026-01-01T00:00:00.000Z') }).map((row) => row.title)).toEqual(['New', 'Old'])
+  })
 })

@@ -24,9 +24,12 @@ function sortValue(item: MediaItem, sort: SortKey): number | string | null {
   if (sort === 'title') return item.titleKey
   if (sort === 'year') return item.year
   if (sort === 'status') return item.status.length === 0 ? null : item.status.toLowerCase()
-  if (sort === 'updated') return item.updatedAt
   if (sort === 'myRating') return item.myRating
   if (sort === 'imdbRating') return item.imdbRating
+  if (sort === 'finished') {
+    const finished = (item.extra['date finished'] ?? '').trim()
+    return finished.length === 0 ? null : finished
+  }
   return effectiveRating(item)
 }
 

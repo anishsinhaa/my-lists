@@ -1,4 +1,4 @@
-export type SortKey = 'title' | 'year' | 'rating' | 'myRating' | 'imdbRating' | 'updated' | 'status'
+export type SortKey = 'title' | 'year' | 'rating' | 'myRating' | 'imdbRating' | 'finished' | 'status'
 export type RatingBy = 'best' | 'my' | 'external'
 
 export interface ListQuery {
@@ -21,8 +21,8 @@ export interface ListQuery {
 
 export const DEFAULT_QUERY: ListQuery = {
   view: 'grid',
-  sort: 'updated',
-  dir: 'desc',
+  sort: 'title',
+  dir: 'asc',
   q: '',
   statuses: [],
   genres: [],
@@ -37,7 +37,7 @@ export const DEFAULT_QUERY: ListQuery = {
   poster: 'any',
 }
 
-const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'updated', 'status']
+const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status']
 
 function list(value: string | null): string[] {
   if (value === null || value.length === 0) return []
@@ -56,8 +56,8 @@ export function parseListQuery(params: URLSearchParams): ListQuery {
   const poster = params.get('poster')
   return {
     view: params.get('view') === 'table' ? 'table' : params.get('view') === 'shelves' ? 'shelves' : 'grid',
-    sort: SORTS.includes(sort as SortKey) ? (sort as SortKey) : 'updated',
-    dir: params.get('dir') === 'asc' ? 'asc' : 'desc',
+    sort: SORTS.includes(sort as SortKey) ? (sort as SortKey) : 'title',
+    dir: params.get('dir') === 'desc' ? 'desc' : 'asc',
     q: params.get('q') ?? '',
     statuses: list(params.get('status')),
     genres: list(params.get('genre')),

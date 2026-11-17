@@ -81,6 +81,7 @@ export function Rail({ label, children, align = 'center' }: { label: string; chi
       ) : null}
       <div
         ref={scroller}
+        data-rail-scroller="true"
         role="region"
         aria-label={label}
         tabIndex={0}

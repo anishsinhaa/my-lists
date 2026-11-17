@@ -50,7 +50,7 @@ describe('shelves and current strip', () => {
     const seen = groups.find((group) => group.status === 'Watched')
     expect(seen?.items).toHaveLength(30)
     expect(seen?.total).toBe(40)
-    expect(seen?.items[0]?.title).toBe('W39')
+    expect(seen?.items[0]?.title).toBe('W0')
   })
 
   it('keeps a blank status in its own group', () => {

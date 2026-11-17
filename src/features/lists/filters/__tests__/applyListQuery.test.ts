@@ -39,7 +39,7 @@ describe('applyListQuery', () => {
 
   it('ORs statuses and ANDs other fields, with an inclusive year range', () => {
     expect(run(rows, { statuses: ['Watched', 'Dropped'], genres: ['Drama'] })).toEqual(['A', 'C'])
-    expect(run(rows, { yearMin: 2000, yearMax: 2001 })).toEqual(['B', 'A'])
+    expect(run(rows, { yearMin: 2000, yearMax: 2001 })).toEqual(['A', 'B'])
     expect(run(rows, { yearMin: 1990 })).not.toContain('C')
   })
 
@@ -48,6 +48,17 @@ describe('applyListQuery', () => {
     expect(run([rows[2]!], { ratingBy: 'my', ratingMin: 6 })).toEqual(['C'])
     expect(run([rows[0]!], { ratingBy: 'my', ratingMin: 1 })).toEqual([])
     expect(run([rows[0]!], { ratingBy: 'best', ratingMin: 8 })).toEqual(['A'])
+  })
+
+  it('keeps title order when a rating changes and sorts finished dates without using Updated at', () => {
+    const rated = rows.map((row) => row.title === 'B' ? { ...row, myRating: 10, updatedAt: '2026-01-01T00:00:00.000Z' } : row)
+    expect(run(rated, { sort: 'title', dir: 'asc' })).toEqual(['A', 'B', 'C', 'D'])
+    const dated = [
+      item({ title: 'Later', extra: { 'date finished': '2024-02-01' } }),
+      item({ title: 'Earlier', extra: { 'date finished': '2020-05-01' } }),
+      item({ title: 'Undated', extra: {} }),
+    ]
+    expect(run(dated, { sort: 'finished', dir: 'desc' })).toEqual(['Later', 'Earlier', 'Undated'])
   })
 
   it('keeps a stable order and logs a 500-item filter', () => {

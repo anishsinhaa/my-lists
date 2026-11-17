@@ -1,5 +1,7 @@
 import { useLocation } from 'react-router-dom'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Toaster } from '@/components/ui/sonner'
+import { useOnline } from '@/hooks/useOnline'
 import type { ThemeId } from '@/types/theme'
 import { ThemeProvider } from '@/themes/ThemeProvider'
 import { BottomNav } from './BottomNav'
@@ -15,12 +17,19 @@ function themeFor(pathname: string): ThemeId {
 
 export function AppShell() {
   const location = useLocation()
+  const online = useOnline()
   return (
     <ThemeProvider themeId={themeFor(location.pathname)}>
+      {online ? null : <p className="bg-[var(--accent-2)] px-3 py-2 text-sm text-[var(--bg)]">You are offline. Showing saved lists.</p>}
       <TopBar />
-      <div className="pb-16 md:pb-0">
-        <PageTransition />
-      </div>
+      <ErrorBoundary>
+        <div className="pb-20 md:pb-8">
+          <PageTransition />
+        </div>
+      </ErrorBoundary>
+      <footer className="px-4 pb-4 text-center text-xs text-[var(--ink-muted)]">
+        <a className="underline" href="https://rawg.io" rel="noreferrer">Data: RAWG</a>
+      </footer>
       <BottomNav />
       <Toaster />
     </ThemeProvider>

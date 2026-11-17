@@ -1,0 +1,8 @@
+{
+  "name": "My Lists",
+  "short_name": "My Lists",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0E0F13",
+  "theme_color": "#0E0F13"
+}

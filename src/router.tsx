@@ -3,8 +3,12 @@ import { AppShell } from '@/components/layout/AppShell'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
-import { ListCounts } from '@/features/data/ListCounts'
-import { ThemePreview } from '@/themes/ThemePreview'
+import { HomePage } from '@/features/home/HomePage'
+import { ListPage } from '@/features/lists/ListPage'
+import { MyListsPage } from '@/features/lists/MyListsPage'
+import { PicksPage } from '@/features/picks/PicksPage'
+
+const picksOn = import.meta.env.VITE_FEATURE_PICKS === 'true'
 
 function AuthLayout() {
   return (
@@ -14,12 +18,8 @@ function AuthLayout() {
   )
 }
 
-function Page({ title }: { title: string }) {
-  return (
-    <main className="p-6">
-      <h1 className="text-2xl font-semibold">{title}</h1>
-    </main>
-  )
+function NotFound() {
+  return <main className="p-6"><h1 className="text-2xl font-semibold">Not found</h1></main>
 }
 
 export const router = createBrowserRouter([
@@ -33,12 +33,11 @@ export const router = createBrowserRouter([
           {
             element: <AppShell />,
             children: [
-              { path: '/', element: <ListCounts /> },
-              { path: '/lists', element: <Page title="My Lists" /> },
-              { path: '/lists/:listId', element: <Page title="List" /> },
-              { path: '/picks', element: <Page title="Picks" /> },
-              { path: '/_theme', element: <ThemePreview /> },
-              { path: '*', element: <Page title="Not found" /> },
+              { path: '/', element: <HomePage /> },
+              { path: '/lists', element: <MyListsPage /> },
+              { path: '/lists/:listId', element: <ListPage /> },
+              { path: '/picks', element: picksOn ? <PicksPage /> : <NotFound /> },
+              { path: '*', element: <NotFound /> },
             ],
           },
         ],

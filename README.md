@@ -1,32 +1,14 @@
-# React + TypeScript + Vite
+# My Lists
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A personal viewer for movies, series, anime, games, books, and a couple of free-form lists. The Google Sheet is the source of truth. There is no database.
 
-Currently, two official plugins are available:
+## Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `npm run dev` starts the Vite app and the local API together.
+- `npm run typecheck`, `npm run lint`, and `npm run test` check the project.
+- `npm run hash -- "password"` prints a bcrypt hash for `AUTH_PASSWORD_HASH`.
+- `npm run check-sheet` prints row counts, missing columns, and warnings.
 
-## React Compiler
+See `docs/SETUP.md` for Google, TMDB, OMDb, RAWG, and Vercel setup. Never commit `.env`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Phase 2 (adding rows with Gemini) is planned only. The Add button stays disabled.

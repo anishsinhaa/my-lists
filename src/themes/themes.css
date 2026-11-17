@@ -31,4 +31,15 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-theme] { --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; }
+  .grain::after, .scanlines { opacity: 0; }
 }
+
+.grain { position: relative; }
+.grain::after { content: ""; pointer-events: none; position: absolute; inset: 0; opacity: 0.06; background-image: radial-gradient(#ffffff22 0.5px, transparent 0.5px); background-size: 3px 3px; }
+.vignette { background-image: linear-gradient(to top, #000000cc, transparent 55%); }
+.ticket-chip { border-radius: 999px; }
+.halftone { background-image: radial-gradient(var(--ink) 1px, transparent 1px); background-size: 6px 6px; }
+.scanlines { background-image: repeating-linear-gradient(to bottom, transparent, transparent 2px, #00000014 3px); }
+.paper { background-image: radial-gradient(#00000010 0.4px, transparent 0.4px); background-size: 4px 4px; }
+.spine { background-image: linear-gradient(90deg, #00000033, transparent 8%); }
+.chamfer { clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }

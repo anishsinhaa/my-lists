@@ -1,8 +1,32 @@
 import { useEffect } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { fetchLists } from '@/services/sheets/listsApi'
 import { listsCache } from '@/services/sheets/listsCache'
+import type { PosterFillResult } from '@/types/api'
+import type { ListId } from '@/types/lists'
+import type { ListsPayload, MediaItem } from '@/types/media'
+
+export function patchListResult(queryClient: QueryClient, listId: ListId, result: PosterFillResult, year: number | null): void {
+  queryClient.setQueryData<ListsPayload>(['lists'], (current) => {
+    if (current === undefined) return current
+    const next = current.lists[listId].map((item) => applyWritten(item, result, year))
+    const payload = { ...current, lists: { ...current.lists, [listId]: next } }
+    listsCache.save(payload)
+    return payload
+  })
+}
+
+function applyWritten(item: MediaItem, result: PosterFillResult, year: number | null): MediaItem {
+  if (item.titleKey !== result.titleKey || item.year !== year) return item
+  return {
+    ...item,
+    poster: result.written.poster === true ? result.poster : item.poster,
+    creator: result.written.creator === true ? result.creator : item.creator,
+    franchise: result.written.franchise === true ? result.franchise : item.franchise,
+    imdbRating: result.written.imdbRating === true ? result.imdbRating : item.imdbRating,
+  }
+}
 
 export function useLists() {
   const queryClient = useQueryClient()

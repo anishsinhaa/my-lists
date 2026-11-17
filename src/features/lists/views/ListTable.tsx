@@ -1,3 +1,4 @@
+import { displayTitle } from '@/lib/displayTitle'
 import { externalRatingLabel } from '@/lib/rating'
 import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
@@ -27,7 +28,7 @@ export function ListTable({ items, listId }: { items: MediaItem[]; listId: ListI
         <tbody>
           {items.map((item) => (
             <tr key={item.id} className="border-t border-border">
-              <td className="p-2">{item.title}</td>
+              <td className="p-2">{displayTitle(item.title, item.year)}</td>
               <td className="p-2">{cell(item.status)}</td>
               <td className="p-2">{cell(item.year)}</td>
               <td className="hidden p-2 sm:table-cell">{cell(item.genres.join(', '))}</td>

@@ -9,6 +9,7 @@ import { Rail } from '@/design/Rail'
 import { StatusBadge } from '@/design/StatusBadge'
 import { thumbnailUrl } from '@/design/archive'
 import { useAuth } from '@/features/auth/AuthContext'
+import { displayTitle } from '@/lib/displayTitle'
 import { useLists } from '@/features/data/useLists'
 import { usePicksVisibility } from '@/features/settings/useSettings'
 import { LIST_KIND } from '@/types/lists'
@@ -73,7 +74,7 @@ export function HomePage() {
             <span className="mt-3 flex gap-2 overflow-hidden">
               {tile.items.slice(0, 4).map((item) => (
                 <span key={item.id} className="w-14 shrink-0">
-                  <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={item.title} />
+                  <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={displayTitle(item.title, item.year)} />
                 </span>
               ))}
             </span>
@@ -95,7 +96,7 @@ export function HomePage() {
             <Rail label={tile.title}>
               {tile.items.slice(0, 8).map((item) => (
                 <Link key={item.id} to={tile.href} data-rail-card="true" className="w-[clamp(4.5rem,18cqi,7.5rem)] shrink-0 snap-start">
-                  <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={item.title} />
+                  <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={displayTitle(item.title, item.year)} />
                 </Link>
               ))}
             </Rail>
@@ -105,8 +106,8 @@ export function HomePage() {
       {spot === null ? null : (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Pick for tonight">
           <div className="w-full max-w-sm space-y-3 rounded-md border border-(--brass) bg-[#14110e] p-4 text-[#f4ead8]">
-            <PosterImage alt="" kind={LIST_KIND[spot.listId]} src={spot.poster} title={spot.title} />
-            <h2 className="font-['Fraunces',serif] text-2xl">{spot.title}</h2>
+            <PosterImage alt="" kind={LIST_KIND[spot.listId]} src={spot.poster} title={displayTitle(spot.title, spot.year)} />
+            <h2 className="font-['Fraunces',serif] text-2xl">{displayTitle(spot.title, spot.year)}</h2>
             <StatusBadge listId={spot.listId} status={spot.status} />
             <p className="text-sm text-[#cbbfa8]">{spot.year ?? ''} {spot.creator ?? ''}</p>
             <div className="flex gap-2">

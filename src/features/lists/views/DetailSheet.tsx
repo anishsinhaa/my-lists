@@ -1,5 +1,6 @@
 import { RatingBadge } from '@/components/common/RatingBadge'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { displayTitle } from '@/lib/displayTitle'
 import { externalRatingLabel } from '@/lib/rating'
 import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
@@ -15,7 +16,7 @@ export function DetailSheet({ item, listId, onClose }: { item: MediaItem | null;
       <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto">
         {item === null ? null : (
           <SheetHeader>
-            <SheetTitle>{item.title}</SheetTitle>
+            <SheetTitle>{displayTitle(item.title, item.year)}</SheetTitle>
             {line('Year', item.year)}
             {line('Genres', item.genres.join(', ') || null)}
             {line('Why', item.why || null)}

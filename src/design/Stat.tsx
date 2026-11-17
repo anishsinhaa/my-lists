@@ -9,13 +9,13 @@ export function Stat({ label, value }: { label: string; value: number | string }
   )
 }
 
-export function SegmentedBar({ segments, onSelect }: { segments: { id: string; label: string; count: number }[]; onSelect?: (id: string) => void }) {
+export function SegmentedBar({ segments, onSelect }: { segments: { id: string; label: string; count: number; tone?: string }[]; onSelect?: (id: string) => void }) {
   const total = segments.reduce((sum, segment) => sum + segment.count, 0)
   if (total === 0) return null
   return (
-    <div className="flex h-3 overflow-hidden rounded-full border border-(--brass)/40" role="img" aria-label={segments.map((segment) => `${segment.label} ${segment.count}`).join(', ')}>
+    <div className="flex h-3 overflow-hidden rounded-full border border-(--brass)/40" role="group" aria-label="Status mix">
       {segments.filter((segment) => segment.count > 0).map((segment) => (
-        <button key={segment.id} type="button" title={`${segment.label}: ${segment.count}`} className="h-full bg-(--brass) odd:bg-accent" style={{ width: `${(segment.count / total) * 100}%` }} onClick={() => onSelect?.(segment.id)} />
+        <button key={segment.id} type="button" aria-label={`${segment.label}: ${segment.count}`} title={`${segment.label}: ${segment.count}`} className={`h-full min-w-px ${segment.tone ?? 'bg-accent'}`} style={{ width: `${(segment.count / total) * 100}%` }} onClick={() => onSelect?.(segment.id)} />
       ))}
     </div>
   )

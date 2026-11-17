@@ -31,17 +31,18 @@ describe('smart views and stats', () => {
       item({ title: 'Inception', creator: 'Christopher Nolan', status: 'Watched', statusGroup: 'done' }),
       item({ title: 'Other', creator: 'Nolan Bushnell' }),
       item({ title: 'Iron Man', franchise: 'Marvel', status: 'Watched', statusGroup: 'done' }),
+      item({ title: 'Ultron', franchise: 'MCU', status: 'Watched', statusGroup: 'done' }),
       item({ title: 'Next', franchise: 'Marvel Cinematic Universe', status: 'Want to', statusGroup: 'planned' }),
     ]
     const nolan = SMART_VIEWS.movies[0]?.apply(rows, { now: new Date() }) ?? []
     expect(nolan.map((row) => row.title)).toEqual(['Inception'])
     const marvel = SMART_VIEWS.movies.find((view) => view.id === 'marvel')
     const matched = marvel?.apply(rows, { now: new Date() }) ?? []
-    expect(matched.filter((row) => marvel?.split?.left(row)).map((row) => row.title)).toEqual(['Iron Man'])
+    expect(matched.filter((row) => marvel?.split?.left(row)).map((row) => row.title)).toEqual(['Iron Man', 'Ultron'])
     expect(matched.filter((row) => marvel?.split?.right(row)).map((row) => row.title)).toEqual(['Next'])
   })
 
-  it('uses My Rating for top-rated and averages ratings independently', () => {
+  it('keeps a title when My Rating or the external rating is at least 8', () => {
     expect(TOP_RATED_MIN).toBe(8)
     const rows = [
       item({ title: 'Mine', myRating: 9, imdbRating: 5 }),
@@ -50,7 +51,7 @@ describe('smart views and stats', () => {
       item({ title: 'Empty', myRating: null, imdbRating: null }),
     ]
     const titles = SMART_VIEWS.movies.find((view) => view.id === 'top-rated')?.apply(rows, { now: new Date() }).map((row) => row.title)
-    expect(titles).toEqual(['Mine', 'External'])
+    expect(titles).toEqual(['Low', 'Mine', 'External'])
     const stats = computeStats(rows)
     expect(stats.avgMyRating).toBe(7.5)
     expect(stats.myRatedCount).toBe(2)

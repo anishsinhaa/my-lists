@@ -1,7 +1,18 @@
+import { matchStatus } from '@/design/statusConfig'
 import { effectiveRating } from '@/lib/rating'
 import { normalizeTitle } from '@/lib/normalize'
+import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 import type { ListQuery, SortKey } from './listQuery'
+
+function statusAllowed(raw: string, selected: string[], listId?: ListId): boolean {
+  if (selected.length === 0) return true
+  const have = raw.trim().toLowerCase()
+  return selected.some((status) => {
+    if (status.trim().toLowerCase() === have) return true
+    return listId !== undefined && matchStatus(listId, status).value.toLowerCase() === matchStatus(listId, raw).value.toLowerCase()
+  })
+}
 
 function chosenRating(item: MediaItem, query: ListQuery): number | null {
   if (query.ratingBy === 'my') return item.myRating
@@ -27,11 +38,11 @@ function compareValues(left: number | string | null, right: number | string | nu
   return dir === 'asc' ? base : -base
 }
 
-export function applyListQuery(items: MediaItem[], query: ListQuery, _ctx: { now: Date }): MediaItem[] {
+export function applyListQuery(items: MediaItem[], query: ListQuery, ctx: { now: Date; listId?: ListId }): MediaItem[] {
   const needle = normalizeTitle(query.q)
   const filtered = items.filter((item) => {
     if (needle.length > 0 && !item.titleKey.includes(needle) && !normalizeTitle(item.title).includes(needle)) return false
-    if (query.statuses.length > 0 && !query.statuses.includes(item.status)) return false
+    if (!statusAllowed(item.status, query.statuses, ctx.listId)) return false
     if (query.genres.length > 0 && !query.genres.some((genre) => item.genres.includes(genre))) return false
     if (query.yearMin !== null || query.yearMax !== null) {
       if (item.year === null) return false

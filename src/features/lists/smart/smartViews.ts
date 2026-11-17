@@ -1,4 +1,3 @@
-import { effectiveRating } from '@/lib/rating'
 import { normalizeKey } from '@/lib/normalize'
 import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
@@ -14,13 +13,20 @@ export interface SmartViewDef {
   split?: { leftLabel: string; rightLabel: string; left(item: MediaItem): boolean; right(item: MediaItem): boolean }
 }
 
+export function topScore(item: { myRating: number | null; imdbRating: number | null }): number | null {
+  const scores: number[] = []
+  if (item.myRating !== null && item.myRating >= TOP_RATED_MIN) scores.push(item.myRating)
+  if (item.imdbRating !== null && item.imdbRating >= TOP_RATED_MIN) scores.push(item.imdbRating)
+  if (scores.length === 0) return null
+  return Math.max(...scores)
+}
+
 function topRated(items: MediaItem[]): MediaItem[] {
   return items
-    .filter((item) => {
-      const rating = effectiveRating(item)
-      return rating !== null && rating >= TOP_RATED_MIN
-    })
-    .sort((left, right) => (effectiveRating(right) ?? 0) - (effectiveRating(left) ?? 0))
+    .map((item, index) => ({ item, index, score: topScore(item) }))
+    .filter((row): row is { item: MediaItem; index: number; score: number } => row.score !== null)
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map((row) => row.item)
 }
 
 function recent(items: MediaItem[], now: Date): MediaItem[] {
@@ -42,13 +48,20 @@ const shared = {
 const nolan = normalizeKey(PINNED_DIRECTORS[0] ?? '')
 const marvel = normalizeKey(PINNED_FRANCHISES[0] ?? '')
 
+function isMarvel(item: MediaItem): boolean {
+  const franchise = normalizeKey(item.franchise ?? '')
+  if (franchise.length === 0) return false
+  if (franchise.includes(marvel)) return true
+  return franchise.split(' ').includes('mcu')
+}
+
 export const SMART_VIEWS: Record<ListId, SmartViewDef[]> = {
   movies: [
     { id: 'nolan', label: 'Nolan', apply: (items) => items.filter((item) => normalizeKey(item.creator ?? '') === nolan) },
     {
       id: 'marvel',
       label: 'Marvel',
-      apply: (items) => items.filter((item) => normalizeKey(item.franchise ?? '').includes(marvel)),
+      apply: (items) => items.filter((item) => isMarvel(item)),
       split: {
         leftLabel: 'Watched',
         rightLabel: 'Want',

@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { edgeScrollSpeed } from './archive'
 
-export function Rail({ label, children }: { label: string; children: ReactNode }) {
+export function Rail({ label, children, align = 'center' }: { label: string; children: ReactNode; align?: 'center' | 'start' }) {
   const scroller = useRef<HTMLDivElement>(null)
   const track = useRef<HTMLDivElement>(null)
   const speed = useRef(0)
@@ -95,7 +95,7 @@ export function Rail({ label, children }: { label: string; children: ReactNode }
           hovering.current = target instanceof Element && target.closest('[data-rail-card]') !== null
         }}
       >
-        <div ref={track} className={`flex w-max min-w-full items-stretch gap-[clamp(0.75rem,1.5vw,1.25rem)] py-4 ${overflow ? 'justify-start px-14' : 'justify-center px-[clamp(0.75rem,2vw,1.5rem)]'}`}>
+        <div ref={track} className={`flex w-max min-w-full items-stretch gap-[clamp(0.75rem,1.5vw,1.25rem)] py-4 ${overflow || align === 'start' ? 'justify-start' : 'justify-center'} ${overflow ? 'px-14' : 'px-[clamp(0.75rem,2vw,1.5rem)]'}`}>
           {children}
         </div>
       </div>

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
+import { useLists } from '@/features/data/useLists'
+import { dataHealth } from '@/features/lists/stats/dataHealth'
 import { fetchLists } from '@/services/sheets/listsApi'
 import { listsCache } from '@/services/sheets/listsCache'
-import { POSTER_LISTS, TAB_NAME, type ListId } from '@/types/lists'
+import { LIST_IDS, POSTER_LISTS, TAB_NAME, type ListId } from '@/types/lists'
 import type { PicksToggles } from '@/types/settings'
 import { savePicks, startEnrich, useEnrichStatus, useSettings } from './useSettings'
 
@@ -32,6 +34,7 @@ export function SettingsPage() {
   const queryClient = useQueryClient()
   const settings = useSettings()
   const status = useEnrichStatus()
+  const lists = useLists()
   const [tab, setTab] = useState<RefreshTab>('all')
   const [notice, setNotice] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -79,6 +82,17 @@ export function SettingsPage() {
     try {
       const started = await startEnrich({ tab, force })
       queryClient.setQueryData(['enrich-status'], started)
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Could not start the refresh')
+    }
+  }
+
+  async function fill(id: ListId): Promise<void> {
+    setNotice(null)
+    try {
+      const started = await startEnrich({ tab: id, force: false })
+      queryClient.setQueryData(['enrich-status'], started)
+      setTab(id)
     } catch (error) {
       setNotice(error instanceof Error ? error.message : 'Could not start the refresh')
     }
@@ -136,6 +150,28 @@ export function SettingsPage() {
         <p className="text-sm text-(--ink-muted)">
           {lastRun === null ? 'No refresh has been run from Settings yet.' : `Last run ${new Date(lastRun.finishedAt).toLocaleString()}: ${lastRun.summary}`}
         </p>
+      </section>
+      <section className="space-y-3">
+        <h2 className="font-(--font-display) text-xl">Data health</h2>
+        {lists.data === undefined ? <p className="text-sm text-(--ink-muted)">Loading lists.</p> : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {LIST_IDS.map((id) => {
+              const health = dataHealth(lists.data?.lists[id] ?? [])
+              return (
+                <article key={id} className="space-y-2 rounded-md border border-(--brass)/40 bg-(--surface) p-3">
+                  <h3 className="font-(--font-display) text-lg">{TAB_NAME[id]}</h3>
+                  <ul className="space-y-1 text-sm text-(--ink-muted)">
+                    <li>Missing posters {health.posters}</li>
+                    <li>Missing ratings {health.ratings}</li>
+                    <li>Missing creators {health.creators}</li>
+                    <li>Missing franchises {health.franchises}</li>
+                  </ul>
+                  {POSTER_LISTS.includes(id) ? <Button type="button" className="min-h-11" disabled={running} onClick={() => void fill(id)}>Fill missing data</Button> : null}
+                </article>
+              )
+            })}
+          </div>
+        )}
       </section>
       <section className="space-y-1">
         <h2 className="font-(--font-display) text-xl">Picks tabs</h2>

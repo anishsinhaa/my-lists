@@ -14,7 +14,7 @@ export interface ShelfGroup {
 
 const SHELF_CAP = 30
 
-export function shelfGroups(listId: ListId, items: MediaItem[]): ShelfGroup[] {
+export function shelfGroups(listId: ListId, items: MediaItem[], order: 'rating' | 'given' = 'rating'): ShelfGroup[] {
   const buckets = new Map<string, MediaItem[]>()
   for (const item of items) {
     const matched = matchStatus(listId, item.status)
@@ -30,7 +30,7 @@ export function shelfGroups(listId: ListId, items: MediaItem[]): ShelfGroup[] {
     const rows = buckets.get(value) ?? []
     if (rows.length === 0) continue
     const def = matchStatus(listId, value)
-    const ranked = [...rows].sort((left, right) => {
+    const ranked = order === 'given' ? rows : [...rows].sort((left, right) => {
       const rating = (right.myRating ?? -1) - (left.myRating ?? -1)
       if (rating !== 0) return rating
       return (right.updatedAt ?? '').localeCompare(left.updatedAt ?? '')

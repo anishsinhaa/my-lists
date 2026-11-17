@@ -3,6 +3,7 @@ import { RatingBadge } from '@/components/common/RatingBadge'
 import { StatusChip } from '@/components/common/StatusChip'
 import { StatusBadge } from '@/design/StatusBadge'
 import { visibleRating } from '@/design/archive'
+import { displayTitle } from '@/lib/displayTitle'
 import { externalRatingLabel } from '@/lib/rating'
 import { LIST_KIND } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
@@ -29,7 +30,7 @@ function themed(props: PosterCardProps) {
   return (
     <button type="button" className="block w-full text-left" onClick={() => props.onOpen?.(item)}>
       <span className="relative block">
-        <PosterImage alt="" kind={LIST_KIND[item.listId]} src={item.poster} title={item.title} />
+        <PosterImage alt="" kind={LIST_KIND[item.listId]} src={item.poster} title={displayTitle(item.title, item.year)} />
         <span className="absolute top-2 left-2"><StatusChip size="sm" status={item.status} /></span>
       </span>
       <CardCaption item={item} />

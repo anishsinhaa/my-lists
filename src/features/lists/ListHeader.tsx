@@ -21,8 +21,8 @@ export function ListHeader({ listId, stats, poster, enriching }: { listId: ListI
       {listId === 'anime' ? <div className="halftone h-8" /> : null}
       {listId === 'games' ? <div className="scanlines h-2" /> : null}
       <div className={`relative space-y-2 p-4 ${listId === 'books' ? 'paper' : ''}`}>
-        <h2 className={`font-[var(--font-display)] text-4xl ${listId === 'movies' || listId === 'games' ? 'uppercase tracking-[0.06em]' : ''}`}>{TAB_NAME[listId]}</h2>
-        {listId === 'games' ? <div className="h-0.5 w-24 bg-[var(--accent)]" /> : null}
+        <h2 className={`font-(--font-display) text-4xl ${listId === 'movies' || listId === 'games' ? 'uppercase tracking-[0.06em]' : ''}`}>{TAB_NAME[listId]}</h2>
+        {listId === 'games' ? <div className="h-0.5 w-24 bg-accent" /> : null}
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <span><CountUp value={stats.total} /></span>
           <span>My avg {stats.avgMyRating ?? '–'} ({stats.myRatedCount} rated)</span>
@@ -31,9 +31,9 @@ export function ListHeader({ listId, stats, poster, enriching }: { listId: ListI
           <span>{daysAgo(stats.lastUpdated)}</span>
           {enriching !== undefined ? <span className="rounded-full border px-2 py-0.5">{enriching}</span> : null}
         </div>
-        <div className="flex h-2 overflow-hidden rounded-full bg-[var(--surface-2)]">
+        <div className="flex h-2 overflow-hidden rounded-full bg-(--surface-2)">
           {groups.map((group) => (
-            <span key={group} className="origin-left bg-[var(--accent)]" style={{ transform: `scaleX(1)`, width: `${(stats.byGroup[group] / Math.max(stats.total, 1)) * 100}%` }} />
+            <span key={group} className="origin-left bg-accent" style={{ transform: `scaleX(1)`, width: `${(stats.byGroup[group] / Math.max(stats.total, 1)) * 100}%` }} />
           ))}
         </div>
       </div>

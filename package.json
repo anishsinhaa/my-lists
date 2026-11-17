@@ -13,6 +13,7 @@
     "test": "vitest run",
     "hash": "tsx scripts/hash-password.ts",
     "check-sheet": "tsx scripts/check-sheet.ts",
+    "enrich": "tsx scripts/enrich.ts",
     "preview": "vite preview"
   },
   "dependencies": {

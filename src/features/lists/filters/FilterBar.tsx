@@ -40,7 +40,7 @@ export function FilterBar({ listId, items, query, onChange }: { listId: ListId; 
     <div className="space-y-2">
       <div className="flex gap-2 overflow-x-auto">
         {statuses.map((status) => (
-          <button key={status} type="button" className={`min-h-11 shrink-0 rounded-full border px-3 text-sm ${query.statuses.includes(status) ? 'bg-[var(--accent)] text-[var(--bg)]' : ''}`} onClick={() => toggleStatus(status)}>{status}</button>
+          <button key={status} type="button" className={`min-h-11 shrink-0 rounded-full border px-3 text-sm ${query.statuses.includes(status) ? 'bg-accent text-(--bg)' : ''}`} onClick={() => toggleStatus(status)}>{status}</button>
         ))}
         <Button type="button" variant="outline" onClick={() => setOpen(true)}>Filters {activeCount(query) > 0 ? activeCount(query) : ''}</Button>
         <Button type="button" variant="ghost" onClick={() => onChange({ ...DEFAULT_QUERY, view: query.view, sort: query.sort, dir: query.dir })}>Clear all</Button>
@@ -85,7 +85,7 @@ function OptionList({ label, options, selected, onToggle }: { label: string; opt
       <input aria-label={`Search ${label}`} className="mt-1 w-full rounded-md border bg-transparent px-2 py-1" value={needle} onChange={(event) => setNeedle(event.target.value)} />
       <div className="mt-2 flex max-h-32 flex-wrap gap-1 overflow-y-auto">
         {shown.map((option) => (
-          <button key={option} type="button" className={`rounded-full border px-2 py-1 text-xs ${selected.includes(option) ? 'bg-[var(--accent)] text-[var(--bg)]' : ''}`} onClick={() => onToggle(option)}>{option}</button>
+          <button key={option} type="button" className={`rounded-full border px-2 py-1 text-xs ${selected.includes(option) ? 'bg-accent text-(--bg)' : ''}`} onClick={() => onToggle(option)}>{option}</button>
         ))}
       </div>
     </div>

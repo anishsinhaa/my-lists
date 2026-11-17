@@ -28,7 +28,7 @@ export function ListCategoryCard({ listId, count, posters, to, variant, items }:
     <Link
       to={to}
       data-theme={listId}
-      className={`block overflow-hidden border bg-[var(--surface)] text-[var(--ink)] ${variant === 'fullscreen' ? 'h-[calc(100dvh-7.5rem)]' : 'min-h-64'}`}
+      className={`block overflow-hidden border bg-(--surface) text-(--ink) ${variant === 'fullscreen' ? 'h-[calc(100dvh-7.5rem)]' : 'min-h-64'}`}
       style={{ borderRadius: spec.radiusPx, borderColor: spec.colors.border, transform: tilt.on ? `perspective(800px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateY(-4px)` : undefined }}
       onMouseLeave={() => setTilt({ x: 0, y: 0, on: false })}
       onMouseMove={variant === 'tile' ? (event) => {
@@ -46,10 +46,10 @@ export function ListCategoryCard({ listId, count, posters, to, variant, items }:
         ))}
       </div>
       <div className="p-4">
-        <h2 className="font-[var(--font-display)] text-3xl">{TAB_NAME[listId]}</h2>
+        <h2 className="font-(--font-display) text-3xl">{TAB_NAME[listId]}</h2>
         <p>{count}</p>
-        <div className="mt-2 flex h-1.5 overflow-hidden rounded-full bg-[var(--surface-2)]">
-          {Object.entries(groups).map(([group, value]) => <span key={group} className="bg-[var(--accent)]" style={{ width: `${(value / Math.max(count, 1)) * 100}%` }} />)}
+        <div className="mt-2 flex h-1.5 overflow-hidden rounded-full bg-(--surface-2)">
+          {Object.entries(groups).map(([group, value]) => <span key={group} className="bg-accent" style={{ width: `${(value / Math.max(count, 1)) * 100}%` }} />)}
         </div>
       </div>
     </Link>

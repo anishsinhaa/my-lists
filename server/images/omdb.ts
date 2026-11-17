@@ -1,4 +1,5 @@
 import { fetchJson, omdbKey } from './http.js'
+import { logSample } from './samples.js'
 import { rating } from './types.js'
 
 export async function omdbRating(input: { imdbId?: string; title: string; year: number | null; type: 'movie' | 'series' }, signal?: AbortSignal): Promise<number | undefined> {
@@ -12,6 +13,7 @@ export async function omdbRating(input: { imdbId?: string; title: string; year: 
     if (input.year !== null) params.set('y', String(input.year))
   }
   const body = await fetchJson(`https://www.omdbapi.com/?${params.toString()}`, { signal })
+  logSample('omdb', body)
   if (typeof body !== 'object' || body === null) return undefined
   const record = body as { Response?: string; imdbRating?: string }
   if (record.Response === 'False' || record.imdbRating === undefined || record.imdbRating === 'N/A') return undefined

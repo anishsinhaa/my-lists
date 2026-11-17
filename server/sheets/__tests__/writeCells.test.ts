@@ -50,6 +50,15 @@ describe('writeCells', () => {
     expect(() => assertWritable('movies', 'myRating' as 'poster')).toThrow(WriteForbiddenError)
   })
 
+  it('overwrites a poster when the refresh asks to replace the current value', async () => {
+    const client = memory([header, ['Heat', 1995, 'https://img.example/old.jpg', '', '', 9, '8.8']])
+    const [result] = await writeCells(client, [{ ...poster('heat', 1995), value: 'https://img.example/new.jpg', expectedCurrent: 'https://img.example/old.jpg', overwrite: true }])
+    expect(result?.outcome).toBe('written')
+    expect(client.rows[1]?.[2]).toBe('https://img.example/new.jpg')
+    expect(client.rows[1]?.[5]).toBe(9)
+    expect(client.rows[1]?.[6]).toBe('8.8')
+  })
+
   it('skips ambiguous duplicates and a missing column', async () => {
     const dupes = memory([header, ['Heat', '', '', '', '', '', ''], ['Heat', '', '', '', '', '', '']])
     expect((await writeCells(dupes, [{ ...poster('heat', null) }]))[0]?.outcome).toBe('skipped_ambiguous')

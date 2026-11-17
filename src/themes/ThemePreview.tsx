@@ -15,7 +15,7 @@ export function ThemePreview() {
       {ids.map((id) => {
         const spec = THEME_SPECS[id]
         return (
-          <section key={id} data-theme={id} className="rounded-[var(--radius)] border p-4" style={{ background: spec.colors.bg, color: spec.colors.ink, borderColor: spec.colors.border, fontFamily: spec.fonts.body, borderRadius: spec.radiusPx }}>
+          <section key={id} data-theme={id} className="rounded-(--radius) border p-4" style={{ background: spec.colors.bg, color: spec.colors.ink, borderColor: spec.colors.border, fontFamily: spec.fonts.body, borderRadius: spec.radiusPx }}>
             <h2 style={{ fontFamily: spec.fonts.display }}>{spec.label}</h2>
             <p style={{ color: spec.colors.inkMuted }}>{spec.cardStyle}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">

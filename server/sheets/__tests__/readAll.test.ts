@@ -37,6 +37,24 @@ describe('readAll', () => {
     expect(payload.lists.curious).toEqual([])
   })
 
+  it('skips a turned-off picks tab without warning that it is missing', async () => {
+    const ranges: string[][] = []
+    const client = clientReturning([...LIST_IDS, ...PICKS_IDS].map((id) => TAB_NAME[id]))
+    const wrapped: SheetsClient = {
+      batchGetValues: (requested) => {
+        ranges.push(requested)
+        return client.batchGetValues(requested)
+      },
+      batchUpdateValues: () => Promise.resolve(),
+    }
+    const payload = await readAll(wrapped, { skipPicks: ['games-picks'] })
+    expect(ranges[0]?.some((range) => range.includes('Games picks'))).toBe(false)
+    expect(payload.picks['games-picks']).toEqual([])
+    expect(payload.warnings.some((warning) => warning.tab === 'games-picks')).toBe(false)
+    expect(payload.lists.movies).toHaveLength(1)
+    expect(Array.isArray(payload.picks['movies-picks'])).toBe(true)
+  })
+
   it('does not import image providers', () => {
     const source = [readFileSync(resolve('server/sheets/readAll.ts'), 'utf8'), readFileSync(resolve('api/lists.ts'), 'utf8')].join('\n')
     expect(source).not.toMatch(/server\/images|tmdb|omdb|rawg|jikan|openlibrary/i)

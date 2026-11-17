@@ -16,6 +16,18 @@ describe('normalizeTitle', () => {
     expect(normalizeTitle('Tom & Jerry')).toBe('tom and jerry')
     expect(normalizeTitle('The Matrix')).toBe('the matrix')
   })
+
+  it('drops a trailing parenthetical year before matching', () => {
+    expect(normalizeTitle('Triangle of Sadness (2022)')).toBe('triangle of sadness')
+    expect(normalizeTitle('Les Misérables (2012)')).toBe('les miserables')
+    expect(normalizeTitle('The Substance (2024)')).toBe('the substance')
+  })
+
+  it('treats hyphens as spaces and roman numerals as digits', () => {
+    expect(normalizeTitle('The 40-Year-Old Virgin')).toBe('the 40 year old virgin')
+    expect(normalizeTitle('One-Punch Man')).toBe('one punch man')
+    expect(normalizeTitle("Baldur's Gate III")).toBe('baldurs gate 3')
+  })
 })
 
 describe('dates', () => {

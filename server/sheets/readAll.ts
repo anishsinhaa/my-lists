@@ -11,15 +11,21 @@ function rangeFor(tabName: string): string {
   return `'${tabName}'!A1:Z3000`
 }
 
-function valuesFor(tabName: string, batches: Array<{ range: string; values: unknown[][] }>, index: number): unknown[][] | null {
-  const indexed = batches[index]
-  if (indexed !== undefined && indexed.range.toLowerCase().includes(tabName.toLowerCase())) return indexed.values
-  const found = batches.find((batch) => batch.range.toLowerCase().includes(tabName.toLowerCase()))
+function rangeMatches(range: string, tabName: string): boolean {
+  const normalized = range.toLowerCase().replaceAll("'", '')
+  const name = tabName.toLowerCase()
+  return normalized === name || normalized.startsWith(`${name}!`)
+}
+
+function valuesFor(tabName: string, batches: Array<{ range: string; values: unknown[][] }>): unknown[][] | null {
+  const found = batches.find((batch) => rangeMatches(batch.range, tabName))
   return found === undefined ? null : found.values
 }
 
-export async function readAll(client: SheetsClient): Promise<ListsPayload> {
-  const ranges = TABS.map((id) => rangeFor(TAB_NAME[id]))
+export async function readAll(client: SheetsClient, options: { skipPicks?: readonly PicksId[] } = {}): Promise<ListsPayload> {
+  const skip = new Set(options.skipPicks ?? [])
+  const requested = TABS.filter((id) => !skip.has(id as PicksId))
+  const ranges = requested.map((id) => rangeFor(TAB_NAME[id]))
   let batches: Array<{ range: string; values: unknown[][] }>
   try {
     batches = await client.batchGetValues(ranges)
@@ -40,27 +46,32 @@ export async function readAll(client: SheetsClient): Promise<ListsPayload> {
   const warnings: SheetWarning[] = []
   const columns = {} as ListsPayload['columns']
 
-  TABS.forEach((id, index) => {
-    const values = valuesFor(TAB_NAME[id], batches, index)
+  for (const id of TABS) {
+    if (skip.has(id as PicksId)) {
+      picks[id as PicksId] = []
+      columns[id] = { ...EMPTY_COLUMNS }
+      continue
+    }
+    const values = valuesFor(TAB_NAME[id], batches)
     if (values === null) {
       warnings.push({ tab: id, code: 'missing_tab', message: `Tab "${TAB_NAME[id]}" was not found` })
       columns[id] = { ...EMPTY_COLUMNS }
       if ((PICKS_IDS as readonly string[]).includes(id)) picks[id as PicksId] = []
       else lists[id as ListId] = []
-      return
+      continue
     }
     if ((PICKS_IDS as readonly string[]).includes(id)) {
       const mapped = mapPicksTab(id as PicksId, values)
       picks[id as PicksId] = mapped.items
       warnings.push(...mapped.warnings)
       columns[id] = mapped.columns
-      return
+      continue
     }
     const mapped = mapMainTab(id as ListId, values)
     lists[id as ListId] = mapped.items
     warnings.push(...mapped.warnings)
     columns[id] = mapped.columns
-  })
+  }
 
   const dataHash = createHash('sha1').update(JSON.stringify({ lists, picks })).digest('hex')
   return { fetchedAt: new Date().toISOString(), dataHash, lists, picks, warnings, columns }

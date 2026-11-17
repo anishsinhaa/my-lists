@@ -1,6 +1,8 @@
+import { stripTrailingYear } from '../../src/lib/normalize.js'
 import { getEnv } from '../config/env.js'
 import { bestMatch } from './match.js'
 import { fetchJson } from './http.js'
+import { logSample } from './samples.js'
 import { Throttle } from './throttle.js'
 import { rating, wants, type PosterProvider } from './types.js'
 
@@ -9,15 +11,17 @@ const throttle = new Throttle(250)
 export const rawg: PosterProvider = {
   id: 'rawg',
   async lookup(query, signal) {
-    const params = new URLSearchParams({ search: query.title, page_size: '5', key: getEnv().RAWG_API_KEY })
+    const title = stripTrailingYear(query.title)
+    const params = new URLSearchParams({ search: title, page_size: '5', key: getEnv().RAWG_API_KEY })
     const body = await throttle.run(() => fetchJson(`https://api.rawg.io/api/games?${params.toString()}`, { signal }))
     const results = Array.isArray((body as { results?: unknown[] }).results) ? (body as { results: unknown[] }).results : []
+    logSample('rawg', results[0] ?? body)
     const candidates = results.map((entry) => {
       const row = typeof entry === 'object' && entry !== null ? entry as Record<string, unknown> : {}
       const released = typeof row.released === 'string' ? Number(row.released.slice(0, 4)) : null
       return { title: typeof row.name === 'string' ? row.name : '', year: Number.isFinite(released) ? released : null, row }
     })
-    const chosen = bestMatch(query, candidates)
+    const chosen = bestMatch({ ...query, title }, candidates) ?? (query.year === null ? null : bestMatch({ ...query, title, year: null }, candidates))
     if (chosen === null) return null
     const row = chosen.item.row
     const match = { sourceId: String(row.id ?? chosen.item.title), confidence: chosen.confidence }

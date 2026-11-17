@@ -9,7 +9,7 @@ export function AnimeCard({ item, index, onOpen }: PosterCardProps) {
   const tilt = index % 2 === 0 ? '-rotate-[1.5deg]' : 'rotate-[1.5deg]'
   return (
     <button type="button" className={`block w-full text-left transition-transform hover:rotate-0 ${tilt}`} onClick={() => onOpen?.(item)}>
-      <span className="relative block border-[3px] border-[var(--ink)] shadow-[5px_5px_0_var(--ink)]">
+      <span className="relative block border-[3px] border-(--ink) shadow-[5px_5px_0_var(--ink)]">
         <PosterImage alt="" kind="anime" src={item.poster} title={item.title} />
         <span className="absolute top-2 right-2 -rotate-6"><StatusChip size="sm" status={item.status} /></span>
         <span className="absolute bottom-2 left-2"><RatingBadge externalLabel={externalRatingLabel('anime')} externalRating={item.imdbRating} myRating={item.myRating} /></span>

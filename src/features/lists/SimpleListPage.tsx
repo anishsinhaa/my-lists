@@ -18,7 +18,7 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
   if (data === undefined) return <main className="p-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
   return (
     <main className="space-y-3 p-4">
-      <h2 className="font-[var(--font-display)] text-3xl">{TAB_NAME[listId]}</h2>
+      <h2 className="font-(--font-display) text-3xl">{TAB_NAME[listId]}</h2>
       <Input aria-label="Search this list" value={query} onChange={(event) => setQuery(event.target.value)} />
       {shown.length === 0 ? <EmptyState title="Nothing here" /> : null}
       <ul className="space-y-2">
@@ -28,7 +28,7 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
               <span>{item.title}</span>
               {item.status.length > 0 ? <StatusChip size="sm" status={item.status} /> : null}
             </div>
-            <p className="text-sm text-[var(--ink-muted)]">{Object.entries(item.extra).map(([key, value]) => `${key}: ${value}`).join(' · ')}</p>
+            <p className="text-sm text-(--ink-muted)">{Object.entries(item.extra).map(([key, value]) => `${key}: ${value}`).join(' · ')}</p>
           </li>
         ))}
       </ul>

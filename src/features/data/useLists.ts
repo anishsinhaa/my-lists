@@ -40,7 +40,9 @@ export function useLists() {
     refetchOnReconnect: true,
     retry: 2,
     initialData: cached ?? undefined,
+    initialDataUpdatedAt: cached === null ? undefined : 0,
     placeholderData: cached ?? undefined,
+    refetchOnMount: 'always',
   })
 
   useEffect(() => {

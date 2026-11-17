@@ -2,7 +2,7 @@ import { statusGroupOf, type StatusGroup } from '@/types/lists'
 
 const GROUP_CLASS: Record<StatusGroup, string> = {
   done: 'bg-[#14532d] text-[#dcfce7]',
-  active: 'border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_28%,var(--surface))] text-[var(--ink)]',
+  active: 'border border-accent bg-[color-mix(in_srgb,var(--accent)_28%,var(--surface))] text-(--ink)',
   planned: 'bg-[#1e3a8a] text-[#dbeafe]',
   maybe: 'bg-[#3f3f46] text-[#fafafa]',
   unknown: 'bg-[#3f3f46] text-[#fafafa]',

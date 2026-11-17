@@ -5,7 +5,7 @@ import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 
 function line(label: string, value: string | number | null) {
-  return <p className="text-sm"><span className="text-[var(--ink-muted)]">{label}: </span>{value ?? '–'}</p>
+  return <p className="text-sm"><span className="text-(--ink-muted)">{label}: </span>{value ?? '–'}</p>
 }
 
 export function DetailSheet({ item, listId, onClose }: { item: MediaItem | null; listId: ListId; onClose: () => void }) {
@@ -25,7 +25,7 @@ export function DetailSheet({ item, listId, onClose }: { item: MediaItem | null;
             {line('Updated', item.updatedAt)}
             {listId === 'games' ? line('Platform', item.platform) : null}
             <p className="text-sm">My rating {item.myRating ?? '–'}</p>
-            <p className="text-sm text-[var(--ink-muted)]">{label} {item.imdbRating ?? '–'}</p>
+            <p className="text-sm text-(--ink-muted)">{label} {item.imdbRating ?? '–'}</p>
             <RatingBadge externalLabel={label} externalRating={item.imdbRating} myRating={item.myRating} size="md" />
           </SheetHeader>
         )}

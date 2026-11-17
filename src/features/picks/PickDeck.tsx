@@ -45,7 +45,7 @@ export function PickDeck({ picksId }: { picksId: PicksId }) {
         {options.map((status) => <Button key={status} className="min-h-14" type="button" onClick={() => queue.act({ type: 'status', status })}>{status}</Button>)}
       </div>
       <Button type="button" variant="outline" className="min-h-14 w-full" onClick={() => queue.act({ type: 'skip' })}><EyeOff /> Skip for now</Button>
-      <p className="text-center text-xs text-[var(--ink-muted)]">Hides until next session. {queue.remaining} left. {queue.syncing > 0 ? 'Saving…' : ''}</p>
+      <p className="text-center text-xs text-(--ink-muted)">Hides until next session. {queue.remaining} left. {queue.syncing > 0 ? 'Saving…' : ''}</p>
       <Button type="button" variant="ghost" disabled={!queue.canUndo} onClick={queue.undo}>Undo</Button>
       {queue.lastError !== null ? <p className="text-sm">{queue.lastError}</p> : null}
     </div>

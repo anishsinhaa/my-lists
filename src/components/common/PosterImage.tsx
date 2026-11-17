@@ -8,7 +8,7 @@ export function PosterImage({ src, alt, title, aspect = '2/3', className = '', p
   const ratio = aspect === '1/1' ? 'aspect-square' : 'aspect-[2/3]'
   const showImage = src !== null && src.length > 0 && !failed
   return (
-    <div className={`relative overflow-hidden bg-[var(--surface-2)] ${ratio} ${className}`}>
+    <div className={`relative overflow-hidden bg-(--surface-2) ${ratio} ${className}`}>
       {showImage ? (
         <motion.img
           alt={alt}

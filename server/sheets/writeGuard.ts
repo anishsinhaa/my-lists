@@ -27,6 +27,11 @@ export function assertWritable(tab: TabId, field: WritableField): void {
   if (!WRITE_POLICY[tab].includes(field)) throw new WriteForbiddenError(tab, field)
 }
 
-export function assertFillOnly(field: WritableField, expectedCurrent: string): void {
-  if (field !== 'pickStatus' && expectedCurrent !== '') throw new WriteForbiddenError(field, 'expectedCurrent')
+export function assertFillOnly(field: WritableField, expectedCurrent: string, overwrite = false): void {
+  if (field === 'pickStatus') return
+  if (overwrite) {
+    if (field === 'poster' || field === 'imdbRating') return
+    throw new WriteForbiddenError(field, 'overwrite')
+  }
+  if (expectedCurrent !== '') throw new WriteForbiddenError(field, 'expectedCurrent')
 }

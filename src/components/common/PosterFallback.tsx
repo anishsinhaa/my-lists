@@ -25,7 +25,7 @@ export function PosterFallback({ title, kind, className = '' }: { title: string;
     <div className={`flex h-full w-full items-center justify-center bg-[linear-gradient(160deg,var(--accent),var(--surface-2))] ${className}`}>
       <div className="flex flex-col items-center gap-1 rounded-md bg-[#111418] px-2 py-1 text-[#f4f4f5]">
         <Icon aria-hidden="true" className="size-5" />
-        <span className="text-center font-[var(--font-display)] text-sm leading-none">{initials(title)}</span>
+        <span className="text-center font-(--font-display) text-sm leading-none">{initials(title)}</span>
       </div>
     </div>
   )

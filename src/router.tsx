@@ -7,8 +7,7 @@ import { HomePage } from '@/features/home/HomePage'
 import { ListPage } from '@/features/lists/ListPage'
 import { MyListsPage } from '@/features/lists/MyListsPage'
 import { PicksPage } from '@/features/picks/PicksPage'
-
-const picksOn = import.meta.env.VITE_FEATURE_PICKS === 'true'
+import { SettingsPage } from '@/features/settings/SettingsPage'
 
 function AuthLayout() {
   return (
@@ -36,7 +35,8 @@ export const router = createBrowserRouter([
               { path: '/', element: <HomePage /> },
               { path: '/lists', element: <MyListsPage /> },
               { path: '/lists/:listId', element: <ListPage /> },
-              { path: '/picks', element: picksOn ? <PicksPage /> : <NotFound /> },
+              { path: '/picks', element: <PicksPage /> },
+              { path: '/settings', element: <SettingsPage /> },
               { path: '*', element: <NotFound /> },
             ],
           },

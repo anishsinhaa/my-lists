@@ -10,19 +10,26 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+function statusOf(error: unknown): number {
+  if (typeof error !== 'object' || error === null) return 0
+  const code = 'code' in error ? Number(error.code) : 0
+  if (code === 429 || code >= 500) return code
+  const status = 'status' in error ? Number(error.status) : 0
+  return Number.isFinite(status) ? status : 0
+}
+
 async function withRetry<T>(run: () => Promise<T>): Promise<T> {
-  const waits = [500, 1000, 2000]
+  const waits = [5000, 20000, 65000]
   let last: unknown
   for (let attempt = 0; attempt <= waits.length; attempt += 1) {
     try {
       return await run()
     } catch (error) {
       last = error
-      const status = typeof error === 'object' && error !== null && 'code' in error ? Number(error.code) : 0
-      const retry = status === 429 || status >= 500
-      const wait = waits[attempt]
-      if (!retry || wait === undefined) break
-      await sleep(wait + Math.floor(Math.random() * 100))
+      const status = statusOf(error)
+      const wait = status === 429 ? 65000 : waits[attempt]
+      if (attempt === waits.length || (status !== 429 && status < 500) || wait === undefined) break
+      await sleep(wait)
     }
   }
   throw last instanceof Error ? last : new Error('Sheets request failed')
@@ -41,14 +48,18 @@ export function createSheetsClient(env: Env): SheetsClient {
       return (response.data.valueRanges ?? []).map((range) => ({ range: range.range ?? '', values: (range.values ?? []) as unknown[][] }))
     },
     async batchUpdateValues(updates) {
-      if (updates.length === 0) return
-      await withRetry(() => api.spreadsheets.values.batchUpdate({
-        spreadsheetId: env.GOOGLE_SHEET_ID,
-        requestBody: {
-          valueInputOption: 'RAW',
-          data: updates.map((update) => ({ range: update.range, values: [[update.value]] })),
-        },
-      }))
+      const size = 80
+      for (let index = 0; index < updates.length; index += size) {
+        const slice = updates.slice(index, index + size)
+        await withRetry(() => api.spreadsheets.values.batchUpdate({
+          spreadsheetId: env.GOOGLE_SHEET_ID,
+          requestBody: {
+            valueInputOption: 'RAW',
+            data: slice.map((update) => ({ range: update.range, values: [[update.value]] })),
+          },
+        }))
+        if (index + size < updates.length) await sleep(400)
+      }
     },
   }
 }

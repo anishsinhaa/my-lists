@@ -1,3 +1,4 @@
+import { stripTrailingYear } from '../../src/lib/normalize.js'
 import { getEnv } from '../config/env.js'
 import { bestMatch } from './match.js'
 import { fetchJson } from './http.js'
@@ -9,14 +10,15 @@ const throttle = new Throttle(450)
 export const jikan: PosterProvider = {
   id: 'jikan',
   async lookup(query, signal) {
-    const params = new URLSearchParams({ q: query.title, limit: '5', sfw: 'true' })
+    const title = stripTrailingYear(query.title)
+    const params = new URLSearchParams({ q: title, limit: '5', sfw: 'true' })
     const body = await throttle.run(() => fetchJson(`${getEnv().JIKAN_BASE_URL}/anime?${params.toString()}`, { signal }))
     const data = Array.isArray((body as { data?: unknown[] }).data) ? (body as { data: unknown[] }).data : []
     const candidates = data.map((entry) => {
       const row = typeof entry === 'object' && entry !== null ? entry as Record<string, unknown> : {}
       return { title: typeof row.title === 'string' ? row.title : '', year: typeof row.year === 'number' ? row.year : null, row }
     })
-    const chosen = bestMatch(query, candidates)
+    const chosen = bestMatch({ ...query, title }, candidates)
     if (chosen === null) return null
     const row = chosen.item.row
     const images = typeof row.images === 'object' && row.images !== null ? row.images as { jpg?: { large_image_url?: string } } : {}

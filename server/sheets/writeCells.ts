@@ -13,6 +13,7 @@ export interface CellWrite {
   becauseKey?: string
   value: string | number
   expectedCurrent: string
+  overwrite?: boolean
 }
 
 export type WriteOutcome = 'written' | 'skipped_not_found' | 'skipped_ambiguous' | 'skipped_conflict' | 'skipped_missing_column' | 'skipped_policy' | 'error'
@@ -53,7 +54,7 @@ function findRow(values: unknown[][], write: CellWrite): { found: Found } | { ou
 export async function writeCells(client: SheetsClient, writes: CellWrite[]): Promise<WriteResult[]> {
   for (const write of writes) {
     assertWritable(write.tab, write.field)
-    assertFillOnly(write.field, write.expectedCurrent)
+    assertFillOnly(write.field, write.expectedCurrent, write.overwrite === true)
   }
   const tabs = [...new Set(writes.map((write) => write.tab))]
   const ranges = tabs.map((tab) => `'${TAB_NAME[tab]}'!A1:Z3000`)

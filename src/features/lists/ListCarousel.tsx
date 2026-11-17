@@ -26,7 +26,7 @@ export function ListCarousel({ counts, lists }: { counts: Record<ListId, number>
         ))}
       </div>
       <div className="mt-3 flex justify-center gap-2">
-        {ORDER.map((id, index) => <button key={id} type="button" aria-label={id} className={`h-2 w-2 rounded-full ${index === selected ? 'bg-[var(--accent)]' : 'bg-[var(--border)]'}`} onClick={() => api?.scrollTo(index)} />)}
+        {ORDER.map((id, index) => <button key={id} type="button" aria-label={id} className={`h-2 w-2 rounded-full ${index === selected ? 'bg-accent' : 'bg-border'}`} onClick={() => api?.scrollTo(index)} />)}
       </div>
     </div>
   )

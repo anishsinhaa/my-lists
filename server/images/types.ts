@@ -4,6 +4,7 @@ import type { TabId } from '../../src/types/lists.js'
 export interface PosterLookup {
   title: string
   year: number | null
+  author?: string
   need: EnrichField[]
 }
 

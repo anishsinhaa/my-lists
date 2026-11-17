@@ -4,12 +4,12 @@ import type { PickItem } from '@/types/media'
 
 export function PickCard({ item, existing }: { item: PickItem; existing?: string }) {
   return (
-    <article className="rounded-2xl border bg-[var(--surface)] p-4 shadow-[var(--shadow-card)]">
+    <article className="rounded-2xl border bg-(--surface) p-4 shadow-(--shadow-card)">
       <PosterImage alt="" className="mx-auto w-36" kind={LIST_KIND[item.targetList]} src={item.poster} title={item.title} />
       <h2 className="mt-3 text-xl">{item.title}</h2>
-      <p className="text-sm text-[var(--ink-muted)]">{item.year ?? '–'} {item.genres.join(', ')}</p>
+      <p className="text-sm text-(--ink-muted)">{item.year ?? '–'} {item.genres.join(', ')}</p>
       <p className="mt-2 text-sm">Because you liked {item.becauseYouLiked}</p>
-      {item.why.length > 0 ? <p className="text-sm text-[var(--ink-muted)]">{item.why}</p> : null}
+      {item.why.length > 0 ? <p className="text-sm text-(--ink-muted)">{item.why}</p> : null}
       {existing !== undefined && existing.length > 0 ? <p className="mt-2 text-sm">Already in your list: {existing}</p> : null}
     </article>
   )

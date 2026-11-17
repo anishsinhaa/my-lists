@@ -1,10 +1,24 @@
+export function stripTrailingYear(value: string): string {
+  let title = value.trim()
+  let previous = ''
+  while (title !== previous) {
+    previous = title
+    title = title.replace(/\s*[([]\s*(?:19|20)\d{2}\s*[)\]]\s*$/u, '').trim()
+  }
+  return title
+}
+
+const ROMAN: Record<string, string> = { i: '1', ii: '2', iii: '3', iv: '4', v: '5', vi: '6', vii: '7', viii: '8', ix: '9', x: '10' }
+
 export function normalizeTitle(value: string): string {
-  return value
+  return stripTrailingYear(value)
     .normalize('NFKD')
     .replace(/\p{M}/gu, '')
     .toLowerCase()
     .replaceAll('&', 'and')
+    .replace(/[-–—_/]+/g, ' ')
     .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\b(x|ix|viii|vii|vi|v|iv|iii|ii|i)\b/g, (token) => ROMAN[token] ?? token)
     .replace(/\s+/g, ' ')
     .trim()
 }

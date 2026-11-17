@@ -31,7 +31,7 @@ export function GlobalSearch() {
           ) : null}
         </span>
       </label>
-      <p aria-live="polite" className="sr-only">{ready ? `${hits.length} results` : 'Loading lists'}</p>
+      <p aria-live="polite" className="sr-only">{query.trim().length < 2 ? (ready ? 'Lists loaded' : 'Loading lists') : `${hits.length} results`}</p>
       {query.trim().length >= 2 ? (
         <ul className="mt-3 space-y-1">
           {hits.map((hit, index) => (

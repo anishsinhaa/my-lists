@@ -23,4 +23,11 @@ export const listsCache = {
   save(payload: ListsPayload): void {
     writeJson(KEY, { savedAt: new Date().toISOString(), payload } satisfies StoredLists)
   },
+  clear(): void {
+    try {
+      localStorage.removeItem(KEY)
+    } catch {
+      // Private-mode storage. The next fetch still replaces the in-memory query.
+    }
+  },
 }

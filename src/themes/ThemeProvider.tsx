@@ -8,7 +8,7 @@ export function ThemeProvider({ themeId, children }: { themeId: ThemeId; childre
   const spec = THEME_SPECS[themeId]
   return (
     <ThemeContext.Provider value={spec}>
-      <div data-theme={themeId} className="min-h-dvh bg-[var(--bg)] text-[var(--ink)] font-[var(--font-body)]">
+      <div data-theme={themeId} className="min-h-dvh bg-(--bg) text-(--ink) font-(--font-body)">
         {children}
       </div>
     </ThemeContext.Provider>

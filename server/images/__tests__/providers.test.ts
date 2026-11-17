@@ -3,7 +3,7 @@ import { resetEnvCache } from '../../config/env.js'
 import { scoreMatch } from '../match.js'
 import { ProviderError, RetryableError } from '../types.js'
 import { Throttle } from '../throttle.js'
-import { tmdbMovies } from '../tmdb.js'
+import { tmdbAnime, tmdbMovies } from '../tmdb.js'
 import { rawg } from '../rawg.js'
 import { jikan } from '../jikan.js'
 import { openLibrary } from '../openLibrary.js'
@@ -32,6 +32,11 @@ describe('scoreMatch', () => {
   it('accepts an exact title and rejects a wrong-year sequel', () => {
     expect(scoreMatch({ title: 'Inception', year: 2010, need: ['poster'] }, { title: 'Inception', year: 2010 })).toBeGreaterThanOrEqual(0.6)
     expect(scoreMatch({ title: 'Inception', year: 2010, need: ['poster'] }, { title: 'Inception', year: 2020 })).toBeLessThan(0.6)
+    expect(scoreMatch({ title: 'Triangle of Sadness (2022)', year: 2022, need: ['poster'] }, { title: 'Triangle of Sadness', year: 2022 })).toBeGreaterThanOrEqual(0.6)
+    expect(scoreMatch({ title: 'Tom & Jerry', year: null, need: ['poster'] }, { title: 'Tom and Jerry', year: null })).toBeGreaterThanOrEqual(0.6)
+    expect(scoreMatch({ title: 'The 40-Year-Old Virgin', year: 2005, need: ['poster'] }, { title: 'The 40 Year-Old Virgin', year: 2005 })).toBeGreaterThanOrEqual(0.6)
+    expect(scoreMatch({ title: 'YuYu Hakusho', year: 1992, need: ['poster'] }, { title: 'Yu Yu Hakusho', year: 1992 })).toBeGreaterThanOrEqual(0.6)
+    expect(scoreMatch({ title: "Baldur's Gate 3", year: 2023, need: ['poster'] }, { title: "Baldur's Gate III", year: 2023 })).toBeGreaterThanOrEqual(0.6)
   })
 })
 
@@ -57,7 +62,7 @@ describe('providers', () => {
     vi.stubGlobal('fetch', vi.fn(async (url: string) => {
       calls.push(String(url))
       if (String(url).includes('/search/movie')) return Response.json({ results: [{ id: 1, title: 'Inception', release_date: '2010-07-16', poster_path: '/abc.jpg' }] })
-      if (String(url).includes('/movie/1')) return Response.json({ credits: { crew: [{ job: 'Director', name: 'Christopher Nolan' }] }, belongs_to_collection: { name: 'Inception Collection' }, external_ids: { imdb_id: 'tt1375666' } })
+      if (String(url).includes('/movie/1')) return Response.json({ vote_average: 9.9, imdb_id: 'tt1375666', credits: { crew: [{ job: 'Director', name: 'Christopher Nolan' }] }, belongs_to_collection: { name: 'Inception Collection' }, external_ids: { imdb_id: 'tt1375666' } })
       if (String(url).includes('omdbapi')) return Response.json({ Response: 'True', imdbRating: 'N/A' })
       return Response.json({})
     }))
@@ -71,6 +76,46 @@ describe('providers', () => {
     expect(calls).toHaveLength(1)
     expect(poster?.poster).toContain('https://image.tmdb.org')
     expect(JSON.stringify(poster)).not.toContain('tmdb-token')
+    expect(poster?.poster).toBe('https://image.tmdb.org/t/p/w500/abc.jpg')
+  })
+
+  it('strips a trailing year and searches again without the year filter', async () => {
+    installEnv()
+    const urls: string[] = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      urls.push(String(url))
+      if (String(url).includes('year=2022')) return Response.json({ results: [] })
+      if (String(url).includes('/search/movie')) return Response.json({ results: [{ id: 5, title: 'Triangle of Sadness', release_date: '2022-09-18', poster_path: '/sad.jpg' }] })
+      return Response.json({})
+    }))
+    const match = await tmdbMovies.lookup({ title: 'Triangle of Sadness (2022)', year: 2022, need: ['poster'] })
+    expect(match?.poster).toBe('https://image.tmdb.org/t/p/w500/sad.jpg')
+    const decoded = decodeURIComponent((urls[0] ?? '').replaceAll('+', ' '))
+    expect(decoded).toContain('query=Triangle of Sadness')
+    expect(decoded).not.toContain('(2022)')
+    expect(urls.some((url) => url.includes('/search/movie') && !url.includes('year='))).toBe(true)
+  })
+
+  it('accepts the only year-matching hit when the title is an alternate name', async () => {
+    installEnv()
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ results: [{ id: 671, title: "Harry Potter and the Philosopher's Stone", release_date: '2001-11-16', poster_path: '/hp.jpg' }] })))
+    const match = await tmdbMovies.lookup({ title: "Harry Potter and the Sorcerer's Stone", year: 2001, need: ['poster'] })
+    expect(match?.poster).toBe('https://image.tmdb.org/t/p/w500/hp.jpg')
+  })
+
+  it('tries the TV endpoint before the movie endpoint for anime', async () => {
+    installEnv()
+    const urls: string[] = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      urls.push(String(url))
+      if (String(url).includes('/search/tv')) return Response.json({ results: [] })
+      if (String(url).includes('/search/movie')) return Response.json({ results: [{ id: 9, title: 'Your Name.', release_date: '2016-08-26', poster_path: '/yn.jpg' }] })
+      return Response.json({})
+    }))
+    const match = await tmdbAnime.lookup({ title: 'Your Name', year: 2016, need: ['poster'] })
+    expect(urls[0]).toContain('/search/tv')
+    expect(urls.findIndex((url) => url.includes('/search/movie'))).toBeGreaterThan(0)
+    expect(match?.poster).toBe('https://image.tmdb.org/t/p/w500/yn.jpg')
   })
 
   it('maps RAWG, Jikan, and Open Library ratings', async () => {

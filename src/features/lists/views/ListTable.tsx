@@ -11,7 +11,7 @@ export function ListTable({ items, listId }: { items: MediaItem[]; listId: ListI
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
-        <thead className="sticky top-0 bg-[var(--surface)]">
+        <thead className="sticky top-0 bg-(--surface)">
           <tr>
             <th className="p-2">Title</th>
             <th className="p-2">Status</th>
@@ -26,7 +26,7 @@ export function ListTable({ items, listId }: { items: MediaItem[]; listId: ListI
         </thead>
         <tbody>
           {items.map((item) => (
-            <tr key={item.id} className="border-t border-[var(--border)]">
+            <tr key={item.id} className="border-t border-border">
               <td className="p-2">{item.title}</td>
               <td className="p-2">{cell(item.status)}</td>
               <td className="p-2">{cell(item.year)}</td>

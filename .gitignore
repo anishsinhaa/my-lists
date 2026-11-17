@@ -31,3 +31,4 @@ coverage
 .vercel
 *service-account*.json
 *-key.json
+data/settings.json

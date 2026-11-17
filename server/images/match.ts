@@ -6,8 +6,9 @@ export const MIN_CONFIDENCE = 0.6
 export function scoreMatch(wanted: PosterLookup, candidate: { title: string; year: number | null }): number {
   const left = normalizeTitle(wanted.title)
   const right = normalizeTitle(candidate.title)
+  const compact = left.replaceAll(' ', '')
   let score = 0
-  if (left.length > 0 && left === right) score = 0.7
+  if (left.length > 0 && (left === right || compact === right.replaceAll(' ', ''))) score = 0.7
   else if (left.length > 0 && (right.includes(left) || left.includes(right))) score = 0.45
   else return 0
   if (wanted.year !== null && candidate.year !== null) {
@@ -17,6 +18,13 @@ export function scoreMatch(wanted: PosterLookup, candidate: { title: string; yea
     else score -= 0.3
   }
   return Math.max(0, Math.min(1, score))
+}
+
+export function onlyCandidate<T extends { title: string; year: number | null }>(wanted: PosterLookup, candidates: T[]): { item: T; confidence: number } | null {
+  if (wanted.year === null || candidates.length !== 1) return null
+  const item = candidates[0]
+  if (item === undefined || item.year !== wanted.year) return null
+  return { item, confidence: MIN_CONFIDENCE }
 }
 
 export function bestMatch<T extends { title: string; year: number | null }>(wanted: PosterLookup, candidates: T[]): { item: T; confidence: number } | null {

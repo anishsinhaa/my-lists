@@ -8,6 +8,7 @@ import { STATUS_TABLE } from '@/design/statusConfig'
 import { thumbnailUrl } from '@/design/archive'
 import { displayTitle } from '@/lib/displayTitle'
 import { externalRatingLabel } from '@/lib/rating'
+import type { ThemeId } from '@/types/theme'
 import { LIST_KIND, type ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 import type { ItemPatch } from '../useSaveItem'
@@ -33,13 +34,15 @@ function Field({ label, value }: { label: string; value: string | number | null 
   return <p className="text-sm"><span className="text-(--ink-muted)">{label}: </span>{text}</p>
 }
 
-export function ItemModal({ item, items, listId, onClose, onOpen, onSave }: {
+export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpenInList, theme }: {
   item: MediaItem | null
   items: MediaItem[]
   listId: ListId
   onClose: () => void
   onOpen: (item: MediaItem) => void
   onSave: (item: MediaItem, patch: ItemPatch) => Promise<void>
+  onOpenInList?: () => void
+  theme?: ThemeId
 }) {
   const [draft, setDraft] = useState<{ id: string; text: string; editing: boolean } | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
@@ -81,6 +84,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave }: {
   return (
     <Dialog open={item !== null} onOpenChange={(open) => { if (!open) onClose() }}>
       <DialogContent
+        theme={theme}
         className="item-modal gap-0 border-(--border) bg-(--bg) p-0 text-(--ink)"
         onCloseAutoFocus={(event) => event.preventDefault()}
         onInteractOutside={(event) => {
@@ -102,6 +106,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave }: {
                   <DialogTitle className="font-(--font-display) text-2xl leading-tight">{displayTitle(item.title, item.year)}</DialogTitle>
                   <DialogDescription className="sr-only">{displayTitle(item.title, item.year)}</DialogDescription>
                   {savedId === item.id ? <p aria-live="polite" className="mt-1 inline-flex items-center gap-1 text-sm text-(--accent)"><Check aria-hidden="true" className="size-4" />Saved</p> : null}
+                  {onOpenInList ? <button type="button" className="mt-2 min-h-11 text-sm underline" onClick={onOpenInList}>Open in list</button> : null}
                 </div>
                 <button type="button" aria-label="Next" className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-(--border) disabled:opacity-30" disabled={next === undefined} onClick={() => { if (next !== undefined) onOpen(next) }}>
                   <ChevronRight aria-hidden="true" className="size-5" />

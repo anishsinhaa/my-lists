@@ -8,6 +8,7 @@ import { EnrichmentRunner } from '@/features/posters/EnrichmentRunner'
 import { ArchiveFooter } from './ArchiveFooter'
 import { BottomNav } from './BottomNav'
 import { PageTransition } from './PageTransition'
+import { SearchDock } from '@/features/search/SearchDock'
 import { TopBar } from './TopBar'
 
 function themeFor(pathname: string): ThemeId {
@@ -25,6 +26,7 @@ export function AppShell() {
       {online ? null : <p className="bg-(--accent-2) px-3 py-2 text-sm text-(--bg)">You are offline. Showing saved lists.</p>}
       <EnrichmentRunner />
       <TopBar />
+      <SearchDock />
       <ErrorBoundary>
         <div id="content" className="w-full min-w-0 overflow-x-clip pb-28 md:pb-16">
           <PageTransition />

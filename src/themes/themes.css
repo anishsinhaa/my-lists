@@ -31,6 +31,8 @@
 [data-theme='books'] { --bg: #F4EBDD; --surface: #FBF6EC; --surface-2: #EFE3CF; --ink: #2E2A25; --ink-muted: #7A6F62; --accent: #8C5A3C; --accent-2: #7A8B69; --border: #D9C9AE; --radius-px: 4; --font-display: 'Lora Variable', serif; --font-body: 'Source Serif 4 Variable', serif; --ease: cubic-bezier(0.45, 0, 0.2, 1); --dur-fast: 260ms; --dur-base: 500ms; --dur-slow: 800ms; --shadow-card: 0 6px 14px #5a4a3a33; }
 [data-theme='other'] { --bg: #111418; --surface: #1A1F26; --surface-2: #232A33; --ink: #E6EAF0; --ink-muted: #8B95A5; --accent: #5EEAD4; --accent-2: #A78BFA; --border: #2B333E; --radius-px: 10; --font-display: 'Inter Variable', sans-serif; --font-body: 'Inter Variable', sans-serif; --ease: cubic-bezier(0.2, 0, 0, 1); --dur-fast: 150ms; --dur-base: 240ms; --dur-slow: 400ms; --shadow-card: none; }
 
+[data-theme] [data-theme]::before { content: none; }
+
 [data-theme]::before {
   content: "";
   pointer-events: none;

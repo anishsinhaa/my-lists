@@ -1,23 +1,14 @@
-import { useNavigate } from 'react-router-dom'
 import { PosterImage } from '@/components/common/PosterImage'
 import { StatusChip } from '@/components/common/StatusChip'
 import { displayTitle } from '@/lib/displayTitle'
 import { LIST_KIND, TAB_NAME } from '@/types/lists'
 import type { SearchHit } from '@/features/search/searchIndex'
 
-export function SearchResultRow({ hit }: { hit: SearchHit }) {
-  const navigate = useNavigate()
+export function SearchResultRow({ hit, active = false, onSelect, controlId }: { hit: SearchHit; active?: boolean; onSelect: () => void; controlId?: string }) {
   const item = hit.source.item
   const pick = hit.source.kind === 'pick'
-  const onSelect = () => {
-    if (pick && hit.source.kind === 'pick') {
-      navigate(`/picks?tab=${hit.source.item.picksId}&q=${encodeURIComponent(item.title)}`)
-      return
-    }
-    navigate(`/lists/${hit.listId}?q=${encodeURIComponent(item.title)}`)
-  }
   return (
-    <button type="button" className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-(--surface)" onClick={onSelect}>
+    <button id={controlId} type="button" aria-selected={active} className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-(--surface) ${active ? 'bg-(--surface)' : ''}`} onClick={onSelect}>
       <PosterImage alt="" className="w-10 shrink-0" kind={LIST_KIND[hit.listId]} src={item.poster} title={displayTitle(item.title, item.year)} />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{displayTitle(item.title, item.year)}</span>

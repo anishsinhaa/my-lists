@@ -279,22 +279,6 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => {
-    const onAsk = () => document.getElementById('list-search')?.focus()
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === '/' && !(event.target instanceof HTMLInputElement) && !(event.target instanceof HTMLTextAreaElement)) {
-        event.preventDefault()
-        document.getElementById('list-search')?.focus()
-      }
-    }
-    window.addEventListener('ml:search', onAsk)
-    window.addEventListener('keydown', onKey)
-    return () => {
-      window.removeEventListener('ml:search', onAsk)
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [])
-
   return (
     <div className="filter-sticky space-y-2 bg-(--bg)/90 py-2 backdrop-blur" onMouseEnter={() => setHot(true)} onMouseLeave={() => setHot(false)}>
       <div className="flex flex-wrap items-center gap-2">

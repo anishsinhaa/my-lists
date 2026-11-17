@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Skeletons } from '@/components/common/Skeletons'
@@ -8,6 +9,7 @@ import { usePosterFill } from '@/features/posters/usePosterFill'
 import { parseListQuery, serializeListQuery, type ListQuery } from './filters/listQuery'
 import { ListHeader } from './ListHeader'
 import { SimpleListPage } from './SimpleListPage'
+import { TonightButton, TonightModal } from '@/features/home/TonightModal'
 import { CategoryView } from './CategoryView'
 
 function NotFound() {
@@ -25,6 +27,7 @@ export function ListPage() {
 function MainList({ listId }: { listId: ListId }) {
   const { data, isLoading, error, refetch } = useLists()
   const enrich = usePosterFill(listId)
+  const [tonight, setTonight] = useState(false)
   const [params, setParams] = useSearchParams()
   const stored = readJson<'shelves' | 'grid' | 'table'>(`ml.view.${listId}`, listId === 'books' ? 'grid' : 'shelves')
   const query = parseListQuery(params)
@@ -33,6 +36,13 @@ function MainList({ listId }: { listId: ListId }) {
     writeJson(`ml.view.${listId}`, next.view)
     setParams(serializeListQuery(next), { replace: true })
   }
+  const openItemId = params.get('item')
+  function closeItem() {
+    if (!params.has('item')) return
+    const next = new URLSearchParams(params)
+    next.delete('item')
+    setParams(next, { replace: true })
+  }
   const items = data?.lists[listId] ?? []
   if (isLoading) return <main className="edge py-4"><Skeletons count={12} /></main>
   if (data === undefined) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
@@ -40,8 +50,12 @@ function MainList({ listId }: { listId: ListId }) {
   const enriching = enrich.running ? `Enriching ${enrich.done}/${enrich.done + enrich.pending}` : undefined
   return (
     <main className="edge w-full space-y-4 overflow-x-clip py-4">
-      {listId === 'series' ? null : <ListHeader enriching={enriching} listId={listId} poster={poster} />}
-      <CategoryView enriching={enriching} items={items} listId={listId} query={query} onChange={update} />
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">{listId === 'series' ? null : <ListHeader enriching={enriching} listId={listId} poster={poster} />}</div>
+        <TonightButton onClick={() => setTonight(true)} />
+      </div>
+      <CategoryView enriching={enriching} items={items} listId={listId} openItemId={openItemId} query={query} onChange={update} onItemClose={closeItem} />
+      {tonight && data !== undefined ? <TonightModal lists={data.lists} preset={listId} onClose={() => setTonight(false)} /> : null}
     </main>
   )
 }

@@ -6,16 +6,16 @@ import { Skeletons } from '@/components/common/Skeletons'
 import { BRAND } from '@/config/branding'
 import { Button } from '@/design/Button'
 import { Rail } from '@/design/Rail'
-import { StatusBadge } from '@/design/StatusBadge'
 import { thumbnailUrl } from '@/design/archive'
 import { useAuth } from '@/features/auth/AuthContext'
 import { displayTitle } from '@/lib/displayTitle'
 import { useLists } from '@/features/data/useLists'
 import { usePicksVisibility } from '@/features/settings/useSettings'
-import { LIST_KIND } from '@/types/lists'
-import type { MediaItem } from '@/types/media'
+import { LIST_IDS, LIST_KIND } from '@/types/lists'
 import { GlobalSearch } from './GlobalSearch'
-import { archiveStats, tonightPool, wallTiles } from './wall'
+import { TonightModal } from './TonightModal'
+import { readTonight, tonightMatches, type TonightChoice } from './tonight'
+import { archiveStats, wallTiles } from './wall'
 
 function salute(name: string): string {
   const hour = new Date().getHours()
@@ -28,20 +28,16 @@ export function HomePage() {
   const { user } = useAuth()
   const picks = usePicksVisibility()
   const { data, isLoading, error, refetch } = useLists()
-  const [spot, setSpot] = useState<MediaItem | null>(null)
+  const [tonight, setTonight] = useState(false)
+  const [choice, setChoice] = useState<TonightChoice | null>(null)
   const tiles = useMemo(() => (data === undefined ? [] : wallTiles(data)), [data])
-  const pool = useMemo(() => (data === undefined ? [] : tonightPool(data)), [data])
+  const pool = useMemo(() => (data === undefined ? [] : tonightMatches(data.lists, choice ?? readTonight(data.lists))), [choice, data])
+  const archiveSize = data === undefined ? 0 : LIST_IDS.reduce((sum, id) => sum + data.lists[id].length, 0)
   const stats = data === undefined ? null : archiveStats(data)
   const collage = useMemo(() => {
     if (data === undefined) return []
     return Object.values(data.lists).flatMap((rows) => rows).flatMap((item) => (item.poster === null ? [] : [item])).slice(0, 18)
   }, [data])
-
-  function pickTonight() {
-    if (pool.length === 0) return
-    const next = pool[Math.floor(Math.random() * pool.length)]
-    setSpot(next ?? null)
-  }
 
   if (isLoading) return <main className="edge py-4"><Skeletons /></main>
   if (data === undefined || stats === null) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
@@ -59,7 +55,7 @@ export function HomePage() {
           <p className="text-sm text-[#cbbfa8]">{salute(user?.username ?? 'there')}</p>
           <div className="flex flex-wrap gap-3">
             <Button size="lg" onClick={() => void navigate('/lists')}>Open my lists</Button>
-            <Button size="lg" variant="ghost" className="text-[#f4ead8]" disabled={pool.length === 0} onClick={pickTonight}>Pick for tonight</Button>
+            <Button size="lg" variant="ghost" className="text-[#f4ead8]" disabled={archiveSize === 0} onClick={() => setTonight(true)}>Pick for tonight</Button>
             {picks.any ? <Button size="lg" variant="ghost" className="text-[#f4ead8]" onClick={() => void navigate('/picks')}>Picks</Button> : null}
             <button type="button" disabled className="min-h-13 rounded-full border border-[#8c6b3a] bg-[#6b2b24] px-4 text-sm text-[#f4ead8]">Soon</button>
           </div>
@@ -84,9 +80,9 @@ export function HomePage() {
           <p className="font-['Cinzel',serif] text-3xl tabular-nums">{stats.total}</p>
           <p className="text-sm text-(--ink-muted)">{stats.finished} finished{stats.average === null ? '' : ` · my average ${stats.average}`}</p>
         </div>
-        <button type="button" className="rounded-md border border-(--brass)/40 p-4 text-left md:col-span-4" onClick={pickTonight}>
+        <button type="button" className="rounded-md border border-(--brass)/40 p-4 text-left md:col-span-4" onClick={() => setTonight(true)}>
           <span className="font-['Cinzel',serif]">Pick for tonight</span>
-          <span className="mt-1 block text-sm text-(--ink-muted)">{pool.length === 0 ? 'Nothing queued' : `${pool.length} waiting`}</span>
+          <span className="mt-1 block text-sm text-(--ink-muted)">{pool.length === 0 ? 'Nothing matches' : `${pool.length} to pick from`}</span>
         </button>
       </section>
       <div className="md:hidden">
@@ -103,21 +99,7 @@ export function HomePage() {
           </section>
         ))}
       </div>
-      {spot === null ? null : (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Pick for tonight">
-          <div className="w-full max-w-sm space-y-3 rounded-md border border-(--brass) bg-[#14110e] p-4 text-[#f4ead8]">
-            <PosterImage alt="" kind={LIST_KIND[spot.listId]} src={spot.poster} title={displayTitle(spot.title, spot.year)} />
-            <h2 className="font-['Fraunces',serif] text-2xl">{displayTitle(spot.title, spot.year)}</h2>
-            <StatusBadge listId={spot.listId} status={spot.status} />
-            <p className="text-sm text-[#cbbfa8]">{spot.year ?? ''} {spot.creator ?? ''}</p>
-            <div className="flex gap-2">
-              <Button onClick={pickTonight}>Pick another</Button>
-              <Button variant="ghost" className="text-[#f4ead8]" onClick={() => void navigate(`/lists/${spot.listId}?q=${encodeURIComponent(spot.title)}`)}>Open in list</Button>
-              <Button variant="ghost" className="text-[#f4ead8]" onClick={() => setSpot(null)}>Close</Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {tonight ? <TonightModal lists={data.lists} onClose={() => { setChoice(readTonight(data.lists)); setTonight(false) }} /> : null}
     </main>
   )
 }

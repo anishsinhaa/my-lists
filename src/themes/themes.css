@@ -48,7 +48,7 @@
 @media (prefers-reduced-motion: reduce) {
   [data-theme] { --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; }
   [data-theme]::before, .grain::after, .scanlines::after { opacity: 0; }
-  .series-reel, .star-face.is-pop { animation: none; }
+  .series-reel, .star-face.is-pop, .tonight-slot { animation: none; }
 }
 
 .grain { position: relative; }
@@ -189,6 +189,8 @@
   .series-dials-row { display: none; }
   .series-channel { min-width: 0; min-height: 1.7rem; width: 100%; }
 }
+.tonight-slot { animation: tonight-slot 140ms var(--ease); }
+@keyframes tonight-slot { from { transform: translateY(18%); opacity: 0.35; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .series-reel, .star-face.is-pop { animation: none; }
+  .series-reel, .star-face.is-pop, .tonight-slot { animation: none; }
 }

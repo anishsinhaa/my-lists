@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { TonightButton, TonightModal } from '@/features/home/TonightModal'
 import { useSaveItem } from '@/features/lists/useSaveItem'
 import { ItemModal } from '@/features/lists/views/ItemModal'
 import { Eraser, X } from 'lucide-react'
@@ -13,8 +15,16 @@ import { TAB_NAME, type ListId } from '@/types/lists'
 
 export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | 'curious'> }) {
   const { data, isLoading, error, refetch } = useLists()
+  const [params, setParams] = useSearchParams()
+  const fromUrl = params.get('item')
   const [query, setQuery] = useState('')
-  const [openId, setOpenId] = useState<string | null>(null)
+  const [tonight, setTonight] = useState(false)
+  const [openId, setOpenId] = useState<string | null>(fromUrl)
+  const [trackedItem, setTrackedItem] = useState(fromUrl)
+  if (fromUrl !== trackedItem) {
+    setTrackedItem(fromUrl)
+    if (fromUrl !== null && fromUrl.length > 0) setOpenId(fromUrl)
+  }
   const save = useSaveItem()
   const items = data?.lists[listId] ?? []
   const needle = query.trim().toLowerCase()
@@ -24,9 +34,12 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
   if (data === undefined) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
   return (
     <main className="edge w-full space-y-3 overflow-x-clip py-4">
-      <header className="space-y-1">
-        <h2 className="font-(--font-display) text-3xl">{TAB_NAME[listId]}</h2>
-        <p className="text-xs text-(--ink-muted)">{items.length} titles</p>
+      <header className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h2 className="font-(--font-display) text-3xl">{TAB_NAME[listId]}</h2>
+          <p className="text-xs text-(--ink-muted)">{items.length} titles</p>
+        </div>
+        <TonightButton onClick={() => setTonight(true)} />
       </header>
       <Input aria-label="Search this list" value={query} onChange={(event) => setQuery(event.target.value)} />
       <div className="flex flex-wrap items-center gap-2">
@@ -55,7 +68,8 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
           </li>
         ))}
       </ul>
-      <ItemModal item={open} items={shown} listId={listId} onClose={() => setOpenId(null)} onOpen={(entry) => setOpenId(entry.id)} onSave={save} />
+      <ItemModal item={open} items={shown} listId={listId} onClose={() => { setOpenId(null); if (params.has('item')) { const next = new URLSearchParams(params); next.delete('item'); setParams(next, { replace: true }) } }} onOpen={(entry) => setOpenId(entry.id)} onSave={save} />
+      {tonight && data !== undefined ? <TonightModal lists={data.lists} preset={listId} onClose={() => setTonight(false)} /> : null}
     </main>
   )
 }

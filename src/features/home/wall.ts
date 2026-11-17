@@ -41,10 +41,6 @@ export function wallTiles(payload: ListsPayload): WallTile[] {
   return tiles.filter((tile) => tile.items.length > 0)
 }
 
-export function tonightPool(payload: ListsPayload): MediaItem[] {
-  return LIST_IDS.flatMap((id) => statusIs(payload.lists[id], id, ['Must watch', 'Want to', 'Want to buy']))
-}
-
 export function archiveStats(payload: ListsPayload): { total: number; finished: number; average: number | null } {
   const items = LIST_IDS.flatMap((id) => payload.lists[id])
   const finished = items.filter((item) => ['Watched', 'Played', 'Completed', 'Read'].includes(matchStatus(item.listId, item.status).value)).length

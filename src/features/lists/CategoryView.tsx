@@ -33,15 +33,22 @@ function LazyBlock({ children }: { children: ReactNode }) {
   return <div ref={ref}>{show ? children : <div className="h-72" />}</div>
 }
 
-export function CategoryView({ listId, items, query, onChange, enriching }: {
+export function CategoryView({ listId, items, query, onChange, enriching, openItemId = null, onItemClose }: {
   listId: ListId
   items: MediaItem[]
   query: ListQuery
   onChange: (next: ListQuery) => void
   enriching?: string
+  openItemId?: string | null
+  onItemClose?: () => void
 }) {
   const [shuffled, setShuffled] = useState<MediaItem[] | null>(null)
-  const [openId, setOpenId] = useState<string | null>(null)
+  const [openId, setOpenId] = useState<string | null>(openItemId)
+  const [trackedItem, setTrackedItem] = useState(openItemId)
+  if (openItemId !== trackedItem) {
+    setTrackedItem(openItemId)
+    if (openItemId !== null && openItemId.length > 0) setOpenId(openItemId)
+  }
   const save = useSaveItem()
   const source = shuffled ?? items
   const visible = useMemo(() => selectItems(listId, source, query, QUERY_NOW), [listId, source, query])
@@ -106,7 +113,7 @@ export function CategoryView({ listId, items, query, onChange, enriching }: {
           </section>
         </LazyBlock>
       )) : null}
-      <ItemModal item={open} items={visible} listId={listId} onClose={() => setOpenId(null)} onOpen={(entry) => setOpenId(entry.id)} onSave={save} />
+      <ItemModal item={open} items={visible} listId={listId} onClose={() => { setOpenId(null); onItemClose?.() }} onOpen={(entry) => setOpenId(entry.id)} onSave={save} />
     </div>
   )
 }

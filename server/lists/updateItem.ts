@@ -37,6 +37,13 @@ function text(value: unknown): string {
   return value === undefined || value === null ? '' : String(value).trim()
 }
 
+function validRating(value: number | null): boolean {
+  if (value === null) return true
+  if (value < 0.5 || value > 10) return false
+  const steps = value * 2
+  return Math.abs(steps - Math.round(steps)) < 1e-6
+}
+
 function duplicateIndex(id: string): number | null {
   const match = /~(\d+)$/.exec(id)
   return match === null ? null : Number(match[1])
@@ -44,7 +51,7 @@ function duplicateIndex(id: string): number | null {
 
 export async function updateListItem(client: SheetsClient, input: ItemUpdate, now = new Date()): Promise<ItemUpdateResult> {
   if (!(LIST_IDS as readonly string[]).includes(input.listId)) return { outcome: 'invalid' }
-  if (input.myRating !== null && (!Number.isInteger(input.myRating) || input.myRating < 1 || input.myRating > 10)) return { outcome: 'invalid' }
+  if (!validRating(input.myRating)) return { outcome: 'invalid' }
   const [batch] = await client.batchGetValues([`'${TAB_NAME[input.listId]}'!A1:Z3000`])
   const values = batch?.values ?? []
   const map = buildColumnMap<MainField>(values[0] ?? [], MAIN_ALIASES)

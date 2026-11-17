@@ -7,6 +7,7 @@ import { displayTitle } from '@/lib/displayTitle'
 import { LIST_KIND, type ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 import { FilterChrome } from './filters/FilterChrome'
+import { SeriesSet } from './SeriesSet'
 import type { ListQuery } from './filters/listQuery'
 import { selectItems } from './filters/selectItems'
 import { StatsStrip } from './StatsStrip'
@@ -32,11 +33,12 @@ function LazyBlock({ children }: { children: ReactNode }) {
   return <div ref={ref}>{show ? children : <div className="h-72" />}</div>
 }
 
-export function CategoryView({ listId, items, query, onChange }: {
+export function CategoryView({ listId, items, query, onChange, enriching }: {
   listId: ListId
   items: MediaItem[]
   query: ListQuery
   onChange: (next: ListQuery) => void
+  enriching?: string
 }) {
   const [shuffled, setShuffled] = useState<MediaItem[] | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
@@ -54,7 +56,9 @@ export function CategoryView({ listId, items, query, onChange }: {
 
   return (
     <div className="space-y-4">
-      <StatsStrip items={items} listId={listId} query={query} onChange={patch} />
+      {listId === 'series'
+        ? <SeriesSet items={items} note={enriching} query={query} onChange={patch} />
+        : <StatsStrip items={items} listId={listId} query={query} onChange={patch} />}
       <FilterChrome
         items={items}
         listId={listId}
@@ -64,8 +68,8 @@ export function CategoryView({ listId, items, query, onChange }: {
         onChange={patch}
         onShuffle={query.view === 'grid' ? () => setShuffled([...items].sort(() => Math.random() - 0.5)) : undefined}
       />
-      {current.length === 0 ? null : (
-        <section className={listId === 'series' ? 'scanlines rounded-md border-8 border-[#3a2c24] p-2' : ''}>
+      {query.view === 'shelves' && listId !== 'series' && current.length > 0 ? (
+        <section>
           <h2 className="mb-2 font-['Cinzel',serif]">Currently</h2>
           <Rail align={current.length === 1 ? 'start' : 'center'} label="Currently">
             {current.map((item) => (
@@ -76,7 +80,7 @@ export function CategoryView({ listId, items, query, onChange }: {
             ))}
           </Rail>
         </section>
-      )}
+      ) : null}
       {visible.length === 0 ? <p className="p-8 text-center text-(--ink-muted)">The shelf is empty.</p> : null}
       {query.view === 'table' ? <ListTable items={visible} listId={listId} onOpen={(item) => setOpenId(item.id)} /> : null}
       {query.view === 'grid' ? (

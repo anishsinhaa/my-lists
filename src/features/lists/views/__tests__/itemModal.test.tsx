@@ -50,12 +50,22 @@ describe('item details', () => {
     const onSave = vi.fn().mockResolvedValue(undefined)
     const { unmount } = render(<ItemModal item={movie({ myRating: 8 })} items={[movie({ myRating: 8 })]} listId="movies" onClose={() => undefined} onOpen={() => undefined} onSave={onSave} />)
     fireEvent.click(screen.getByRole('button', { name: 'Watched' }))
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ title: 'Argo (2012)' }), { status: 'Watched', myRating: 8 })
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ title: 'Argo (2012)' }), { status: 'Watched' })
     unmount()
     onSave.mockClear()
     render(<ItemModal item={movie({ myRating: 8 })} items={[movie({ myRating: 8 })]} listId="movies" onClose={() => undefined} onOpen={() => undefined} onSave={onSave} />)
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ myRating: 8 }), { status: 'Want to', myRating: null })
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ myRating: 8 }), { myRating: null })
+  })
+
+  it('previews a half star on hover and saves it', () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    render(<ItemModal item={movie()} items={[movie()]} listId="movies" onClose={() => undefined} onOpen={() => undefined} onSave={onSave} />)
+    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Rate 7.5' }))
+    expect(document.querySelectorAll('[data-lit="full"]').length).toBe(7)
+    expect(document.querySelector('[data-lit="half"]')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Rate 7.5' }))
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ title: 'Argo (2012)' }), { myRating: 7.5 })
   })
 
   it('shows a poster, the notes on hover, and no updated column', () => {

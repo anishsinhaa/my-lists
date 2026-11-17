@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useDismiss } from '@/hooks/useDismiss'
 import { ArrowDownUp, Calendar, Check, Eraser, Gamepad2, Layers, LayoutGrid, Rows3, SlidersHorizontal, Sparkles, Star, Table2, Tags, UserRound, X } from 'lucide-react'
 import { IconButton } from '@/design/IconButton'
 import { StatusGlyph } from '@/design/icons'
@@ -14,7 +15,7 @@ const KEPT_VIEWS = new Set(['nolan', 'marvel', 'top-rated', 'recent'])
 
 const SHAPE: Record<ListId, string> = {
   movies: 'rounded-[2px_14px_2px_14px] border-dashed',
-  series: "rounded-md font-['VT323',monospace] text-lg leading-none",
+  series: 'rounded-md font-(--font-body)',
   anime: 'rounded-md border-[3px] shadow-[3px_3px_0_#1b1b3a]',
   games: "rounded-sm font-['Rajdhani',sans-serif] tracking-wider uppercase",
   books: 'rounded-sm border-l-4',
@@ -24,7 +25,7 @@ const SHAPE: Record<ListId, string> = {
 
 const EDGE: Record<ListId, string> = {
   movies: 'border-[#d4af37]',
-  series: 'border-[#5c4033]',
+  series: 'border-[#6e8f8a]',
   anime: 'border-[#1b1b3a]',
   games: 'border-[#00f0ff]',
   books: 'border-[#8c5a3c]',
@@ -235,6 +236,15 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
   const [pinned, setPinned] = useState(false)
   const [hover, setHover] = useState(false)
   const [drawer, setDrawer] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const drawerRef = useRef<HTMLDivElement>(null)
+  const closePanel = useCallback(() => {
+    setPinned(false)
+    setHover(false)
+  }, [])
+  const closeDrawer = useCallback(() => setDrawer(false), [])
+  useDismiss(pinned || hover, closePanel, panelRef)
+  useDismiss(drawer, closeDrawer, drawerRef)
   const collapsed = slim && !hot
   const panel = pinned || hover
   const counts = useMemo(() => {
@@ -288,7 +298,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
           <SlidersHorizontal aria-hidden="true" className="size-4" />
           Filters
         </button>
-        <div className="relative hidden md:block" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+        <div ref={panelRef} className="relative hidden md:block" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
           <button type="button" aria-expanded={panel} className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 px-3 text-sm" onClick={() => setPinned((value) => !value)}>
             <SlidersHorizontal aria-hidden="true" className="size-4" />
             Filters
@@ -329,7 +339,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
         <p className="text-sm text-(--ink-muted) md:ml-auto">Showing {shown} of {total}</p>
       </div>
       {drawer ? (
-        <div className="md:hidden">
+        <div ref={drawerRef} className="md:hidden">
           <button type="button" aria-label="Close filters" className="fixed inset-0 z-40 bg-black/50" onClick={() => setDrawer(false)} />
           <div className="fixed inset-x-0 bottom-0 z-50 max-h-[80dvh] overflow-y-auto rounded-t-2xl border border-(--brass)/40 bg-(--bg) p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <div className="mb-2 flex items-center justify-between">

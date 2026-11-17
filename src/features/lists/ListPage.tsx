@@ -37,10 +37,11 @@ function MainList({ listId }: { listId: ListId }) {
   if (isLoading) return <main className="edge py-4"><Skeletons count={12} /></main>
   if (data === undefined) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
   const poster = items.find((item) => item.poster !== null)?.poster
+  const enriching = enrich.running ? `Enriching ${enrich.done}/${enrich.done + enrich.pending}` : undefined
   return (
     <main className="edge w-full space-y-4 overflow-x-clip py-4">
-      <ListHeader enriching={enrich.running ? `Enriching ${enrich.done}/${enrich.done + enrich.pending}` : undefined} listId={listId} poster={poster} />
-      <CategoryView items={items} listId={listId} query={query} onChange={update} />
+      {listId === 'series' ? null : <ListHeader enriching={enriching} listId={listId} poster={poster} />}
+      <CategoryView enriching={enriching} items={items} listId={listId} query={query} onChange={update} />
     </main>
   )
 }

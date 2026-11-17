@@ -61,6 +61,12 @@ describe('updateListItem', () => {
     const invalid = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Watched', myRating: 11 }, now)
     expect(invalid.outcome).toBe('invalid')
     expect(sheet.rows[1]?.[2]).toBe('Want to')
+    const half = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: 7.5 }, now)
+    expect(half.outcome).toBe('written')
+    expect(sheet.rows[1]?.[3]).toBe(7.5)
+    const step = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: 7.2 }, now)
+    expect(step.outcome).toBe('invalid')
+    expect(sheet.rows[1]?.[3]).toBe(7.5)
   })
 
   it('reports a missing row and an ambiguous title', async () => {

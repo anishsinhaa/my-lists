@@ -1,7 +1,11 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { MemoryRouter, useNavigate } from 'react-router-dom'
 import { DEFAULT_QUERY } from '../listQuery'
 import { FilterChrome } from '../FilterChrome'
+import type { ListId } from '@/types/lists'
+import type { ListQuery } from '../listQuery'
+import type { MediaItem } from '@/types/media'
 
 function chip(name: string): HTMLElement {
   const matches = screen.getAllByRole('button', { name })
@@ -12,18 +16,23 @@ function chip(name: string): HTMLElement {
 
 afterEach(() => cleanup())
 
+function renderChrome(listId: ListId = 'movies', query: ListQuery = { ...DEFAULT_QUERY, view: 'shelves', statuses: ['Maybe'] }, onChange = () => undefined) {
+  return render(
+    <MemoryRouter>
+      <FilterChrome items={[] as MediaItem[]} listId={listId} query={query} shown={1} total={2} onChange={onChange} />
+    </MemoryRouter>,
+  )
+}
+
+function filtersButton(): HTMLElement {
+  const button = screen.getAllByRole('button', { name: 'Filters' }).find((entry) => entry.hasAttribute('aria-expanded'))
+  if (button === undefined) throw new Error('Missing filters')
+  return button
+}
+
 describe('filter chips', () => {
   it('gives the selected status a filled state and a check, and leaves the others off', () => {
-    render(
-      <FilterChrome
-        items={[]}
-        listId="movies"
-        query={{ ...DEFAULT_QUERY, view: 'shelves', statuses: ['Maybe'] }}
-        shown={1}
-        total={2}
-        onChange={() => undefined}
-      />,
-    )
+    renderChrome()
     const maybe = chip('Maybe 0')
     const want = chip('Want to 0')
     expect(maybe.getAttribute('aria-pressed')).toBe('true')
@@ -37,19 +46,33 @@ describe('filter chips', () => {
 
   it('adds a status from the bar and can clear it', () => {
     const onChange = vi.fn()
-    render(
-      <FilterChrome
-        items={[]}
-        listId="movies"
-        query={{ ...DEFAULT_QUERY, view: 'shelves', statuses: ['Maybe'] }}
-        shown={1}
-        total={2}
-        onChange={onChange}
-      />,
-    )
+    renderChrome('movies', { ...DEFAULT_QUERY, view: 'shelves', statuses: ['Maybe'] }, onChange)
     fireEvent.click(chip('Want to 0'))
     expect(onChange).toHaveBeenCalledWith({ statuses: ['Maybe', 'Want to'] })
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }))
     expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ statuses: [], smart: null, q: '' }))
+  })
+
+  it('closes the filter panel on an outside click, Escape, and a route change', () => {
+    function Probe() {
+      const navigate = useNavigate()
+      return (
+        <>
+          <button type="button" onClick={() => navigate('/lists/anime')}>Leave</button>
+          <FilterChrome items={[]} listId="movies" query={{ ...DEFAULT_QUERY, view: 'grid' }} shown={1} total={2} onChange={() => undefined} />
+        </>
+      )
+    }
+    render(<MemoryRouter initialEntries={['/lists/movies']}><Probe /></MemoryRouter>)
+    fireEvent.click(filtersButton())
+    expect(screen.getByLabelText('From year')).toBeTruthy()
+    fireEvent.pointerDown(document.body)
+    expect(screen.queryByLabelText('From year')).toBeNull()
+    fireEvent.click(filtersButton())
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(screen.queryByLabelText('From year')).toBeNull()
+    fireEvent.click(filtersButton())
+    fireEvent.click(screen.getByRole('button', { name: 'Leave' }))
+    expect(screen.queryByLabelText('From year')).toBeNull()
   })
 })

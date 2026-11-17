@@ -96,7 +96,7 @@ export function SettingsPage() {
   const lastRun = settings.data?.lastRun ?? status.data?.lastRun ?? null
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-8 p-4">
+    <main className="edge flex w-full max-w-3xl flex-col gap-8 py-4">
       <section className="space-y-3">
         <h2 className="font-(--font-display) text-xl">Refresh data</h2>
         <label className="flex flex-col gap-1 text-sm">

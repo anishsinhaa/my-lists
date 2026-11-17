@@ -42,12 +42,12 @@ export function HomePage() {
     setSpot(next ?? null)
   }
 
-  if (isLoading) return <main className="p-4"><Skeletons /></main>
-  if (data === undefined || stats === null) return <main className="p-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
+  if (isLoading) return <main className="edge py-4"><Skeletons /></main>
+  if (data === undefined || stats === null) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
 
   return (
     <main>
-      <section className="relative flex min-h-[70vh] flex-col justify-end overflow-hidden px-4 py-10">
+      <section className="edge relative flex min-h-[70vh] w-full flex-col justify-end overflow-hidden py-10">
         <div className="pointer-events-none absolute inset-0 grid grid-cols-6 gap-2 opacity-40 blur-sm" aria-hidden="true">
           {collage.map((item) => <img key={item.id} alt="" className="h-40 w-full object-cover" src={thumbnailUrl(item.poster, 'w185') ?? ''} />)}
         </div>
@@ -60,12 +60,12 @@ export function HomePage() {
             <Button size="lg" onClick={() => void navigate('/lists')}>Open my lists</Button>
             <Button size="lg" variant="ghost" className="text-[#f4ead8]" disabled={pool.length === 0} onClick={pickTonight}>Pick for tonight</Button>
             {picks.any ? <Button size="lg" variant="ghost" className="text-[#f4ead8]" onClick={() => void navigate('/picks')}>Picks</Button> : null}
-            <button type="button" disabled className="min-h-[52px] rounded-full border border-[#8c6b3a] bg-[#6b2b24] px-4 text-sm text-[#f4ead8]">Soon</button>
+            <button type="button" disabled className="min-h-13 rounded-full border border-[#8c6b3a] bg-[#6b2b24] px-4 text-sm text-[#f4ead8]">Soon</button>
           </div>
           <GlobalSearch />
         </div>
       </section>
-      <section className="mx-auto grid max-w-6xl gap-4 p-4 md:grid-cols-12">
+      <section className="edge grid w-full gap-4 py-4 md:grid-cols-12">
         {tiles.map((tile) => (
           <Link key={tile.id} to={tile.href} className="rounded-md border border-(--brass)/40 bg-[#17130f]/80 p-3 md:col-span-4">
             <span className="font-['Cinzel',serif] text-sm tracking-wide">{tile.title}</span>
@@ -90,11 +90,11 @@ export function HomePage() {
       </section>
       <div className="md:hidden">
         {tiles.map((tile) => (
-          <section key={`${tile.id}-rail`} className="px-4 pb-4">
+          <section key={`${tile.id}-rail`} className="edge pb-4">
             <h2 className="mb-2 font-['Cinzel',serif] text-sm">{tile.title}</h2>
             <Rail label={tile.title}>
               {tile.items.slice(0, 8).map((item) => (
-                <Link key={item.id} to={tile.href} data-rail-card="true" className="w-36 shrink-0 snap-start">
+                <Link key={item.id} to={tile.href} data-rail-card="true" className="w-[clamp(4.5rem,18cqi,7.5rem)] shrink-0 snap-start">
                   <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={item.title} />
                 </Link>
               ))}

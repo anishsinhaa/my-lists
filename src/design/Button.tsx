@@ -5,7 +5,7 @@ type Variant = 'brass' | 'ghost' | 'icon'
 type Size = 'md' | 'lg'
 
 export function Button({ variant = 'brass', size = 'md', className, children, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size; children?: ReactNode }) {
-  const sizing = size === 'lg' ? 'min-h-[52px] px-5 text-base' : 'min-h-11 px-4 text-sm'
+  const sizing = size === 'lg' ? 'min-h-13 px-5 text-base' : 'min-h-11 px-4 text-sm'
   const look = variant === 'ghost'
     ? 'border border-(--brass)/50 bg-transparent text-(--ink)'
     : variant === 'icon'

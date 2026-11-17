@@ -26,7 +26,7 @@ export function AppShell() {
       <EnrichmentRunner />
       <TopBar />
       <ErrorBoundary>
-        <div id="content" className="pb-28 md:pb-16">
+        <div id="content" className="w-full min-w-0 overflow-x-clip pb-28 md:pb-16">
           <PageTransition />
         </div>
       </ErrorBoundary>

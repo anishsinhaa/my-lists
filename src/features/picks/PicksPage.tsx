@@ -8,17 +8,17 @@ export function PicksPage() {
   const picks = usePicksVisibility()
   const requested = params.get('tab')
   const picksId = picks.visible.find((id) => id === requested) ?? picks.visible[0]
-  if (!picks.isSuccess && !picks.isError) return <main className="p-4">Loading settings.</main>
+  if (!picks.isSuccess && !picks.isError) return <main className="edge py-4">Loading settings.</main>
   if (picksId === undefined) {
     return (
-      <main className="mx-auto max-w-lg space-y-3 p-4">
+      <main className="edge w-full max-w-lg space-y-3 py-4">
         <p>Picks are turned off.</p>
         <Link className="text-sm underline" to="/settings">Settings</Link>
       </main>
     )
   }
   return (
-    <main className="mx-auto max-w-lg space-y-4 p-4">
+    <main className="edge w-full max-w-lg space-y-4 py-4">
       <h1 className="font-['Cinzel',serif] text-2xl">Recommended for you</h1>
       <div className="flex flex-wrap gap-2">
         {picks.visible.map((id) => (

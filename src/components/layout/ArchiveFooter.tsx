@@ -8,13 +8,13 @@ export function ArchiveFooter() {
   const mobile = useMediaQuery('(max-width: 767px)')
   return (
     <>
-      <footer className={`fixed inset-x-0 z-30 border-t border-(--brass)/40 bg-[#100e0c]/95 px-3 text-[#e8dcc4] ${mobile ? 'bottom-14 h-6 text-[11px]' : 'bottom-0 h-10 text-xs'}`}>
+      <footer className={`fixed inset-x-0 z-30 w-full border-t border-(--brass)/40 bg-[#100e0c]/95 text-[#e8dcc4] ${mobile ? 'bottom-14 h-6 text-[11px]' : 'bottom-0 min-h-10 text-xs'}`}>
         {mobile ? (
           <button type="button" className="flex h-full w-full items-center justify-center" onClick={() => setOpen(true)}>© · Credits</button>
         ) : (
-          <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-3">
+          <div className="edge flex min-h-10 w-full flex-wrap items-center justify-between gap-x-4 gap-y-1">
             <p>{copyrightLine()}</p>
-            <p className="flex flex-wrap items-center gap-x-3">
+            <p className="flex flex-wrap items-center justify-end gap-x-3">
               <a href={BRAND.tmdb} target="_blank" rel="noopener noreferrer">TMDB</a>
               <a href={BRAND.omdb} target="_blank" rel="noopener noreferrer">OMDb</a>
               <a href={BRAND.rawg} target="_blank" rel="noopener noreferrer">Game data from RAWG</a>

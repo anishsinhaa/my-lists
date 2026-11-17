@@ -15,12 +15,12 @@ export function SegmentedBar({ segments, onSelect }: { segments: { id: string; l
   return (
     <div className="flex h-3 overflow-hidden rounded-full border border-(--brass)/40" role="img" aria-label={segments.map((segment) => `${segment.label} ${segment.count}`).join(', ')}>
       {segments.filter((segment) => segment.count > 0).map((segment) => (
-        <button key={segment.id} type="button" title={`${segment.label}: ${segment.count}`} className="h-full bg-(--brass) odd:bg-(--accent)" style={{ width: `${(segment.count / total) * 100}%` }} onClick={() => onSelect?.(segment.id)} />
+        <button key={segment.id} type="button" title={`${segment.label}: ${segment.count}`} className="h-full bg-(--brass) odd:bg-accent" style={{ width: `${(segment.count / total) * 100}%` }} onClick={() => onSelect?.(segment.id)} />
       ))}
     </div>
   )
 }
 
 export function Ribbon({ children }: { children: string }) {
-  return <span className="inline-block bg-(--accent) px-2 py-1 text-xs text-(--bg) shadow-md">{children}</span>
+  return <span className="inline-block bg-accent px-2 py-1 text-xs text-(--bg) shadow-md">{children}</span>
 }

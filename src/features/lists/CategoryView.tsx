@@ -88,7 +88,7 @@ export function CategoryView({ listId, items, query, onChange }: {
         </p>
       </section>
       <div className="sticky top-16 z-20 flex flex-wrap items-center gap-2 rounded-md bg-(--bg)/90 p-2 backdrop-blur">
-        <input id="list-search" value={query.q} onChange={(event) => patch({ q: event.target.value })} placeholder="Search this list" aria-label="Search this list" className="h-11 min-w-40 flex-1 rounded-md border border-border bg-(--surface) px-3" />
+        <input id="list-search" value={query.q} onChange={(event) => patch({ q: event.target.value })} placeholder="Search this list" aria-label="Search this list" className="h-11 w-full min-w-0 flex-1 rounded-md border border-border bg-(--surface) px-3 sm:w-auto sm:min-w-40" />
         <IconButton label="Filters" onClick={() => setFiltersOpen((value) => !value)}><SlidersHorizontal className="size-4" /></IconButton>
         <IconButton label="Sort" onClick={() => patch({ sort: query.sort === 'title' ? 'updated' : query.sort === 'updated' ? 'year' : query.sort === 'year' ? 'myRating' : 'title' })}><ArrowDownUp className="size-4" /></IconButton>
         <div role="radiogroup" aria-label="View" className="flex gap-1">
@@ -124,7 +124,7 @@ export function CategoryView({ listId, items, query, onChange }: {
           <h2 className="mb-2 font-['Cinzel',serif]">Currently</h2>
           <Rail label="Currently">
             {current.map((item) => (
-              <button key={item.id} type="button" data-rail-card="true" className="w-40 shrink-0 snap-start text-left" onClick={() => setOpen(item)}>
+              <button key={item.id} type="button" data-rail-card="true" className="w-[clamp(7.5rem,20cqi,11rem)] shrink-0 snap-start text-left" onClick={() => setOpen(item)}>
                 <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w342')} title={item.title} />
                 <StatusBadge listId={item.listId} status={item.status} />
               </button>
@@ -149,7 +149,7 @@ export function CategoryView({ listId, items, query, onChange }: {
             <p className="text-xs text-(--ink-muted)">{group.flavour}</p>
             <Rail label={group.status}>
               {group.items.map((item, index) => (
-                <div key={item.id} data-rail-card="true" className="w-52 shrink-0 snap-start">
+                <div key={item.id} data-rail-card="true" className="w-[clamp(9rem,22cqi,13.5rem)] shrink-0 snap-start">
                   <PosterCard index={index} item={item} onOpen={setOpen} />
                 </div>
               ))}

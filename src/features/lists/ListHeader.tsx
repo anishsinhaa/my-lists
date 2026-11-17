@@ -22,7 +22,7 @@ export function ListHeader({ listId, stats, poster, enriching }: { listId: ListI
       {listId === 'games' ? <div className="scanlines h-2" /> : null}
       <div className={`relative space-y-2 p-4 ${listId === 'books' ? 'paper' : ''}`}>
         <h2 className={`font-(--font-display) text-4xl ${listId === 'movies' || listId === 'games' ? 'uppercase tracking-[0.06em]' : ''}`}>{TAB_NAME[listId]}</h2>
-        {listId === 'series' ? <p className="font-['VT323',monospace] text-2xl text-(--accent)">CH 01</p> : null}
+        {listId === 'series' ? <p className="font-['VT323',monospace] text-2xl text-accent">CH 01</p> : null}
         {listId === 'games' ? <div className="h-0.5 w-24 bg-accent" /> : null}
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <span><CountUp value={stats.total} /></span>

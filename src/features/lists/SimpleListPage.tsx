@@ -14,10 +14,10 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
   const items = data?.lists[listId] ?? []
   const fuse = useMemo(() => new Fuse(items, { keys: ['title'], threshold: 0.35, ignoreLocation: true }), [items])
   const shown = query.trim().length < 2 ? items : fuse.search(query).map((result) => result.item)
-  if (isLoading) return <main className="p-4"><Skeletons /></main>
-  if (data === undefined) return <main className="p-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
+  if (isLoading) return <main className="edge py-4"><Skeletons /></main>
+  if (data === undefined) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
   return (
-    <main className="space-y-3 p-4">
+    <main className="edge w-full space-y-3 overflow-x-clip py-4">
       <h2 className="font-(--font-display) text-3xl">{TAB_NAME[listId]}</h2>
       <Input aria-label="Search this list" value={query} onChange={(event) => setQuery(event.target.value)} />
       {shown.length === 0 ? <EmptyState title={listId === 'other' ? 'This drawer is empty' : 'Nothing curious yet'} /> : null}

@@ -8,7 +8,7 @@ export function BookCard({ item, onOpen }: PosterCardProps) {
     <button type="button" className="block w-full text-left" onClick={() => onOpen?.(item)}>
       <span className="paper spine relative block overflow-hidden shadow-(--shadow-card)">
         <PosterImage alt="" kind="book" src={item.poster} title={item.title} />
-        <span aria-hidden="true" className="absolute top-0 right-4 h-10 w-3 bg-(--accent)" />
+        <span aria-hidden="true" className="absolute top-0 right-4 h-10 w-3 bg-accent" />
         <span className="absolute bottom-2 left-3"><RatingBadge externalLabel={externalRatingLabel('books')} externalRating={item.imdbRating} myRating={item.myRating} /></span>
       </span>
       <span className="mt-1 block font-(--font-display) text-sm">{item.title}</span>

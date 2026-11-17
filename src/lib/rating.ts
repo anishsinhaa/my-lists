@@ -31,8 +31,7 @@ export function effectiveRating(item: { myRating: number | null; imdbRating: num
 }
 
 export function externalRatingLabel(listId: ListId): string {
-  if (listId === 'movies' || listId === 'series') return 'IMDb'
-  if (listId === 'anime') return 'MAL'
+  if (listId === 'movies' || listId === 'series' || listId === 'anime') return 'IMDb'
   if (listId === 'games') return 'Metacritic'
   if (listId === 'books') return 'Open Library'
   return 'Rating'

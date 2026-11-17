@@ -62,8 +62,8 @@ async function search(kind: 'movie' | 'tv', query: PosterLookup, signal?: AbortS
   const match: PosterMatch = { sourceId: String(chosen.item.id), confidence: chosen.confidence }
   const url = posterUrl(chosen.item.posterPath)
   if (wants(query, 'poster') && url !== undefined) match.poster = url
-  const ratingWanted = wants(query, 'imdbRating') && omdbKey().length > 0
-  const needsDetails = wants(query, 'creator') || wants(query, 'franchise') || ratingWanted
+  const wantsRating = wants(query, 'imdbRating')
+  const needsDetails = wants(query, 'creator') || wants(query, 'franchise') || wantsRating
   if (!needsDetails) return match
   const append = ['external_ids']
   if (kind === 'movie' && (wants(query, 'creator') || wants(query, 'franchise'))) append.unshift('credits')
@@ -84,9 +84,12 @@ async function search(kind: 'movie' | 'tv', query: PosterLookup, signal?: AbortS
     const name = record(details.belongs_to_collection).name
     if (typeof name === 'string') match.franchise = name.replace(/ collection$/i, '')
   }
-  if (ratingWanted) {
-    const imdbId = typeof details.imdb_id === 'string' ? details.imdb_id : typeof external.imdb_id === 'string' ? external.imdb_id : undefined
-    if (imdbId !== undefined) match.imdbRating = await omdbThrottle.run(() => omdbRating({ imdbId, title, year: query.year, type: kind === 'movie' ? 'movie' : 'series' }, signal))
+  if (wantsRating) {
+    const imdbId = [details.imdb_id, external.imdb_id].find((value): value is string => typeof value === 'string' && value.startsWith('tt'))
+    logSample(`tmdb.${kind}.external_ids`, details.external_ids ?? null)
+    logSample(`tmdb.${kind}.imdb_id`, imdbId ?? null)
+    if (omdbKey().length === 0) logSample('omdb', { skipped: 'OMDB_API_KEY is empty' })
+    else match.imdbRating = await omdbThrottle.run(() => omdbRating({ imdbId, title, year: query.year, type: kind === 'movie' ? 'movie' : 'series' }, signal))
   }
   return match
 }

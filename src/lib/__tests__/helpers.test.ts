@@ -40,6 +40,7 @@ describe('dates', () => {
     expect(parseUpdatedAt('15/03/2023')).toBe('2023-03-15T00:00:00.000Z')
     expect(parseUpdatedAt('03/15/2023')).toBe('2023-03-15T00:00:00.000Z')
     expect(parseUpdatedAt('03/04/2023')).toBe('2023-04-03T00:00:00.000Z')
+    expect(parseUpdatedAt('2026-11-17 23:39')).toBe('2026-11-17T18:09:00.000Z')
   })
 
   it('reads a year from a number or the first 4-digit token', () => {
@@ -63,7 +64,7 @@ describe('ratings', () => {
   it('prefers my rating and labels the external source', () => {
     expect(effectiveRating({ myRating: null, imdbRating: 7.4 })).toBe(7.4)
     expect(effectiveRating({ myRating: 9, imdbRating: 7.4 })).toBe(9)
-    expect(externalRatingLabel('anime')).toBe('MAL')
+    expect(externalRatingLabel('anime')).toBe('IMDb')
   })
 })
 

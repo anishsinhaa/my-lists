@@ -15,6 +15,20 @@ export function parseYear(value: unknown): number | null {
   return year
 }
 
+function istPart(date: Date, type: Intl.DateTimeFormatPartTypes): string {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(date)
+  const value = parts.find((part) => part.type === type)?.value ?? ''
+  return type === 'hour' && value === '24' ? '00' : value
+}
+
+export function formatIstStamp(date: Date): string {
+  return `${istPart(date, 'year')}-${istPart(date, 'month')}-${istPart(date, 'day')} ${istPart(date, 'hour')}:${istPart(date, 'minute')}`
+}
+
+export function formatIstDay(date: Date): string {
+  return formatIstStamp(date).slice(0, 10)
+}
+
 export function parseUpdatedAt(value: unknown): string | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
     const day = serialToIso(value)
@@ -26,6 +40,12 @@ export function parseUpdatedAt(value: unknown): string | null {
   if (typeof value !== 'string') return null
   const text = value.trim()
   if (text.length === 0) return null
+  const ist = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/.exec(text)
+  if (ist !== null) {
+    const parsed = new Date(`${ist[1]}-${ist[2]}-${ist[3]}T${ist[4]}:${ist[5]}:00+05:30`)
+    if (Number.isNaN(parsed.getTime())) return null
+    return parsed.toISOString()
+  }
   if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
     const parsed = new Date(text)
     if (Number.isNaN(parsed.getTime())) return null

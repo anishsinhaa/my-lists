@@ -10,7 +10,8 @@ import { FilterChrome } from './filters/FilterChrome'
 import type { ListQuery } from './filters/listQuery'
 import { selectItems } from './filters/selectItems'
 import { StatsStrip } from './StatsStrip'
-import { DetailSheet } from './views/DetailSheet'
+import { useSaveItem } from './useSaveItem'
+import { ItemModal } from './views/ItemModal'
 import { ListTable } from './views/ListTable'
 import { PosterCard } from './views/PosterCard'
 
@@ -38,11 +39,14 @@ export function CategoryView({ listId, items, query, onChange }: {
   onChange: (next: ListQuery) => void
 }) {
   const [shuffled, setShuffled] = useState<MediaItem[] | null>(null)
-  const [open, setOpen] = useState<MediaItem | null>(null)
+  const [openId, setOpenId] = useState<string | null>(null)
+  const save = useSaveItem()
   const source = shuffled ?? items
   const visible = useMemo(() => selectItems(listId, source, query, QUERY_NOW), [listId, source, query])
   const current = useMemo(() => currentItems(listId, visible), [visible, listId])
   const groups = useMemo(() => shelfGroups(listId, visible, query.smart === 'top-rated' ? 'given' : 'rating'), [visible, listId, query.smart])
+
+  const open = openId === null ? null : items.find((item) => item.id === openId) ?? source.find((item) => item.id === openId) ?? null
 
   function patch(partial: Partial<ListQuery>) {
     onChange({ ...query, ...partial })
@@ -65,7 +69,7 @@ export function CategoryView({ listId, items, query, onChange }: {
           <h2 className="mb-2 font-['Cinzel',serif]">Currently</h2>
           <Rail align={current.length === 1 ? 'start' : 'center'} label="Currently">
             {current.map((item) => (
-              <button key={item.id} type="button" data-rail-card="true" className="w-[clamp(7.5rem,20cqi,11rem)] shrink-0 snap-start text-left" onClick={() => setOpen(item)}>
+              <button key={item.id} type="button" data-rail-card="true" className="w-[clamp(7.5rem,20cqi,11rem)] shrink-0 snap-start text-left" onClick={() => setOpenId(item.id)}>
                 <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
                 <StatusBadge listId={item.listId} status={item.status} />
               </button>
@@ -74,10 +78,10 @@ export function CategoryView({ listId, items, query, onChange }: {
         </section>
       )}
       {visible.length === 0 ? <p className="p-8 text-center text-(--ink-muted)">The shelf is empty.</p> : null}
-      {query.view === 'table' ? <ListTable items={visible} listId={listId} /> : null}
+      {query.view === 'table' ? <ListTable items={visible} listId={listId} onOpen={(item) => setOpenId(item.id)} /> : null}
       {query.view === 'grid' ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {visible.map((item, index) => <PosterCard key={item.id} index={index} item={item} onOpen={setOpen} />)}
+          {visible.map((item, index) => <PosterCard key={item.id} index={index} item={item} onOpen={(entry) => setOpenId(entry.id)} />)}
         </div>
       ) : null}
       {query.view === 'shelves' ? groups.map((group) => (
@@ -91,14 +95,14 @@ export function CategoryView({ listId, items, query, onChange }: {
             <Rail align={group.items.length === 1 ? 'start' : 'center'} label={group.status}>
               {group.items.map((item, index) => (
                 <div key={item.id} data-rail-card="true" className="w-[clamp(9rem,22cqi,13.5rem)] shrink-0 snap-start">
-                  <PosterCard index={index} item={item} onOpen={setOpen} />
+                  <PosterCard index={index} item={item} onOpen={(entry) => setOpenId(entry.id)} />
                 </div>
               ))}
             </Rail>
           </section>
         </LazyBlock>
       )) : null}
-      <DetailSheet item={open} listId={listId} onClose={() => setOpen(null)} />
+      <ItemModal item={open} items={visible} listId={listId} onClose={() => setOpenId(null)} onOpen={(entry) => setOpenId(entry.id)} onSave={save} />
     </div>
   )
 }

@@ -36,6 +36,16 @@ describe('mapMainTab', () => {
     expect(result.items[0]?.imdbRating).toBeNull()
   })
 
+  it('maps the notes header and keeps date finished as an extra', () => {
+    const result = mapMainTab('movies', [
+      ['Title', "Notes / Why it's on the list", 'Date finished', 'IMDb Rating'],
+      ['Heat', 'a heist', '2020-01-02', ''],
+    ])
+    expect(result.items[0]?.why).toBe('a heist')
+    expect(result.items[0]?.extra['date finished']).toBe('2020-01-02')
+    expect(result.items[0]?.updatedAt).toBeNull()
+  })
+
   it('warns and returns nothing when Title is missing', () => {
     const result = mapMainTab('movies', [['Status'], ['Watched']])
     expect(result.items).toEqual([])

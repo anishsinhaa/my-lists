@@ -139,4 +139,31 @@ describe('providers', () => {
     expect((await rawg.lookup({ title: 'Hades', year: 2020, need: ['imdbRating'] }))?.imdbRating).toBe(8.4)
     expect((await openLibrary.lookup({ title: 'Dune', year: 1965, need: ['imdbRating'] }))?.imdbRating).toBeUndefined()
   })
+
+  it('uses an Open Library ISBN when the matched edition has no cover id', async () => {
+    installEnv()
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (String(url).includes('search.json')) return Response.json({ docs: [{ title: 'Beyond Good and Evil', first_publish_year: 1886, isbn: ['978-1979466073'], author_name: ['Friedrich Nietzsche'] }] })
+      return new Response(null, { status: String(url).includes('9781979466073') ? 200 : 404 })
+    }))
+    const match = await openLibrary.lookup({ title: 'Beyond Good and Evil', year: 1886, author: 'Friedrich Nietzsche', need: ['poster'] })
+    expect(match?.poster).toBe('https://covers.openlibrary.org/b/isbn/9781979466073-L.jpg')
+  })
+
+  it('asks OMDb by title when TMDB has no imdb id, and keeps a numeric rating', async () => {
+    installEnv()
+    const urls: string[] = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      urls.push(String(url))
+      if (String(url).includes('/search/movie')) return Response.json({ results: [{ id: 1, title: 'Inception', release_date: '2010-07-16', poster_path: '/abc.jpg' }] })
+      if (String(url).includes('/movie/1')) return Response.json({ external_ids: { imdb_id: null }, vote_average: 8 })
+      if (String(url).includes('omdbapi')) return Response.json({ Response: 'True', imdbRating: '8.6' })
+      return Response.json({})
+    }))
+    const match = await tmdbMovies.lookup({ title: 'Inception', year: 2010, need: ['imdbRating'] })
+    expect(match?.imdbRating).toBe(8.6)
+    const omdb = urls.find((url) => url.includes('omdbapi')) ?? ''
+    expect(decodeURIComponent(omdb)).toContain('t=Inception')
+    expect(omdb).not.toContain('i=tt')
+  })
 })

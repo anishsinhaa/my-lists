@@ -72,6 +72,10 @@
 .app-topbar { box-sizing: border-box; min-height: var(--app-bar); padding-top: max(0.625rem, env(safe-area-inset-top, 0px)); padding-bottom: 0.375rem; }
 .app-topbar-row { min-height: 3.5rem; }
 .filter-sticky { position: sticky; top: var(--app-bar); z-index: 30; }
+.item-modal { top: 0; left: 0; width: 100%; height: 100dvh; max-width: none; max-height: none; translate: none; overflow: auto; border-radius: 0; background: var(--bg); color: var(--ink); }
+@media (min-width: 768px) {
+  .item-modal { top: 50%; left: 50%; width: min(820px, calc(100% - 2rem)); height: auto; max-height: min(92dvh, 900px); translate: -50% -50%; overflow: hidden; border-radius: 1rem; }
+}
 .archive-slot { container-type: inline-size; width: min(calc((100vw - 13rem) / 5), calc((100dvh - 18rem) * 2 / 3)); }
 .archive-card { box-shadow: 0 18px 32px #00000073; }
 .archive-gloss { pointer-events: none; position: absolute; inset: 0; z-index: 5; background: radial-gradient(circle at var(--gloss, 28%) 18%, #ffffff73, transparent 42%); opacity: 0; transition: opacity 180ms linear; }
@@ -88,20 +92,20 @@
 .archive-skin-books { background: linear-gradient(90deg, #3a2418 0 8%, #c4a574 8% 9%, transparent 9%); }
 .archive-skin-books::after { content: ""; position: absolute; top: 22%; right: 12%; width: 12px; height: 22%; background: #7a1f2b; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%); }
 .archive-face { container-type: inline-size; display: flex; width: 100%; flex-direction: column; align-items: stretch; gap: 0.5rem; }
-.list-sign { position: relative; display: flex; width: 100%; min-height: 2.6rem; flex-direction: column; align-items: center; justify-content: center; padding: 0.45rem 0.55rem; text-align: center; }
-.list-sign-label { position: relative; z-index: 1; max-width: 100%; line-height: 1.1; }
+.list-sign { position: relative; box-sizing: border-box; display: flex; width: 100%; height: 3.75rem; flex-direction: column; align-items: center; justify-content: center; padding: 0.45rem 0.55rem; text-align: center; }
+.list-sign-label { position: relative; z-index: 1; max-width: 100%; font-size: clamp(0.95rem, 13cqi, 1.25rem); line-height: 1.1; }
 .list-sign-movies { padding: 0.55rem; color: #d4af37; background-color: #0b0b0f; background-image: radial-gradient(circle, #ffe08a 1.5px, #6b5420 2.3px, transparent 3px), radial-gradient(circle, #ffe08a 1.5px, #6b5420 2.3px, transparent 3px), radial-gradient(circle, #ffe08a 1.5px, #6b5420 2.3px, transparent 3px), radial-gradient(circle, #ffe08a 1.5px, #6b5420 2.3px, transparent 3px); background-repeat: repeat-x, repeat-x, repeat-y, repeat-y; background-position: 0 0, 0 100%, 0 0, 100% 0; background-size: 12px 9px, 12px 9px, 9px 12px, 9px 12px; }
-.list-sign-movies .list-sign-label { display: block; width: 100%; border: 1px solid #d4af37; padding: 0.2rem 0.25rem; font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.15rem, 18cqi, 1.7rem); letter-spacing: 0.08em; }
+.list-sign-movies .list-sign-label { display: block; width: 100%; border: 1px solid #d4af37; padding: 0.2rem 0.25rem; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.08em; }
 .list-sign-series { border: 2px solid #c4894a; border-radius: 0.7rem; color: #fbefE0; background-color: #3a2a20; background-image: linear-gradient(180deg, #f2a65a66, transparent 58%), repeating-linear-gradient(90deg, #00000033 0 2px, transparent 2px 7px); box-shadow: inset 0 0 0 3px #2a1c14; }
-.list-sign-series .list-sign-label { font-family: 'Special Elite', cursive; font-size: clamp(0.95rem, 13cqi, 1.25rem); text-shadow: 0 1px 0 #1a120c; }
+.list-sign-series .list-sign-label { font-family: 'Special Elite', cursive; text-shadow: 0 1px 0 #1a120c; }
 .list-sign-led { z-index: 1; margin-bottom: 0.1rem; padding: 0 0.28rem; border: 1px solid #f2a65a; background: #140e0a; color: #ffcf70; font-family: 'VT323', monospace; font-size: 0.95rem; letter-spacing: 0.08em; line-height: 1.1; text-shadow: 0 0 6px #f2a65a; }
 .list-sign-anime { border: 3px solid #1b1b3a; border-radius: 1.15rem 1.15rem 1.15rem 0.3rem; background-color: #fff4d6; background-image: radial-gradient(#1b1b3a 0.7px, transparent 0.85px); background-size: 5px 5px; box-shadow: 4px 4px 0 #ff4d8d; }
-.list-sign-anime .list-sign-label { padding: 0 0.2rem; background-image: linear-gradient(#ff4d8d, #ff4d8d); background-repeat: no-repeat; background-position: center 82%; background-size: 100% 0.35em; color: #1b1b3a; font-family: 'Bowlby One', sans-serif; font-size: clamp(0.78rem, 11cqi, 1.05rem); }
+.list-sign-anime .list-sign-label { padding: 0 0.2rem; background-image: linear-gradient(#ff4d8d, #ff4d8d); background-repeat: no-repeat; background-position: center 82%; background-size: 100% 0.35em; color: #1b1b3a; font-family: 'Bowlby One', sans-serif; }
 .list-sign-games { padding: 0.5rem 1rem; color: #00f0ff; background: #07060f; clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%); filter: drop-shadow(0 0 3px #00f0ff); }
-.list-sign-games .list-sign-label { font-family: 'Orbitron Variable', sans-serif; font-size: clamp(0.68rem, 8.5cqi, 0.86rem); letter-spacing: 0.14em; text-transform: uppercase; text-shadow: 0 0 8px #00f0ff; }
+.list-sign-games .list-sign-label { font-family: 'Orbitron Variable', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; text-shadow: 0 0 8px #00f0ff; }
 .list-sign-brackets { position: absolute; inset: 6px 16px; z-index: 1; background: linear-gradient(#00f0ff, #00f0ff) left top / 10px 2px no-repeat, linear-gradient(#00f0ff, #00f0ff) left top / 2px 8px no-repeat, linear-gradient(#00f0ff, #00f0ff) right top / 10px 2px no-repeat, linear-gradient(#00f0ff, #00f0ff) right top / 2px 8px no-repeat, linear-gradient(#00f0ff, #00f0ff) left bottom / 10px 2px no-repeat, linear-gradient(#00f0ff, #00f0ff) left bottom / 2px 8px no-repeat, linear-gradient(#00f0ff, #00f0ff) right bottom / 10px 2px no-repeat, linear-gradient(#00f0ff, #00f0ff) right bottom / 2px 8px no-repeat; }
 .list-sign-books { overflow: hidden; color: #f6e2a8; background: linear-gradient(90deg, #3a2418, #6b3e2a 14%, #8c5a3c 50%, #6b3e2a 86%, #3a2418); box-shadow: inset 0 0 0 1px #e8c872, inset 0 0 0 4px #4a2e1c, inset 0 0 0 5px #e8c872; }
-.list-sign-books .list-sign-label { font-family: 'EB Garamond', serif; font-size: clamp(1.05rem, 15cqi, 1.45rem); font-style: italic; text-shadow: 0 1px 0 #2a180e; }
+.list-sign-books .list-sign-label { font-family: 'EB Garamond', serif; font-style: italic; text-shadow: 0 1px 0 #2a180e; }
 .list-sign-foil { pointer-events: none; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 36%, #fff6ccaa 50%, transparent 64%); transform: translateX(-120%); }
 @media (prefers-reduced-motion: no-preference) {
   .archive-slot:hover .list-sign-movies, .archive-slot:focus-visible .list-sign-movies { animation: marquee-chase 0.9s linear infinite; }

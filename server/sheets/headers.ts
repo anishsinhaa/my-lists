@@ -6,7 +6,7 @@ export const MAIN_ALIASES: Record<MainField, string[]> = {
   status: ['status'],
   year: ['year', 'release year'],
   genre: ['genre', 'genres'],
-  why: ['why', 'notes', 'note', 'reason'],
+  why: ['why', 'notes', 'note', 'reason', "notes / why it's on the list", "notes / why it’s on the list", "why it's on the list", "why it's on my list"],
   updatedAt: ['updated at', 'updated', 'last updated'],
   poster: ['poster', 'poster url', 'cover'],
   creator: ['director/creator', 'director', 'creator', 'author', 'developer'],

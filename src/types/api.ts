@@ -1,4 +1,4 @@
-import type { PicksId, TabId } from './lists.ts'
+import type { ListId, PicksId, TabId } from './lists.ts'
 import type { EnrichField } from './media.ts'
 
 export type ApiErrorCode =
@@ -32,6 +32,23 @@ export interface PosterFillResult {
   written: Partial<Record<EnrichField, boolean>>
   missed: EnrichField[]
   outcome: 'ok' | 'partial' | 'not_found' | 'already_filled' | 'provider_error' | 'write_skipped'
+  detail?: string
+}
+
+export interface ItemUpdateRequest {
+  listId: ListId
+  id: string
+  title: string
+  year: number | null
+  status: string
+  myRating: number | null
+  why?: string
+}
+
+export interface ItemUpdateResult {
+  outcome: 'written' | 'not_found' | 'ambiguous' | 'invalid'
+  updatedAt?: string
+  finishedOn?: string | null
   detail?: string
 }
 

@@ -9,7 +9,7 @@ import { omdbKey } from './http.js'
 import { providerFor } from './resolve.js'
 import type { PosterMatch } from './types.js'
 
-export type FailReason = 'no match' | 'API error' | 'no rating'
+export type FailReason = 'no match' | 'API error' | 'no rating' | 'OMDB_API_KEY is empty'
 
 export interface TabReport {
   tab: ListId
@@ -147,6 +147,7 @@ async function backfillTab(
     if (ratingOnly && usesOmdb(tab) && !omdb) {
       report.omdbSkipped += 1
       if (job.ratingBlank) report.imdbMissing += 1
+      report.failures.push({ title: job.title, reason: 'OMDB_API_KEY is empty' })
       onProgress(index + 1, jobs.length, report.failures.length)
       continue
     }

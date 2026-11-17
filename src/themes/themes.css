@@ -68,7 +68,8 @@
   .game-box { transform: none; }
 }
 .edge { padding-inline: clamp(0.75rem, 2vw, 1.5rem); }
-.archive-card { container-type: inline-size; box-shadow: 0 18px 32px #00000073; }
+.archive-slot { container-type: inline-size; width: min(calc((100vw - 13rem) / 5), calc((100dvh - 18rem) * 2 / 3)); }
+.archive-card { box-shadow: 0 18px 32px #00000073; }
 .archive-gloss { pointer-events: none; position: absolute; inset: 0; z-index: 5; background: radial-gradient(circle at var(--gloss, 28%) 18%, #ffffff73, transparent 42%); opacity: 0; transition: opacity 180ms linear; }
 .archive-card:hover .archive-gloss { opacity: 1; }
 .archive-skin { pointer-events: none; position: absolute; inset: 0; z-index: 4; }
@@ -86,11 +87,12 @@
 .list-carousel::before, .list-carousel::after { content: ""; flex: 0 0 11%; }
 .list-carousel::-webkit-scrollbar { display: none; }
 @media (max-width: 767px) {
-  .list-carousel .archive-card { width: 78%; max-width: none; flex-basis: 78%; }
+  .list-carousel .archive-slot { width: 78%; flex-basis: 78%; }
+  .list-carousel .archive-card { width: min(100%, calc((100dvh - 16rem) * 2 / 3)); }
 }
 @media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
-  .list-carousel .archive-card { transform: scale(0.9); transition: transform 200ms ease; }
-  .list-carousel .archive-card[data-active='true'] { transform: scale(1); }
+  .list-carousel .archive-card { transform: scale(0.92); transition: transform 200ms ease; }
+  .list-carousel .archive-slot[data-active='true'] .archive-card { transform: scale(1); }
 }
 @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
   .archive-card[data-list='games'] { transform: perspective(1000px) rotateY(-14deg); }

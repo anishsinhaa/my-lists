@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { Link } from 'react-router-dom'
+import curiousSeal from '@/assets/wax-seal-curious.png'
+import otherSeal from '@/assets/wax-seal-other.png'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Skeletons } from '@/components/common/Skeletons'
 import { Plaque } from '@/design/Plaque'
@@ -13,6 +15,7 @@ import type { MediaItem } from '@/types/media'
 
 const ORDER = ['movies', 'series', 'anime', 'games', 'books'] as const
 type PortraitId = (typeof ORDER)[number]
+const SEAL: Record<'other' | 'curious', string> = { other: otherSeal, curious: curiousSeal }
 
 function covers(items: MediaItem[]): MediaItem[] {
   return [...items].filter((item) => item.poster !== null).sort((left, right) => (right.updatedAt ?? '').localeCompare(left.updatedAt ?? '')).slice(0, 4)
@@ -25,7 +28,7 @@ function cellClass(count: number, index: number): string {
   return ''
 }
 
-function tilt(event: PointerEvent<HTMLAnchorElement>) {
+function tilt(event: PointerEvent<HTMLSpanElement>) {
   if (event.pointerType !== 'mouse' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   const node = event.currentTarget
   const rect = node.getBoundingClientRect()
@@ -36,7 +39,7 @@ function tilt(event: PointerEvent<HTMLAnchorElement>) {
   node.style.setProperty('--gloss', `${((x + 0.5) * 100).toFixed(0)}%`)
 }
 
-function untilt(event: PointerEvent<HTMLAnchorElement>) {
+function untilt(event: PointerEvent<HTMLSpanElement>) {
   event.currentTarget.style.removeProperty('transform')
 }
 
@@ -47,27 +50,29 @@ function ArchiveCard({ listId, items, count, active }: { listId: PortraitId; ite
   return (
     <Link
       to={`/lists/${listId}`}
-      data-list={listId}
       data-rail-card="true"
       data-carousel-card="true"
       data-active={active ? 'true' : 'false'}
-      className="archive-card relative block aspect-2/3 w-[clamp(10.5rem,17cqi,16.5rem)] max-w-full shrink-0 snap-center overflow-hidden text-[#f6edd8] focus-visible:outline-2 focus-visible:outline-[#b08d57] max-md:w-[78%]"
-      onPointerMove={tilt}
-      onPointerLeave={untilt}
+      className="archive-slot flex shrink-0 snap-center flex-col items-center gap-2 text-[#f6edd8] focus-visible:outline-2 focus-visible:outline-[#b08d57]"
     >
-      <span className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-        {posters.length === 0 ? <span className={`col-span-2 row-span-2 ${listId === 'books' ? 'bg-[#6b3e2a]' : listId === 'anime' ? 'bg-[#fff4d6]' : listId === 'games' ? 'bg-[#100e21]' : listId === 'series' ? 'bg-[#2a1f1a]' : 'bg-[#14110e]'}`} /> : posters.map((item, index) => (
-          <img key={item.id} alt="" className={`h-full min-h-0 w-full object-cover ${cellClass(posters.length, index)}`} decoding="async" loading="lazy" src={thumbnailUrl(item.poster, 'w342') ?? ''} />
-        ))}
+      <Plaque className="w-full">{TAB_NAME[listId]}</Plaque>
+      <span
+        data-list={listId}
+        className="archive-card relative block aspect-2/3 w-full overflow-hidden"
+        onPointerMove={tilt}
+        onPointerLeave={untilt}
+      >
+        <span className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+          {posters.length === 0 ? <span className={`col-span-2 row-span-2 ${listId === 'books' ? 'bg-[#6b3e2a]' : listId === 'anime' ? 'bg-[#fff4d6]' : listId === 'games' ? 'bg-[#100e21]' : listId === 'series' ? 'bg-[#2a1f1a]' : 'bg-[#14110e]'}`} /> : posters.map((item, index) => (
+            <img key={item.id} alt="" className={`h-full min-h-0 w-full object-cover ${cellClass(posters.length, index)}`} decoding="async" loading="lazy" src={thumbnailUrl(item.poster, 'w342') ?? ''} />
+          ))}
+        </span>
+        <span aria-hidden="true" className={`archive-skin archive-skin-${listId}`} />
+        <span aria-hidden="true" className="archive-gloss" />
       </span>
-      <span aria-hidden="true" className={`archive-skin archive-skin-${listId}`} />
-      <span aria-hidden="true" className="archive-gloss" />
-      <span className="absolute top-[8%] right-[10%] left-[12%] z-10">
-        <Plaque>{TAB_NAME[listId]}</Plaque>
-      </span>
-      <span className="absolute inset-x-0 bottom-0 z-10 bg-black/80 px-3 py-2 text-[#f6edd8]">
-        <span className="block text-xs">{count} titles{inProgress > 0 ? ` · ${inProgress} in progress` : ''}</span>
-        <span className="mt-1 block h-1 bg-white/25"><span className="block h-full bg-[#d4af37]" style={{ width: `${count === 0 ? 0 : (done / count) * 100}%` }} /></span>
+      <span className="w-full text-center text-sm">
+        <span className="block">{count} titles{inProgress > 0 ? ` · ${inProgress} in progress` : ''}</span>
+        <span className="mt-1 block h-1 bg-white/20"><span className="block h-full bg-[#d4af37]" style={{ width: `${count === 0 ? 0 : (done / count) * 100}%` }} /></span>
       </span>
     </Link>
   )
@@ -75,9 +80,10 @@ function ArchiveCard({ listId, items, count, active }: { listId: PortraitId; ite
 
 function Seal({ id, count }: { id: 'other' | 'curious'; count: number }) {
   return (
-    <Link to={`/lists/${id}`} className="flex size-14 flex-col items-center justify-center rounded-full border-2 border-[#b08d57] bg-[#5c241c] text-center text-[10px] leading-tight text-[#f6edd8] shadow-[inset_0_2px_0_#ffffff33,0_8px_16px_#00000066]">
+    <Link to={`/lists/${id}`} className="flex min-h-11 items-center gap-2 rounded-[12px] border border-[#b08d57]/35 bg-[#5c241c]/45 px-3 text-sm text-[#f6edd8]/75 shadow-none transition hover:border-[#b08d57] hover:bg-[#5c241c] hover:text-[#f6edd8]">
+      <img alt="" className="size-7 shrink-0" src={SEAL[id]} />
       <span>{TAB_NAME[id]}</span>
-      {count > 0 ? <span className="tabular-nums">{count}</span> : null}
+      <span className="tabular-nums">{count}</span>
     </Link>
   )
 }
@@ -110,28 +116,16 @@ export function MyListsPage() {
     <ArchiveCard key={id} active={mobileActive && index === active} count={counts[id]} items={data.lists[id]} listId={id} />
   ))
   return (
-    <main className="edge relative w-full max-w-full overflow-x-clip py-4 md:min-h-[70vh]">
-      {desktop ? (
-        <div className="flex items-center gap-[clamp(0.75rem,2vw,1.5rem)]">
-          <div className="min-w-0 flex-1">
-            <Rail label="My lists">{cards(false)}</Rail>
-          </div>
-          <aside className="flex shrink-0 flex-col gap-3">
-            <Seal count={counts.other} id="other" />
-            <Seal count={counts.curious} id="curious" />
-          </aside>
+    <main className="edge flex w-full max-w-full flex-col justify-center overflow-x-clip py-4 max-md:pb-24 md:min-h-[calc(100dvh-8.5rem)]">
+      {desktop ? <Rail label="My lists">{cards(false)}</Rail> : (
+        <div ref={carousel} className="list-carousel">
+          {cards(true)}
         </div>
-      ) : (
-        <>
-          <div ref={carousel} className="list-carousel">
-            {cards(true)}
-          </div>
-          <aside className="mt-4 flex items-center justify-center gap-4">
-            <Seal count={counts.other} id="other" />
-            <Seal count={counts.curious} id="curious" />
-          </aside>
-        </>
       )}
+      <aside className="fixed right-[clamp(0.75rem,2vw,1.5rem)] bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-30 flex flex-wrap justify-end gap-2 md:bottom-14">
+        <Seal count={counts.other} id="other" />
+        <Seal count={counts.curious} id="curious" />
+      </aside>
     </main>
   )
 }

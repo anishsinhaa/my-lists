@@ -5,6 +5,7 @@ import { useOnline } from '@/hooks/useOnline'
 import type { ThemeId } from '@/types/theme'
 import { ThemeProvider } from '@/themes/ThemeProvider'
 import { EnrichmentRunner } from '@/features/posters/EnrichmentRunner'
+import { ArchiveFooter } from './ArchiveFooter'
 import { BottomNav } from './BottomNav'
 import { PageTransition } from './PageTransition'
 import { TopBar } from './TopBar'
@@ -25,13 +26,11 @@ export function AppShell() {
       <EnrichmentRunner />
       <TopBar />
       <ErrorBoundary>
-        <div className="pb-20 md:pb-8">
+        <div id="content" className="pb-28 md:pb-16">
           <PageTransition />
         </div>
       </ErrorBoundary>
-      <footer className="px-4 pb-4 text-center text-xs text-(--ink-muted)">
-        <a className="underline" href="https://rawg.io" rel="noreferrer">Data: RAWG</a>
-      </footer>
+      <ArchiveFooter />
       <BottomNav />
       <Toaster />
     </ThemeProvider>

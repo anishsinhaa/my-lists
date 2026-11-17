@@ -17,6 +17,10 @@ function AuthLayout() {
   )
 }
 
+function kitLoader() {
+  return import('@/features/dev/KitPage').then((module) => ({ Component: module.KitPage }))
+}
+
 function NotFound() {
   return <main className="p-6"><h1 className="text-2xl font-semibold">Not found</h1></main>
 }
@@ -37,6 +41,7 @@ export const router = createBrowserRouter([
               { path: '/lists/:listId', element: <ListPage /> },
               { path: '/picks', element: <PicksPage /> },
               { path: '/settings', element: <SettingsPage /> },
+              ...(import.meta.env.DEV ? [{ path: '/dev/kit', lazy: kitLoader }] : []),
               { path: '*', element: <NotFound /> },
             ],
           },

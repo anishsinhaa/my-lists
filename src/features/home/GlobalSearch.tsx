@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { Input } from '@/components/ui/input'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -10,6 +10,21 @@ export function GlobalSearch() {
   const [query, setQuery] = useState('')
   const desktop = useMediaQuery('(min-width: 768px)')
   const { hits, ready } = useGlobalSearch(query)
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === '/' && !(event.target instanceof HTMLInputElement) && !(event.target instanceof HTMLTextAreaElement)) {
+        event.preventDefault()
+        document.getElementById('global-search')?.focus()
+      }
+    }
+    const onAsk = () => document.getElementById('global-search')?.focus()
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('ml:search', onAsk)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('ml:search', onAsk)
+    }
+  }, [])
   return (
     <div>
       <label className="block" htmlFor="global-search">

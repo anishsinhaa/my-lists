@@ -120,7 +120,7 @@ export function CategoryView({ listId, items, query, onChange }: {
         </div>
       ) : null}
       {current.length === 0 ? null : (
-        <section>
+        <section className={listId === 'series' ? 'scanlines rounded-md border-8 border-[#3a2c24] p-2' : ''}>
           <h2 className="mb-2 font-['Cinzel',serif]">Currently</h2>
           <Rail label="Currently">
             {current.map((item) => (

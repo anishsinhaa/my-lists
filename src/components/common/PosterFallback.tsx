@@ -20,6 +20,13 @@ function initials(title: string): string {
 }
 
 export function PosterFallback({ title, kind, className = '' }: { title: string; kind: MediaKind; className?: string }) {
+  if (kind === 'book') {
+    return (
+      <div className={`flex h-full w-full items-end bg-[#6b3e2a] p-3 ${className}`}>
+        <span className="font-['EB_Garamond',serif] text-lg leading-tight text-[#f6e7cf]">{title}</span>
+      </div>
+    )
+  }
   const Icon = ICONS[kind]
   return (
     <div className={`flex h-full w-full items-center justify-center bg-[linear-gradient(160deg,var(--accent),var(--surface-2))] ${className}`}>

@@ -63,7 +63,7 @@
   .marquee-bulbs { animation: bulb-chase 1.4s linear infinite; }
 }
 @keyframes bulb-chase { to { background-position: 16px 0; } }
-.game-box { transform: perspective(800px) rotateY(-16deg); transform-style: preserve-3d; }
+.game-box { transform: perspective(800px) rotateY(var(--tilt-y, -16deg)) rotateX(var(--tilt-x, 0deg)); transform-style: preserve-3d; }
 @media (prefers-reduced-motion: reduce) {
   .game-box { transform: none; }
 }

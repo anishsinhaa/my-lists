@@ -45,6 +45,9 @@ export function applyListQuery(items: MediaItem[], query: ListQuery, _ctx: { now
       const rating = chosenRating(item, query)
       if (rating === null || rating < query.ratingMin) return false
     }
+    const hasPoster = item.poster !== null && item.poster.length > 0
+    if (query.poster === 'has' && !hasPoster) return false
+    if (query.poster === 'missing' && hasPoster) return false
     return true
   })
   return filtered

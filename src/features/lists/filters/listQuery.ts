@@ -2,7 +2,7 @@ export type SortKey = 'title' | 'year' | 'rating' | 'myRating' | 'imdbRating' | 
 export type RatingBy = 'best' | 'my' | 'external'
 
 export interface ListQuery {
-  view: 'grid' | 'table'
+  view: 'shelves' | 'grid' | 'table'
   sort: SortKey
   dir: 'asc' | 'desc'
   q: string
@@ -16,6 +16,7 @@ export interface ListQuery {
   ratingMin: number | null
   ratingBy: RatingBy
   smart: string | null
+  poster: 'any' | 'has' | 'missing'
 }
 
 export const DEFAULT_QUERY: ListQuery = {
@@ -33,6 +34,7 @@ export const DEFAULT_QUERY: ListQuery = {
   ratingMin: null,
   ratingBy: 'best',
   smart: null,
+  poster: 'any',
 }
 
 const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'updated', 'status']
@@ -51,8 +53,9 @@ function numberOrNull(value: string | null): number | null {
 export function parseListQuery(params: URLSearchParams): ListQuery {
   const sort = params.get('sort')
   const ratingBy = params.get('rby')
+  const poster = params.get('poster')
   return {
-    view: params.get('view') === 'table' ? 'table' : 'grid',
+    view: params.get('view') === 'table' ? 'table' : params.get('view') === 'shelves' ? 'shelves' : 'grid',
     sort: SORTS.includes(sort as SortKey) ? (sort as SortKey) : 'updated',
     dir: params.get('dir') === 'asc' ? 'asc' : 'desc',
     q: params.get('q') ?? '',
@@ -66,6 +69,7 @@ export function parseListQuery(params: URLSearchParams): ListQuery {
     ratingMin: numberOrNull(params.get('rmin')),
     ratingBy: ratingBy === 'my' || ratingBy === 'external' ? ratingBy : 'best',
     smart: params.get('smart'),
+    poster: poster === 'has' || poster === 'missing' ? poster : 'any',
   }
 }
 
@@ -85,5 +89,6 @@ export function serializeListQuery(query: ListQuery): URLSearchParams {
   if (query.ratingMin !== null) params.set('rmin', String(query.ratingMin))
   if (query.ratingBy !== DEFAULT_QUERY.ratingBy) params.set('rby', query.ratingBy)
   if (query.smart !== null && query.smart.length > 0) params.set('smart', query.smart)
+  if (query.poster !== 'any') params.set('poster', query.poster)
   return params
 }

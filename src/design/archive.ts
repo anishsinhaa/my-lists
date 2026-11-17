@@ -10,11 +10,12 @@ export interface ShelfGroup {
   icon: StatusDef['icon']
   items: MediaItem[]
   total: number
+  loose: boolean
 }
 
 const SHELF_CAP = 30
 
-export function shelfGroups(listId: ListId, items: MediaItem[], order: 'title' | 'given' = 'title'): ShelfGroup[] {
+export function shelfGroups(listId: ListId, items: MediaItem[], order: 'title' | 'given' = 'title', cap = SHELF_CAP): ShelfGroup[] {
   const buckets = new Map<string, MediaItem[]>()
   for (const item of items) {
     const matched = matchStatus(listId, item.status)
@@ -36,8 +37,9 @@ export function shelfGroups(listId: ListId, items: MediaItem[], order: 'title' |
       flavour: def.flavour,
       family: def.family,
       icon: def.icon,
-      items: ranked.slice(0, SHELF_CAP),
+      items: ranked.slice(0, cap),
       total: rows.length,
+      loose: def.value === 'No status',
     })
   }
   return groups

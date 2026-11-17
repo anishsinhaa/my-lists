@@ -1,10 +1,12 @@
 export type SortKey = 'title' | 'year' | 'rating' | 'myRating' | 'imdbRating' | 'finished' | 'status'
+export type GroupKey = 'none' | 'status' | 'genre' | 'year' | 'franchise' | 'creator' | 'platform'
 export type RatingBy = 'best' | 'my' | 'external'
 
 export interface ListQuery {
   view: 'shelves' | 'grid' | 'table'
   sort: SortKey
   dir: 'asc' | 'desc'
+  group: GroupKey
   q: string
   statuses: string[]
   genres: string[]
@@ -23,6 +25,7 @@ export const DEFAULT_QUERY: ListQuery = {
   view: 'grid',
   sort: 'title',
   dir: 'asc',
+  group: 'none',
   q: '',
   statuses: [],
   genres: [],
@@ -38,6 +41,7 @@ export const DEFAULT_QUERY: ListQuery = {
 }
 
 const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status']
+const GROUPS: readonly GroupKey[] = ['none', 'status', 'genre', 'year', 'franchise', 'creator', 'platform']
 
 function list(value: string | null): string[] {
   if (value === null || value.length === 0) return []
@@ -54,10 +58,13 @@ export function parseListQuery(params: URLSearchParams): ListQuery {
   const sort = params.get('sort')
   const ratingBy = params.get('rby')
   const poster = params.get('poster')
+  const view = params.get('view') === 'table' ? 'table' : params.get('view') === 'shelves' ? 'shelves' : 'grid'
+  const group = params.get('group')
   return {
-    view: params.get('view') === 'table' ? 'table' : params.get('view') === 'shelves' ? 'shelves' : 'grid',
+    view,
     sort: SORTS.includes(sort as SortKey) ? (sort as SortKey) : 'title',
     dir: params.get('dir') === 'desc' ? 'desc' : 'asc',
+    group: GROUPS.includes(group as GroupKey) ? (group as GroupKey) : view === 'shelves' ? 'status' : 'none',
     q: params.get('q') ?? '',
     statuses: list(params.get('status')),
     genres: list(params.get('genre')),
@@ -78,6 +85,8 @@ export function serializeListQuery(query: ListQuery): URLSearchParams {
   if (query.view !== DEFAULT_QUERY.view) params.set('view', query.view)
   if (query.sort !== DEFAULT_QUERY.sort) params.set('sort', query.sort)
   if (query.dir !== DEFAULT_QUERY.dir) params.set('dir', query.dir)
+  const impliedGroup = query.view === 'shelves' ? 'status' : 'none'
+  if (query.group !== impliedGroup) params.set('group', query.group)
   if (query.q.length > 0) params.set('q', query.q)
   if (query.statuses.length > 0) params.set('status', query.statuses.join(','))
   if (query.genres.length > 0) params.set('genre', query.genres.join(','))

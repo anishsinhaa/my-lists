@@ -14,6 +14,14 @@ export function hasFinishedColumn(listId: ListId, items: MediaItem[]): boolean {
   return items.some((item) => Object.prototype.hasOwnProperty.call(item.extra, 'date finished'))
 }
 
+export function sortChipLabel(option: SortOption, selected: boolean, dir: 'asc' | 'desc'): string {
+  if (!selected) return option.label
+  if (option.key === 'title') return dir === 'asc' ? 'Title A–Z' : 'Title Z–A'
+  if (option.key === 'year') return dir === 'desc' ? 'Year newest' : 'Year oldest'
+  if (option.key === 'finished') return dir === 'desc' ? 'Date finished newest' : 'Date finished oldest'
+  return dir === 'desc' ? `${option.label} high–low` : `${option.label} low–high`
+}
+
 export function sortOptions(listId: ListId, showFinished: boolean): SortOption[] {
   const external = externalRatingLabel(listId)
   const options: SortOption[] = [

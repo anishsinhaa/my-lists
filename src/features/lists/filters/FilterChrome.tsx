@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useDismiss } from '@/hooks/useDismiss'
-import { Calendar, Check, Eraser, Gamepad2, Layers, LayoutGrid, Rows3, SlidersHorizontal, Sparkles, Star, Table2, Tags, UserRound, X } from 'lucide-react'
+import { ArrowDownUp, Calendar, Check, ChevronDown, Eraser, Gamepad2, Group, Layers, LayoutGrid, Rows3, SlidersHorizontal, Sparkles, Star, Table2, Tags, UserRound, X } from 'lucide-react'
 import { IconButton } from '@/design/IconButton'
 import { StatusGlyph } from '@/design/icons'
 import { matchStatus, shelfOrder } from '@/design/statusConfig'
 import { externalRatingLabel } from '@/lib/rating'
 import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
-import { SortMenu } from '../SortMenu'
+import { groupOptions } from '../groupOptions'
+import { hasFinishedColumn, sortChipLabel, sortOptions } from '../sortOptions'
 import { finishedOn, SMART_VIEWS } from '../smart/smartViews'
 import { FILTER_CONFIG } from './filterConfig'
 import type { ListQuery, RatingBy } from './listQuery'
@@ -96,10 +97,37 @@ function FilterSections({ listId, items, query, onChange }: {
     return items.some((item) => finishedOn(item) !== null)
   })
   const label = externalRatingLabel(listId)
+  const sorts = sortOptions(listId, hasFinishedColumn(listId, items))
+  const groups = groupOptions(listId, items)
+  const [open, setOpen] = useState<string | null>(null)
+  function toggle(id: string) {
+    setOpen((current) => current === id ? null : id)
+  }
   return (
-    <div className="space-y-1">
+    <div>
+      <Section icon={<ArrowDownUp className="size-4" aria-hidden="true" />} open={open === 'sort'} title="Sort by" onToggle={() => toggle('sort')}>
+        <div role="radiogroup" aria-label="Sort by" className="flex flex-wrap gap-2">
+          {sorts.map((option) => {
+            const selected = query.sort === option.key
+            return (
+              <Choice key={option.key} listId={listId} pressed={selected} onClick={() => onChange(selected ? { dir: query.dir === 'asc' ? 'desc' : 'asc' } : { sort: option.key, dir: option.dir })}>
+                {sortChipLabel(option, selected, query.dir)}
+              </Choice>
+            )
+          })}
+        </div>
+      </Section>
+      <Section icon={<Group className="size-4" aria-hidden="true" />} open={open === 'group'} title="Group by" onToggle={() => toggle('group')}>
+        <div role="radiogroup" aria-label="Group by" className="flex flex-wrap gap-2">
+          {groups.map((option) => (
+            <Choice key={option.key} listId={listId} pressed={query.group === option.key} onClick={() => onChange(option.key === 'none' && query.view === 'shelves' ? { group: 'none', view: 'grid' } : { group: option.key })}>
+              {option.label}
+            </Choice>
+          ))}
+        </div>
+      </Section>
       {config.show.genre && genres.length > 0 ? (
-        <Section icon={<Tags className="size-4" aria-hidden="true" />} title="Genre">
+        <Section icon={<Tags className="size-4" aria-hidden="true" />} open={open === 'genre'} title="Genre" onToggle={() => toggle('genre')}>
           <div className="flex flex-wrap gap-2">
             {genres.slice(0, 24).map((genre) => (
               <Choice key={genre} listId={listId} pressed={query.genres.includes(genre)} onClick={() => onChange({ genres: query.genres.includes(genre) ? query.genres.filter((value) => value !== genre) : [...query.genres, genre] })}>{genre}</Choice>
@@ -108,7 +136,7 @@ function FilterSections({ listId, items, query, onChange }: {
         </Section>
       ) : null}
       {config.show.year ? (
-        <Section icon={<Calendar className="size-4" aria-hidden="true" />} title="Year">
+        <Section icon={<Calendar className="size-4" aria-hidden="true" />} open={open === 'year'} title="Year" onToggle={() => toggle('year')}>
           <div className="flex gap-2">
             <label className="text-sm">From
               <input aria-label="From year" inputMode="numeric" className="mt-1 block h-11 w-28 rounded-md border border-border bg-(--surface) px-2" value={query.yearMin ?? ''} onChange={(event) => onChange({ yearMin: yearValue(event.target.value) })} />
@@ -120,7 +148,7 @@ function FilterSections({ listId, items, query, onChange }: {
         </Section>
       ) : null}
       {config.show.creator && creators.length > 0 ? (
-        <Section icon={<UserRound className="size-4" aria-hidden="true" />} title={config.creatorLabel}>
+        <Section icon={<UserRound className="size-4" aria-hidden="true" />} open={open === 'creator'} title={config.creatorLabel} onToggle={() => toggle('creator')}>
           <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto">
             {creators.slice(0, 24).map((creator) => (
               <Choice key={creator} listId={listId} pressed={query.creator === creator} onClick={() => onChange({ creator: query.creator === creator ? null : creator })}>{creator}</Choice>
@@ -129,7 +157,7 @@ function FilterSections({ listId, items, query, onChange }: {
         </Section>
       ) : null}
       {config.show.franchise && franchises.length > 0 ? (
-        <Section icon={<Layers className="size-4" aria-hidden="true" />} title={config.franchiseLabel}>
+        <Section icon={<Layers className="size-4" aria-hidden="true" />} open={open === 'franchise'} title={config.franchiseLabel} onToggle={() => toggle('franchise')}>
           <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto">
             {franchises.slice(0, 24).map((franchise) => (
               <Choice key={franchise} listId={listId} pressed={query.franchise === franchise} onClick={() => onChange({ franchise: query.franchise === franchise ? null : franchise })}>{franchise}</Choice>
@@ -138,7 +166,7 @@ function FilterSections({ listId, items, query, onChange }: {
         </Section>
       ) : null}
       {config.show.platform && platforms.length > 0 ? (
-        <Section icon={<Gamepad2 className="size-4" aria-hidden="true" />} title="Platform">
+        <Section icon={<Gamepad2 className="size-4" aria-hidden="true" />} open={open === 'platform'} title="Platform" onToggle={() => toggle('platform')}>
           <div className="flex flex-wrap gap-2">
             {platforms.slice(0, 12).map((platform) => (
               <Choice key={platform} listId={listId} pressed={query.platform === platform} onClick={() => onChange({ platform: query.platform === platform ? null : platform })}>{platform}</Choice>
@@ -147,7 +175,7 @@ function FilterSections({ listId, items, query, onChange }: {
         </Section>
       ) : null}
       {config.show.rating ? (
-        <Section icon={<Star className="size-4" aria-hidden="true" />} title="Rating">
+        <Section icon={<Star className="size-4" aria-hidden="true" />} open={open === 'rating'} title="Rating" onToggle={() => toggle('rating')}>
           <div className="flex flex-wrap gap-2">
             {[6, 7, 8, 9].map((min) => (
               <Choice key={min} listId={listId} pressed={query.ratingMin === min} onClick={() => onChange({ ratingMin: query.ratingMin === min ? null : min })}>{`${min}+`}</Choice>
@@ -161,7 +189,7 @@ function FilterSections({ listId, items, query, onChange }: {
         </Section>
       ) : null}
       {views.length > 0 ? (
-        <Section icon={<Sparkles className="size-4" aria-hidden="true" />} title="Smart views">
+        <Section icon={<Sparkles className="size-4" aria-hidden="true" />} open={open === 'smart'} title="Smart views" onToggle={() => toggle('smart')}>
           <div className="flex flex-wrap gap-2">
             {views.map((view) => (
               <Choice key={view.id} listId={listId} pressed={query.smart === view.id} onClick={() => onChange({ smart: query.smart === view.id ? null : view.id })}>{view.label}</Choice>
@@ -173,15 +201,16 @@ function FilterSections({ listId, items, query, onChange }: {
   )
 }
 
-function Section({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
+function Section({ icon, title, open, onToggle, children }: { icon: ReactNode; title: string; open: boolean; onToggle: () => void; children: ReactNode }) {
   return (
-    <details className="group border-b border-border py-1" open>
-      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium">
+    <div className="border-b border-border">
+      <button type="button" aria-expanded={open} className="flex min-h-11 w-full items-center gap-2 text-left text-sm font-medium" onClick={onToggle}>
         {icon}
-        {title}
-      </summary>
-      <div className="pb-3">{children}</div>
-    </details>
+        <span className="flex-1">{title}</span>
+        <ChevronDown aria-hidden="true" className={`size-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open ? <div className="pb-3">{children}</div> : null}
+    </div>
   )
 }
 
@@ -293,12 +322,11 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
             Filters
           </button>
           {panel ? (
-            <div className="absolute right-0 z-30 mt-1 max-h-[70vh] w-[22rem] overflow-y-auto rounded-md border border-(--brass)/40 bg-(--bg) p-3 shadow-xl">
+            <div className="absolute right-0 z-30 mt-1 max-h-[80vh] w-[40rem] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-md border border-(--brass)/40 bg-(--bg) p-4 shadow-xl">
               <FilterSections items={items} listId={listId} query={query} onChange={onChange} />
             </div>
           ) : null}
         </div>
-        <SortMenu dir={query.dir} items={items} listId={listId} value={query.sort} onChange={(sort, dir) => onChange({ sort, dir })} />
         <div role="radiogroup" aria-label="View" className="flex gap-1">
           {([['shelves', Rows3, 'Shelves'], ['grid', LayoutGrid, 'Grid'], ['table', Table2, 'Table']] as const).map(([value, Icon, name]) => (
             <IconButton key={value} aria-pressed={query.view === value} className={query.view === value ? 'bg-accent text-(--bg)' : ''} label={name} onClick={() => onChange({ view: value })}><Icon className="size-4" /></IconButton>
@@ -306,7 +334,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
         </div>
         {onShuffle !== undefined ? <button type="button" className="h-11 px-3 text-sm" onClick={onShuffle}>Shuffle</button> : null}
       </div>
-      <div className={`flex flex-nowrap gap-2 overflow-x-auto pb-1 transition-[padding] duration-200 ${collapsed ? 'py-0' : 'py-1'}`}>
+      <div role="group" aria-label="Status" className={`flex flex-nowrap gap-2 overflow-x-auto pb-1 ${collapsed ? '' : 'py-1'}`}>
         <Choice listId={listId} pressed={query.statuses.length === 0} slim={collapsed} onClick={() => onChange({ statuses: [] })}>All</Choice>
         {rows.map((row) => (
           <Choice key={row.value} count={counts.get(row.value) ?? 0} icon={<StatusGlyph name={row.icon} />} listId={listId} pressed={statusOn(listId, query.statuses, row.value)} slim={collapsed} onClick={() => onChange({ statuses: toggleStatus(listId, query, row.value) })}>{row.value}</Choice>

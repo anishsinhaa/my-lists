@@ -31,7 +31,10 @@ function MainList({ listId }: { listId: ListId }) {
   const [params, setParams] = useSearchParams()
   const stored = readJson<'shelves' | 'grid' | 'table'>(`ml.view.${listId}`, listId === 'books' ? 'grid' : 'shelves')
   const query = parseListQuery(params)
-  if (!params.has('view')) query.view = stored
+  if (!params.has('view')) {
+    query.view = stored
+    if (!params.has('group')) query.group = stored === 'shelves' ? 'status' : 'none'
+  }
   const update = (next: ListQuery) => {
     writeJson(`ml.view.${listId}`, next.view)
     setParams(serializeListQuery(next), { replace: true })

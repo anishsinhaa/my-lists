@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, useNavigate } from 'react-router-dom'
 import { DEFAULT_QUERY } from '../listQuery'
@@ -65,14 +65,51 @@ describe('filter chips', () => {
     }
     render(<MemoryRouter initialEntries={['/lists/movies']}><Probe /></MemoryRouter>)
     fireEvent.click(filtersButton())
+    fireEvent.click(screen.getByRole('button', { name: 'Year' }))
     expect(screen.getByLabelText('From year')).toBeTruthy()
     fireEvent.pointerDown(document.body)
     expect(screen.queryByLabelText('From year')).toBeNull()
     fireEvent.click(filtersButton())
     fireEvent.keyDown(window, { key: 'Escape' })
-    expect(screen.queryByLabelText('From year')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Sort by' })).toBeNull()
     fireEvent.click(filtersButton())
     fireEvent.click(screen.getByRole('button', { name: 'Leave' }))
-    expect(screen.queryByLabelText('From year')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Sort by' })).toBeNull()
+  })
+
+  it('names the sort and can group with the same chips', () => {
+    const onChange = vi.fn()
+    const movie: MediaItem = {
+      id: 'argo', listId: 'movies', title: 'Argo', titleKey: 'argo', status: 'Want to', statusGroup: 'planned',
+      year: 2012, genres: ['Thriller'], why: '', updatedAt: null, poster: null, creator: 'Ben Affleck', franchise: null,
+      myRating: null, imdbRating: null, platform: null, extra: {},
+    }
+    renderChrome('movies', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
+    expect(screen.queryByRole('radiogroup', { name: 'Sort by' })).toBeNull()
+    fireEvent.click(filtersButton())
+    fireEvent.click(screen.getByRole('button', { name: 'Sort by' }))
+    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Sort by' })).getByRole('button', { name: 'Year' }))
+    expect(onChange).toHaveBeenCalledWith({ sort: 'year', dir: 'desc' })
+    cleanup()
+    onChange.mockClear()
+    render(
+      <MemoryRouter>
+        <FilterChrome items={[movie]} listId="movies" query={{ ...DEFAULT_QUERY, view: 'shelves', group: 'status' }} shown={1} total={1} onChange={onChange} />
+      </MemoryRouter>,
+    )
+    fireEvent.click(filtersButton())
+    fireEvent.click(screen.getByRole('button', { name: 'Sort by' }))
+    const sort = screen.getByRole('radiogroup', { name: 'Sort by' })
+    expect(within(sort).getByRole('button', { name: 'Title A–Z' }).getAttribute('aria-pressed')).toBe('true')
+    expect(within(sort).getByRole('button', { name: 'Year' })).toBeTruthy()
+    expect(within(sort).getByRole('button', { name: 'My Rating' })).toBeTruthy()
+    expect(within(sort).getByRole('button', { name: 'IMDb rating' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Group by' }))
+    const grouped = screen.getByRole('radiogroup', { name: 'Group by' })
+    expect(within(grouped).getByRole('button', { name: 'Status' }).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(within(grouped).getByRole('button', { name: 'Genre' }))
+    expect(onChange).toHaveBeenCalledWith({ group: 'genre' })
+    fireEvent.click(within(grouped).getByRole('button', { name: 'None' }))
+    expect(onChange).toHaveBeenLastCalledWith({ group: 'none', view: 'grid' })
   })
 })

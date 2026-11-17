@@ -16,6 +16,7 @@ export function ListHeader({ listId, stats, poster, enriching }: { listId: ListI
   const groups = (['done', 'active', 'planned', 'waiting', 'paused', 'dropped'] as const).filter((group) => stats.byGroup[group] > 0)
   return (
     <header className="relative overflow-hidden">
+      {listId === 'movies' ? <div aria-hidden="true" className="marquee-bulbs h-4" /> : null}
       {listId === 'series' && poster !== undefined && poster !== null ? <img alt="" className="absolute inset-0 h-full w-full object-cover opacity-30 blur-md" src={poster} /> : null}
       {listId === 'anime' ? <div className="halftone h-8" /> : null}
       {listId === 'games' ? <div className="scanlines h-2" /> : null}

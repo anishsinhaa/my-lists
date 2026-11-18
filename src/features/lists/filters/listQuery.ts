@@ -19,6 +19,7 @@ export interface ListQuery {
   ratingBy: RatingBy
   smart: string | null
   poster: 'any' | 'has' | 'missing'
+  unrated: boolean
 }
 
 export const DEFAULT_QUERY: ListQuery = {
@@ -38,9 +39,10 @@ export const DEFAULT_QUERY: ListQuery = {
   ratingBy: 'best',
   smart: null,
   poster: 'any',
+  unrated: false,
 }
 
-export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster'> = {
+export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'unrated'> = {
   q: '',
   statuses: [],
   genres: [],
@@ -53,6 +55,7 @@ export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yea
   ratingBy: 'best',
   smart: null,
   poster: 'any',
+  unrated: false,
 }
 
 export function hasActiveFilters(query: ListQuery): boolean {
@@ -68,6 +71,7 @@ export function hasActiveFilters(query: ListQuery): boolean {
     || query.ratingBy !== DEFAULT_QUERY.ratingBy
     || (query.smart !== null && query.smart.length > 0)
     || query.poster !== 'any'
+    || query.unrated
 }
 
 const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status']
@@ -107,6 +111,7 @@ export function parseListQuery(params: URLSearchParams): ListQuery {
     ratingBy: ratingBy === 'my' || ratingBy === 'external' ? ratingBy : 'best',
     smart: params.get('smart'),
     poster: poster === 'has' || poster === 'missing' ? poster : 'any',
+    unrated: params.get('unrated') === '1',
   }
 }
 
@@ -129,5 +134,6 @@ export function serializeListQuery(query: ListQuery): URLSearchParams {
   if (query.ratingBy !== DEFAULT_QUERY.ratingBy) params.set('rby', query.ratingBy)
   if (query.smart !== null && query.smart.length > 0) params.set('smart', query.smart)
   if (query.poster !== 'any') params.set('poster', query.poster)
+  if (query.unrated) params.set('unrated', '1')
   return params
 }

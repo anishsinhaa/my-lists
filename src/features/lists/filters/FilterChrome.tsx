@@ -137,6 +137,14 @@ function FilterSections({ listId, items, query, onChange }: {
   }
   return (
     <div>
+      <div className="border-b border-border">
+        <button type="button" aria-pressed={query.unrated} className="flex min-h-11 w-full items-center justify-between gap-3 text-left text-sm" onClick={() => onChange({ unrated: !query.unrated })}>
+          <span>Unrated</span>
+          <span className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full border px-0.5 ${query.unrated ? 'justify-end border-transparent bg-accent' : 'border-(--brass)/40 bg-(--surface)'}`}>
+            <span className="size-5 rounded-full bg-(--bg)" />
+          </span>
+        </button>
+      </div>
       <Section icon={<ArrowDownUp className="size-4" aria-hidden="true" />} open={open === 'sort'} title="Sort by" onToggle={() => toggle('sort')}>
         <div role="radiogroup" aria-label="Sort by" className="flex flex-wrap gap-2">
           {sorts.map((option) => {
@@ -305,6 +313,7 @@ interface ActiveChip {
 function activeChips(listId: ListId, query: ListQuery): ActiveChip[] {
   const chips: ActiveChip[] = []
   if (query.q.length > 0) chips.push({ key: 'q', label: `Search: ${query.q}`, clear: { q: '' } })
+  if (query.unrated) chips.push({ key: 'unrated', label: 'Unrated', clear: { unrated: false } })
   for (const status of query.statuses) {
     const label = matchStatus(listId, status).value
     chips.push({
@@ -361,14 +370,16 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
     <div className="filter-sticky space-y-2 bg-(--bg)/90 py-2 backdrop-blur">
       <div className="flex flex-wrap items-center gap-2">
         <input id="list-search" value={query.q} onChange={(event) => onChange({ q: event.target.value })} placeholder="Search this list" aria-label="Search this list" className="h-11 w-full min-w-0 flex-1 rounded-md border border-border bg-(--surface) px-3 sm:w-auto sm:min-w-40" />
-        <button type="button" className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 px-3 text-sm md:hidden" onClick={() => setDrawer(true)}>
+        <button type="button" aria-label={chips.length > 0 ? `Filters ${chips.length}` : 'Filters'} className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 px-3 text-sm md:hidden" onClick={() => setDrawer(true)}>
           <SlidersHorizontal aria-hidden="true" className="size-4" />
           Filters
+          {chips.length > 0 ? <span className="tabular-nums">{chips.length}</span> : null}
         </button>
         <div ref={panelRef} className="relative hidden md:block" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-          <button type="button" aria-expanded={panel} className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 px-3 text-sm" onClick={() => setPinned((value) => !value)}>
+          <button type="button" aria-expanded={panel} aria-label={chips.length > 0 ? `Filters ${chips.length}` : 'Filters'} className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 px-3 text-sm" onClick={() => setPinned((value) => !value)}>
             <SlidersHorizontal aria-hidden="true" className="size-4" />
             Filters
+            {chips.length > 0 ? <span className="tabular-nums">{chips.length}</span> : null}
           </button>
           {panel ? (
             <div className="absolute right-0 z-30 mt-1 max-h-[80vh] w-160 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-md border border-(--brass)/40 bg-(--bg) p-4 shadow-xl">
@@ -389,7 +400,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
           </button>
         ))}
         {chips.length > 0 ? (
-          <button type="button" className="inline-flex min-h-11 items-center gap-1 px-2 text-sm" onClick={() => onChange({ statuses: [], genres: [], smart: null, poster: 'any', q: '', yearMin: null, yearMax: null, ratingMin: null, creator: null, franchise: null, platform: null })}>
+          <button type="button" className="inline-flex min-h-11 items-center gap-1 px-2 text-sm" onClick={() => onChange({ statuses: [], genres: [], smart: null, poster: 'any', q: '', yearMin: null, yearMax: null, ratingMin: null, creator: null, franchise: null, platform: null, unrated: false })}>
             <Eraser aria-hidden="true" className="size-4" />
             Clear all
           </button>

@@ -25,7 +25,7 @@ function renderChrome(listId: ListId = 'movies', query: ListQuery = { ...DEFAULT
 }
 
 function filtersButton(): HTMLElement {
-  const button = screen.getAllByRole('button', { name: 'Filters' }).find((entry) => entry.hasAttribute('aria-expanded'))
+  const button = screen.getAllByRole('button', { name: /^Filters/ }).find((entry) => entry.hasAttribute('aria-expanded'))
   if (button === undefined) throw new Error('Missing filters')
   return button
 }
@@ -138,8 +138,26 @@ describe('filter chips', () => {
     fireEvent.click(filtersButton())
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
     expect(onChange).toHaveBeenCalledWith({
-      q: '', statuses: [], genres: [], yearMin: null, yearMax: null, franchise: null, creator: null, platform: null, ratingMin: null, ratingBy: 'best', smart: null, poster: 'any',
+      q: '', statuses: [], genres: [], yearMin: null, yearMax: null, franchise: null, creator: null, platform: null, ratingMin: null, ratingBy: 'best', smart: null, poster: 'any', unrated: false,
     })
+  })
+
+  it('turns Unrated on, counts it, and clears it with the other filters', () => {
+    const onChange = vi.fn()
+    renderChrome('series', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
+    expect(screen.queryByRole('button', { name: 'Filters 1' })).toBeNull()
+    fireEvent.click(filtersButton())
+    fireEvent.click(screen.getByRole('button', { name: 'Unrated' }))
+    expect(onChange).toHaveBeenCalledWith({ unrated: true })
+    cleanup()
+    onChange.mockClear()
+    renderChrome('series', { ...DEFAULT_QUERY, view: 'grid', unrated: true }, onChange)
+    expect(screen.getAllByRole('button', { name: 'Filters 1' }).length).toBeGreaterThan(0)
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Unrated' }))
+    expect(onChange).toHaveBeenCalledWith({ unrated: false })
+    fireEvent.click(filtersButton())
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ unrated: false }))
   })
 
   it('switches the view from one menu and closes it', () => {

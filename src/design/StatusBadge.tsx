@@ -20,12 +20,13 @@ function seriesTone(status: string): string | null {
   return null
 }
 
-export function StatusBadge({ listId, status }: { listId: ListId; status: string }) {
+export function StatusBadge({ listId, status, size = 'sm' }: { listId: ListId; status: string; size?: 'sm' | 'lg' }) {
   const matched = matchStatus(listId, status)
   const tone = listId === 'series' ? seriesTone(matched.value) ?? FAMILY[matched.family] : FAMILY[matched.family]
+  const large = size === 'lg'
   return (
-    <span className={`inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-1 text-[11px] leading-none backdrop-blur-sm ${tone}`}>
-      {matched.family === 'active' ? <span className="size-1.5 animate-pulse rounded-full bg-amber-300 motion-reduce:animate-none" /> : <StatusGlyph name={matched.icon} />}
+    <span className={`inline-flex max-w-full items-center rounded-full border leading-none backdrop-blur-sm ${tone} ${large ? 'gap-2 px-4 py-2.5 text-base' : 'gap-1 px-2 py-1 text-[11px]'}`}>
+      {matched.family === 'active' ? <span className={`${large ? 'size-2' : 'size-1.5'} animate-pulse rounded-full bg-amber-300 motion-reduce:animate-none`} /> : <StatusGlyph name={matched.icon} className={large ? 'size-5' : 'size-3.5'} />}
       <span className="truncate">{matched.value}</span>
     </span>
   )

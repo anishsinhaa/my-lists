@@ -46,6 +46,15 @@ describe('updateListItem', () => {
     expect(sheet.rows[1]?.[10]).toBe('still a heist')
   })
 
+  it('writes a notes field into the Notes column and leaves Description and Genre alone', async () => {
+    const sheet = client([header, ['Heat', 1995, 'Want to', 8, '', 'a heist', '', '', '', 'Crime', '']])
+    const result = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: 8, notes: 'Season 3' }, now)
+    expect(result.outcome).toBe('written')
+    expect(sheet.rows[1]?.[5]).toBe('a heist')
+    expect(sheet.rows[1]?.[9]).toBe('Crime')
+    expect(sheet.rows[1]?.[10]).toBe('Season 3')
+  })
+
   it('clears a rating without touching a date that is already set', async () => {
     const sheet = client([header, ['Heat', 1995, 'Watched', 9, '2020-01-01 10:00', '', '2019-05-01', '', '']])
     const result = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Watched', myRating: null }, now)

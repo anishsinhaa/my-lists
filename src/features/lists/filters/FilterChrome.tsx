@@ -362,7 +362,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
           <div className="fixed inset-x-0 bottom-0 z-50 max-h-[80dvh] overflow-y-auto rounded-t-2xl border border-(--brass)/40 bg-(--bg) p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="font-(--font-display) text-xl">Filters</h2>
-              <button type="button" className="min-h-11 px-3" onClick={() => setDrawer(false)}>Close</button>
+              <button type="button" aria-label="Close" className="inline-flex size-11 items-center justify-center" onClick={() => setDrawer(false)}><X aria-hidden="true" className="size-5" /></button>
             </div>
             <FilterSections items={items} listId={listId} query={query} onChange={onChange} />
           </div>

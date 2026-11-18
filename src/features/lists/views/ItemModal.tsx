@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PosterImage } from '@/components/common/PosterImage'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
@@ -51,6 +51,96 @@ function TextBlock({ label, children }: { label: string; children: ReactNode }) 
     <div className="space-y-1">
       <p className="text-xs tracking-wide text-(--ink-muted)">{label}</p>
       <div className="text-sm leading-snug">{children}</div>
+    </div>
+  )
+}
+
+function NotesEditor({ value, onSave }: { value: string; onSave: (next: string) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value)
+  const skipBlur = useRef(false)
+  const empty = value.trim().length === 0
+
+  function commit(next: string) {
+    if (skipBlur.current) return
+    skipBlur.current = true
+    setEditing(false)
+    if (next !== value) onSave(next)
+  }
+
+  function cancel() {
+    skipBlur.current = true
+    setDraft(value)
+    setEditing(false)
+  }
+
+  return (
+    <div className="space-y-1">
+      <p className="text-xs tracking-wide text-(--ink-muted)">My notes</p>
+      {editing ? (
+        <div className="space-y-2">
+          <textarea
+            aria-label="My notes"
+            autoFocus
+            className="min-h-20 w-full rounded-md border border-(--border) bg-(--surface) p-2 text-base"
+            placeholder="Add a note, e.g. on Season 3"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.preventDefault()
+                cancel()
+              }
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault()
+                commit(draft)
+              }
+            }}
+            onBlur={() => {
+              if (skipBlur.current) {
+                skipBlur.current = false
+                return
+              }
+              commit(draft)
+            }}
+          />
+          <button type="button" className="min-h-9 rounded-full bg-(--accent) px-3 text-sm text-(--bg)" onMouseDown={(event) => event.preventDefault()} onClick={() => commit(draft)}>Save</button>
+        </div>
+      ) : (
+        <button type="button" className={`w-full rounded-md px-1 py-1 text-left text-sm ${empty ? 'text-(--ink-muted) italic' : ''}`} onClick={() => { skipBlur.current = false; setDraft(value); setEditing(true) }}>
+          {empty ? 'Add a note, e.g. on Season 3' : value}
+        </button>
+      )}
+    </div>
+  )
+}
+
+function StatusMenu({ listId, status, onPick }: { listId: ListId; status: string; onPick: (next: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const options = STATUS_TABLE[listId]
+  const current = status.trim().toLowerCase()
+  return (
+    <div className="space-y-2">
+      {open && options.length > 0 ? (
+        <div aria-label="Status" className="max-h-64 overflow-y-auto rounded-t-2xl border border-(--border) bg-(--surface) p-1 shadow-lg">
+          {options.map((entry) => {
+            const on = entry.value.toLowerCase() === current
+            return (
+              <button key={entry.value} type="button" aria-pressed={on} className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 text-left text-sm aria-pressed:bg-(--accent) aria-pressed:text-(--bg)" onClick={() => { setOpen(false); if (!on) onPick(entry.value) }}>
+                <StatusGlyph name={entry.icon} />
+                <span className="min-w-0 flex-1">{entry.value}</span>
+                {on ? <Check aria-hidden="true" className="size-4" /> : null}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+      <div className="flex items-center justify-between gap-3">
+        <StatusBadge listId={listId} size="lg" status={status} />
+        {options.length === 0 ? null : (
+          <button type="button" aria-expanded={open} className="min-h-11 shrink-0 px-1 text-sm text-(--ink-muted) underline-offset-2 hover:underline" onClick={() => setOpen((value) => !value)}>Change status</button>
+        )}
+      </div>
     </div>
   )
 }
@@ -131,33 +221,22 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                 </button>
               </div>
               {shown(item.why) === null ? null : <TextBlock label="About">{item.why}</TextBlock>}
-              {item.genres.length === 0 ? null : (
-                <div className="flex flex-wrap gap-1.5">
-                  {item.genres.map((genre) => <span key={genre} className="rounded-full border border-(--border) px-2 py-0.5 text-xs">{genre}</span>)}
-                </div>
-              )}
               <DetailGrid rows={[
                 { label: 'Year', value: item.year },
                 { label: creatorLabel(listId), value: item.creator },
                 { label: 'Franchise', value: item.franchise },
                 { label: 'Platform', value: listId === 'games' ? item.platform : null },
-                { label: 'My Rating', value: item.myRating },
                 { label, value: external },
                 { label: 'Date finished', value: finished },
               ]} />
-              {shown(item.status) === null ? null : <StatusBadge listId={listId} status={item.status} />}
-              {STATUS_TABLE[listId].length === 0 ? null : (
+              {item.genres.length === 0 ? null : (
                 <div className="flex flex-wrap gap-1.5">
-                  {STATUS_TABLE[listId].map((entry) => (
-                    <button key={entry.value} type="button" aria-pressed={item.status.trim().toLowerCase() === entry.value.toLowerCase()} className="inline-flex min-h-8 items-center gap-1 rounded-full border border-(--border) px-2.5 text-xs aria-pressed:bg-(--accent) aria-pressed:text-(--bg)" onClick={() => { if (item.status.trim().toLowerCase() !== entry.value.toLowerCase()) save({ status: entry.value }) }}>
-                      <StatusGlyph name={entry.icon} className="size-3" />
-                      {entry.value}
-                    </button>
-                  ))}
+                  {item.genres.map((genre) => <span key={genre} className="rounded-full border border-(--border) px-2 py-0.5 text-xs">{genre}</span>)}
                 </div>
               )}
-              {shown(item.notes) === null ? null : <TextBlock label="My notes">{item.notes}</TextBlock>}
               <StarRating value={item.myRating} onChange={(myRating) => save({ myRating })} />
+              <NotesEditor key={item.id} value={item.notes} onSave={(notes) => save({ notes })} />
+              <StatusMenu key={`${item.id}-status`} listId={listId} status={item.status} onPick={(status) => save({ status })} />
             </div>
           </div>
         )}

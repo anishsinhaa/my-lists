@@ -42,6 +42,7 @@ export interface ItemUpdateRequest {
   year: number | null
   status: string
   myRating: number | null
+  notes?: string
   why?: string
 }
 

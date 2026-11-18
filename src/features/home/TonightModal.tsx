@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Clapperboard, Gamepad2, Layers, Sparkles, Tv, type LucideIcon } from 'lucide-react'
+import { BookOpen, Clapperboard, Gamepad2, Layers, Sparkles, Tv, X, type LucideIcon } from 'lucide-react'
 import { PosterImage } from '@/components/common/PosterImage'
 import { Button } from '@/design/Button'
 import { StatusBadge } from '@/design/StatusBadge'
@@ -179,7 +179,7 @@ export function TonightModal({ lists, preset, onClose }: {
       >
         <div className="mb-3 flex items-start justify-between gap-3">
           <h2 id="tonight-title" className="font-(--font-display) text-2xl">Pick for tonight</h2>
-          <button type="button" className="min-h-11 px-3 text-sm" onClick={onClose}>Close</button>
+          <button type="button" aria-label="Close" className="inline-flex size-11 shrink-0 items-center justify-center" onClick={onClose}><X aria-hidden="true" className="size-5" /></button>
         </div>
         {phase === 'choose' ? (
           <div className="space-y-4">
@@ -264,7 +264,7 @@ export function TonightModal({ lists, preset, onClose }: {
                   <Button onClick={pick}>Pick another</Button>
                   <Button variant="ghost" onClick={() => setPhase('choose')}>Change filters</Button>
                   <Button variant="ghost" onClick={() => openInList(shown)}>Open in list</Button>
-                  <Button variant="ghost" onClick={onClose}>Close</Button>
+                  <Button variant="ghost" aria-label="Close" onClick={onClose}><X aria-hidden="true" className="size-4" /></Button>
                 </div>
               </div>
             )}

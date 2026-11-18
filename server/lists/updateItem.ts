@@ -23,6 +23,7 @@ export interface ItemUpdate {
   year: number | null
   status: string
   myRating: number | null
+  notes?: string
   why?: string
 }
 
@@ -106,8 +107,10 @@ export async function updateListItem(client: SheetsClient, input: ItemUpdate, no
   if (updatedIndex !== undefined) {
     updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(updatedIndex)}${rowIndex + 1}`, value: stamp, prior: row[updatedIndex] === undefined ? '' : row[updatedIndex] as string | number })
   }
-  if (input.why !== undefined && map.index.notes !== undefined) {
-    const note = cleanNote(input.why)
+  const noteInput = input.notes !== undefined ? input.notes : input.why
+  if (noteInput !== undefined) {
+    if (map.index.notes === undefined) return { outcome: 'invalid', detail: 'missing_column' }
+    const note = cleanNote(noteInput)
     if (note === null) return { outcome: 'invalid' }
     updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(map.index.notes)}${rowIndex + 1}`, value: note, prior: row[map.index.notes] === undefined ? '' : row[map.index.notes] as string | number })
   }

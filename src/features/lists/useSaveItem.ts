@@ -13,13 +13,13 @@ const DONE = new Set(['Watched', 'Played', 'Completed', 'Read'])
 export interface ItemPatch {
   status?: string
   myRating?: number | null
-  why?: string
+  notes?: string
 }
 
 interface Desired {
   status: string
   myRating: number | null
-  why?: string
+  notes?: string
 }
 
 interface Lane {
@@ -43,11 +43,11 @@ function message(outcome: string): string {
 }
 
 function combine(current: MediaItem, pending: Desired | null, patch: ItemPatch): Desired {
-  const why = patch.why !== undefined ? patch.why : pending?.why
+  const notes = patch.notes !== undefined ? patch.notes : pending?.notes
   return {
     status: patch.status ?? pending?.status ?? current.status,
     myRating: patch.myRating !== undefined ? patch.myRating : pending?.myRating !== undefined ? pending.myRating : current.myRating,
-    ...(why === undefined ? {} : { why }),
+    ...(notes === undefined ? {} : { notes }),
   }
 }
 
@@ -55,7 +55,7 @@ function apply(item: MediaItem, patch: Desired): MediaItem {
   const extra = { ...item.extra }
   const finished = (extra['date finished'] ?? '').trim()
   if (!DONE.has(item.status) && DONE.has(patch.status) && finished.length === 0) extra['date finished'] = formatIstDay(new Date())
-  return { ...item, status: patch.status, statusGroup: statusGroupOf(patch.status), myRating: patch.myRating, why: patch.why ?? item.why, extra }
+  return { ...item, status: patch.status, statusGroup: statusGroupOf(patch.status), myRating: patch.myRating, notes: patch.notes ?? item.notes, extra }
 }
 
 function holdScroll(applyChange: () => void): void {
@@ -115,7 +115,7 @@ async function drain(item: MediaItem, queryClient: QueryClient): Promise<void> {
         year: item.year,
         status: desired.status,
         myRating: desired.myRating,
-        ...(desired.why === undefined ? {} : { why: desired.why }),
+        ...(desired.notes === undefined ? {} : { notes: desired.notes }),
       })
       if (result.outcome !== 'written') throw new Error(message(result.outcome))
     }

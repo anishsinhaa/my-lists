@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { toast } from 'sonner'
 import { saveItem } from '@/services/sheets/itemApi'
 import { fetchLists } from '@/services/sheets/listsApi'
 import { LIST_IDS, PICKS_IDS, type ListId } from '@/types/lists'
@@ -59,5 +60,19 @@ describe('useSaveItem', () => {
     expect(vi.mocked(saveItem).mock.calls[1]?.[0]).toEqual(expect.objectContaining({ myRating: 8, status: 'Want to' }))
     await act(async () => { second.resolve({ outcome: 'written' }) })
     await waitFor(() => expect(fetchLists).toHaveBeenCalledTimes(1))
+  })
+
+  it('shows a note immediately and restores it when the sheet write fails', async () => {
+    let finish: (value: { outcome: 'not_found' }) => void = () => undefined
+    vi.mocked(saveItem).mockImplementation(() => new Promise((resolve) => { finish = resolve }))
+    const { result } = renderHook(() => useSaveItem(), {
+      wrapper: ({ children }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>,
+    })
+    await act(async () => { void result.current(item(), { notes: 'Season 3' }).catch(() => undefined) })
+    expect((client.getQueryData(['lists']) as ListsPayload).lists.movies[0]?.notes).toBe('Season 3')
+    expect(saveItem).toHaveBeenCalledWith(expect.objectContaining({ notes: 'Season 3', status: 'Want to' }))
+    await act(async () => { finish({ outcome: 'not_found' }) })
+    await waitFor(() => expect((client.getQueryData(['lists']) as ListsPayload).lists.movies[0]?.notes).toBe(''))
+    expect(toast.error).toHaveBeenCalled()
   })
 })

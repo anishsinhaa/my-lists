@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Star } from 'lucide-react'
+import { Star, X } from 'lucide-react'
 
 function same(left: number | null, right: number): boolean {
   return left !== null && Math.abs(left - right) < 0.01
@@ -34,8 +34,8 @@ export function StarRating({ value, onChange }: { value: number | null; onChange
   }
 
   return (
-    <div className="star-rate flex w-full max-w-md flex-col gap-1" onPointerLeave={() => setHover(null)}>
-      <div className="grid grid-cols-10">
+    <div className="star-rate flex w-full max-w-md items-center gap-1" onPointerLeave={() => setHover(null)}>
+      <div className="grid min-w-0 flex-1 grid-cols-10">
         {Array.from({ length: 10 }, (_, index) => {
           const star = index + 1
           const fill = amount(shown, star)
@@ -50,7 +50,11 @@ export function StarRating({ value, onChange }: { value: number | null; onChange
           )
         })}
       </div>
-      <button type="button" className="min-h-11 self-start px-2 text-sm text-(--ink-muted)" disabled={value === null} onClick={() => { setHover(null); setBurst(null); onChange(null) }}>Clear</button>
+      {value !== null ? (
+        <button type="button" aria-label="Clear rating" className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-(--ink-muted)" onClick={() => { setHover(null); setBurst(null); onChange(null) }}>
+          <X aria-hidden="true" className="size-4" />
+        </button>
+      ) : null}
     </div>
   )
 }

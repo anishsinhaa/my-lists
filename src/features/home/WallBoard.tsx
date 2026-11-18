@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Rail } from '@/design/Rail'
 import { HomePosterLink } from './HomePosterLink'
-import type { WallTile } from './wall'
+import { posterHref, type WallTile } from './wall'
 
 export function WallBoard({ tiles }: { tiles: WallTile[] }) {
   return (
@@ -14,7 +14,7 @@ export function WallBoard({ tiles }: { tiles: WallTile[] }) {
               <span className="mt-1 block text-xs text-(--ink-muted)">{tile.items.length}</span>
             </Link>
             <span className="mt-3 flex gap-2 overflow-hidden">
-              {tile.items.slice(0, 4).map((item) => <HomePosterLink key={item.id} className="w-14 shrink-0" item={item} />)}
+              {tile.items.slice(0, 4).map((item) => <HomePosterLink key={item.id} className="w-14 shrink-0" href={posterHref(item, tile.filter)} item={item} />)}
             </span>
           </article>
         ))}
@@ -25,7 +25,7 @@ export function WallBoard({ tiles }: { tiles: WallTile[] }) {
             <h2 className="mb-2 font-['Cinzel',serif] text-sm"><Link to={tile.href}>{tile.title}</Link></h2>
             <Rail label={tile.title}>
               {tile.items.slice(0, 8).map((item) => (
-                <HomePosterLink key={item.id} className="w-[clamp(4.5rem,18cqi,7.5rem)] shrink-0 snap-start" item={item} />
+                <HomePosterLink key={item.id} className="w-[clamp(4.5rem,18cqi,7.5rem)] shrink-0 snap-start" href={posterHref(item, tile.filter)} item={item} />
               ))}
             </Rail>
           </section>

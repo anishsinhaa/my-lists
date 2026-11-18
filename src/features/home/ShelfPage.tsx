@@ -3,9 +3,8 @@ import { ErrorState } from '@/components/common/ErrorState'
 import { Skeletons } from '@/components/common/Skeletons'
 import { useLists } from '@/features/data/useLists'
 import { PosterCard } from '@/features/lists/views/PosterCard'
-import { itemHref } from '@/features/home/tonight'
 import { LIST_IDS, TAB_NAME, type ListId } from '@/types/lists'
-import { wallTiles } from './wall'
+import { posterHref, wallTiles } from './wall'
 
 export function ShelfPage() {
   const params = useParams()
@@ -37,7 +36,7 @@ export function ShelfPage() {
           <h2 className="font-['Cinzel',serif]">{TAB_NAME[group.id as ListId]} · {group.rows.length}</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {group.rows.map((item, index) => (
-              <PosterCard key={item.id} index={index} item={item} onOpen={(entry) => void navigate(itemHref(entry))} />
+              <PosterCard key={item.id} index={index} item={item} onOpen={(entry) => void navigate(posterHref(entry, tile.filter))} />
             ))}
           </div>
         </section>

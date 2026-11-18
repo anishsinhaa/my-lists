@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { MediaItem } from '@/types/media'
 import { HomePosterLink } from '../HomePosterLink'
-import { PREVIEW_DELAY, previewBox } from '../previewBox'
+import { PREVIEW_DELAY, PREVIEW_HEIGHT, PREVIEW_WIDTH, previewBox } from '../previewBox'
 
 function item(): MediaItem {
   return {
@@ -49,19 +49,19 @@ describe('home poster preview', () => {
   })
 
   it('stays inside the viewport', () => {
-    const flipped = previewBox({ top: 700, left: 900, right: 980, bottom: 820 }, { width: 280, height: 420 }, { width: 1000, height: 800 })
+    const flipped = previewBox({ top: 700, left: 900, right: 980, bottom: 820 }, { width: PREVIEW_WIDTH, height: PREVIEW_HEIGHT }, { width: 1000, height: 800 })
     expect(flipped.left).toBeGreaterThanOrEqual(8)
-    expect(flipped.left + 280).toBeLessThanOrEqual(992)
+    expect(flipped.left + PREVIEW_WIDTH).toBeLessThanOrEqual(992)
     expect(flipped.top).toBeGreaterThanOrEqual(8)
-    expect(flipped.top + 420).toBeLessThanOrEqual(792)
+    expect(flipped.top + PREVIEW_HEIGHT).toBeLessThanOrEqual(792)
   })
 
   it('opens a preview on a fine pointer after a short delay and keeps the poster link', () => {
     media(true)
     vi.useFakeTimers()
-    render(<MemoryRouter><HomePosterLink item={item()} /></MemoryRouter>)
+    render(<MemoryRouter><HomePosterLink href="/lists/anime?status=In+progress&item=anime%3Alive" item={item()} /></MemoryRouter>)
     const link = screen.getByRole('link', { name: 'Live anime' })
-    expect(link.getAttribute('href')).toBe('/lists/anime?item=anime%3Alive')
+    expect(link.getAttribute('href')).toBe('/lists/anime?status=In+progress&item=anime%3Alive')
     fireEvent.mouseEnter(link.parentElement!)
     act(() => { vi.advanceTimersByTime(PREVIEW_DELAY - 1) })
     expect(screen.queryByTestId('poster-preview')).toBeNull()
@@ -78,7 +78,7 @@ describe('home poster preview', () => {
   it('does not preview on a coarse pointer', () => {
     media(false)
     vi.useFakeTimers()
-    render(<MemoryRouter><HomePosterLink item={item()} /></MemoryRouter>)
+    render(<MemoryRouter><HomePosterLink href="/lists/anime?status=In+progress&item=anime%3Alive" item={item()} /></MemoryRouter>)
     fireEvent.mouseEnter(screen.getByRole('link', { name: 'Live anime' }).parentElement!)
     act(() => { vi.advanceTimersByTime(PREVIEW_DELAY) })
     expect(screen.queryByTestId('poster-preview')).toBeNull()

@@ -1,6 +1,6 @@
 export const PREVIEW_DELAY = 250
-export const PREVIEW_WIDTH = 280
-export const PREVIEW_HEIGHT = 420
+export const PREVIEW_WIDTH = 220
+export const PREVIEW_HEIGHT = 128
 
 export function previewBox(
   anchor: { top: number; left: number; right: number; bottom: number },

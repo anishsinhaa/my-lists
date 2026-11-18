@@ -5,7 +5,6 @@ import { thumbnailUrl } from '@/design/archive'
 import { displayTitle } from '@/lib/displayTitle'
 import { externalRatingLabel } from '@/lib/rating'
 import type { PosterCardProps } from '../views/PosterCard'
-import { CARD_POSTER, cardHoverClass } from './cardHover'
 import { CardCaption } from './MovieCard'
 
 export function GameCard({ item, onOpen }: PosterCardProps) {
@@ -15,7 +14,7 @@ export function GameCard({ item, onOpen }: PosterCardProps) {
   return (
     <button
       type="button"
-      className={`block w-full text-left ${cardHoverClass()}`}
+      className="block w-full text-left"
       onClick={() => onOpen?.(item)}
       onPointerMove={(event) => {
         const node = box.current
@@ -33,7 +32,7 @@ export function GameCard({ item, onOpen }: PosterCardProps) {
     >
       <span ref={box} className="game-box relative block bg-[#100e21] shadow-[12px_16px_24px_#00000088]">
         <span aria-hidden="true" className="absolute inset-y-0 left-0 w-3 bg-[#2b2760]" />
-        <PosterImage alt="" className={CARD_POSTER} kind="game" src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
+        <PosterImage alt="" kind="game" src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
         <span className="absolute right-2 bottom-2 rounded-sm bg-black/70 px-1 text-[10px] tracking-widest text-white">PC</span>
         {score === null ? null : <span className={`absolute top-2 right-2 rounded-sm bg-black/70 px-1 text-xs ${tone}`}>{score}</span>}
       </span>

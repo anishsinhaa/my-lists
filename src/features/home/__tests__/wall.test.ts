@@ -3,7 +3,7 @@ import { applyListQuery } from '@/features/lists/filters/applyListQuery'
 import { parseListQuery } from '@/features/lists/filters/listQuery'
 import { LIST_IDS, type ListId } from '@/types/lists'
 import type { ListsPayload, MediaItem } from '@/types/media'
-import { wallTiles } from '../wall'
+import { posterHref, wallTiles } from '../wall'
 
 function item(partial: Partial<MediaItem> & Pick<MediaItem, 'id' | 'listId' | 'title' | 'status'>): MediaItem {
   return {
@@ -79,6 +79,8 @@ describe('home wall links', () => {
     const watching = tile(mixed, 'watching')
     expect(watching?.href).toBe('/shelf/watching')
     expect(watching?.items.map((entry) => entry.id)).toEqual(['movies:live', 'series:live', 'anime:live'])
+    const anime = watching?.items.find((entry) => entry.listId === 'anime')
+    expect(anime === undefined ? '' : posterHref(anime, watching!.filter)).toBe('/lists/anime?status=In+progress&item=anime%3Alive')
   })
 
   it('opens a single-category Now watching list on that category', () => {

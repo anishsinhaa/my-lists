@@ -72,18 +72,19 @@
 @media (prefers-reduced-motion: reduce) {
   .game-box { transform: none; }
 }
-.card-hover { transition: transform 300ms ease, box-shadow 300ms ease; }
-.card-tilt-a { transform: rotate(-1.5deg); }
-.card-tilt-b { transform: rotate(1.5deg); }
-.card-hover-poster { transition: transform 300ms ease; }
+.series-card { transition: transform 280ms ease; }
+.book-cover { transition: transform 420ms ease; transform-origin: left center; }
+.other-row { transition: transform 180ms ease; }
+.curious-row { transition: background-color 180ms ease, box-shadow 180ms ease; }
 @media (hover: hover) and (pointer: fine) {
-  .card-hover:hover { transform: translateY(-6px) rotate(0deg); box-shadow: 0 16px 34px #00000073; }
-  .card-hover:hover .card-hover-poster { transform: scale(1.04); }
+  .series-card:hover { transform: translateY(-10px); }
+  .book-cover:hover { transform: rotateY(-14deg); }
+  .other-row:hover { transform: translateX(8px); }
+  .curious-row:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .card-hover, .card-hover:hover, .card-hover-poster, .card-tilt-a, .card-tilt-b { transition: none; transform: none; }
-  .card-hover:hover { box-shadow: none; }
-  .card-hover:hover .card-hover-poster { transform: none; }
+  .series-card, .series-card:hover, .book-cover, .book-cover:hover, .other-row, .other-row:hover { transition: none; transform: none; }
+  .curious-row, .curious-row:hover { transition: none; box-shadow: none; }
 }
 .edge { padding-inline: clamp(0.75rem, 2vw, 1.5rem); }
 .app-topbar { box-sizing: border-box; min-height: var(--app-bar); padding-top: max(0.625rem, env(safe-area-inset-top, 0px)); padding-bottom: 0.375rem; }

@@ -5,10 +5,18 @@ import type { ListsPayload, MediaItem } from '@/types/media'
 export const MY_RATING_MIN = 0.1
 const FINISHED = ['Watched', 'Played', 'Completed', 'Read']
 
+export interface WallFilter {
+  statuses?: string[]
+  sort?: string
+  dir?: 'asc' | 'desc'
+  ratingMin?: number
+}
+
 export interface WallTile {
   id: string
   title: string
   href: string
+  filter: WallFilter
   items: MediaItem[]
 }
 
@@ -44,23 +52,32 @@ function soleList(items: MediaItem[]): ListId | null {
   return [...ids][0] ?? null
 }
 
-function categoryHref(listId: ListId, options: { statuses?: string[]; sort?: string; dir?: 'asc' | 'desc'; ratingMin?: number }): string {
+function filterParams(filter: WallFilter, itemId?: string): URLSearchParams {
   const params = new URLSearchParams()
-  if (options.statuses !== undefined && options.statuses.length > 0) params.set('status', options.statuses.join(','))
-  if (options.sort !== undefined) params.set('sort', options.sort)
-  if (options.dir !== undefined) params.set('dir', options.dir)
-  if (options.ratingMin !== undefined) {
-    params.set('rmin', String(options.ratingMin))
+  if (filter.statuses !== undefined && filter.statuses.length > 0) params.set('status', filter.statuses.join(','))
+  if (filter.sort !== undefined) params.set('sort', filter.sort)
+  if (filter.dir !== undefined) params.set('dir', filter.dir)
+  if (filter.ratingMin !== undefined) {
+    params.set('rmin', String(filter.ratingMin))
     params.set('rby', 'my')
   }
-  const query = params.toString()
+  if (itemId !== undefined) params.set('item', itemId)
+  return params
+}
+
+function categoryHref(listId: ListId, filter: WallFilter): string {
+  const query = filterParams(filter).toString()
   return query.length === 0 ? `/lists/${listId}` : `/lists/${listId}?${query}`
 }
 
-function tileHref(id: string, items: MediaItem[], options: { statuses?: string[]; sort?: string; dir?: 'asc' | 'desc'; ratingMin?: number }): string {
+export function posterHref(item: MediaItem, filter: WallFilter): string {
+  return `/lists/${item.listId}?${filterParams(filter, item.id).toString()}`
+}
+
+function tileHref(id: string, items: MediaItem[], filter: WallFilter): string {
   const listId = soleList(items)
   if (listId === null) return `/shelf/${id}`
-  return categoryHref(listId, options)
+  return categoryHref(listId, filter)
 }
 
 export function wallTiles(payload: ListsPayload): WallTile[] {
@@ -72,14 +89,21 @@ export function wallTiles(payload: ListsPayload): WallTile[] {
   const parked = LIST_IDS.flatMap((id) => statusIs(lists[id], id, ['Paused', 'On hold']))
   const finished = byFinished(LIST_IDS.flatMap((id) => statusIs(lists[id], id, FINISHED)))
   const rated = byMyRating(LIST_IDS.flatMap((id) => lists[id]))
+  const watchingFilter: WallFilter = { statuses: ['In progress'] }
+  const playingFilter: WallFilter = { statuses: ['Playing', 'In progress'] }
+  const readingFilter: WallFilter = { statuses: ['Reading', 'In progress'] }
+  const nextFilter: WallFilter = { statuses: ['Next season out'] }
+  const pausedFilter: WallFilter = { statuses: ['Paused', 'On hold'] }
+  const finishedFilter: WallFilter = { statuses: FINISHED, sort: 'finished', dir: 'desc' }
+  const ratedFilter: WallFilter = { sort: 'myRating', dir: 'desc', ratingMin: MY_RATING_MIN }
   const tiles: WallTile[] = [
-    { id: 'watching', title: 'Now watching', href: tileHref('watching', watching, { statuses: ['In progress'] }), items: watching },
-    { id: 'playing', title: 'Now playing', href: tileHref('playing', playing, { statuses: ['Playing', 'In progress'] }), items: playing },
-    { id: 'reading', title: 'Now reading', href: tileHref('reading', reading, { statuses: ['Reading', 'In progress'] }), items: reading },
-    { id: 'next', title: 'Next season out', href: tileHref('next', nextSeason, { statuses: ['Next season out'] }), items: nextSeason },
-    { id: 'paused', title: 'Paused / On hold', href: tileHref('paused', parked, { statuses: ['Paused', 'On hold'] }), items: parked },
-    { id: 'finished', title: 'Recently finished', href: tileHref('finished', finished, { statuses: FINISHED, sort: 'finished', dir: 'desc' }), items: finished },
-    { id: 'rated', title: 'Top rated', href: tileHref('rated', rated, { sort: 'myRating', dir: 'desc', ratingMin: MY_RATING_MIN }), items: rated },
+    { id: 'watching', title: 'Now watching', href: tileHref('watching', watching, watchingFilter), filter: watchingFilter, items: watching },
+    { id: 'playing', title: 'Now playing', href: tileHref('playing', playing, playingFilter), filter: playingFilter, items: playing },
+    { id: 'reading', title: 'Now reading', href: tileHref('reading', reading, readingFilter), filter: readingFilter, items: reading },
+    { id: 'next', title: 'Next season out', href: tileHref('next', nextSeason, nextFilter), filter: nextFilter, items: nextSeason },
+    { id: 'paused', title: 'Paused / On hold', href: tileHref('paused', parked, pausedFilter), filter: pausedFilter, items: parked },
+    { id: 'finished', title: 'Recently finished', href: tileHref('finished', finished, finishedFilter), filter: finishedFilter, items: finished },
+    { id: 'rated', title: 'Top rated', href: tileHref('rated', rated, ratedFilter), filter: ratedFilter, items: rated },
   ]
   return tiles.filter((tile) => tile.items.length > 0)
 }

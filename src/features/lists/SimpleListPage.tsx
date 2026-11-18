@@ -11,7 +11,6 @@ import { StatusChip } from '@/components/common/StatusChip'
 import { useLists } from '@/features/data/useLists'
 import { Input } from '@/components/ui/input'
 import { displayTitle } from '@/lib/displayTitle'
-import { cardHoverClass } from './cards/cardHover'
 import { TAB_NAME, type ListId } from '@/types/lists'
 
 export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | 'curious'> }) {
@@ -62,7 +61,7 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
       <ul className="space-y-2">
         {shown.map((item) => (
           <li key={item.id}>
-            <button type="button" className={`flex w-full items-center justify-between gap-2 rounded-lg border p-3 text-left ${cardHoverClass()}`} onClick={() => setOpenId(item.id)}>
+            <button type="button" className={`flex w-full items-center justify-between gap-2 rounded-lg border p-3 text-left ${listId === 'other' ? 'other-row' : 'curious-row'}`} onClick={() => setOpenId(item.id)}>
               <span>{displayTitle(item.title, item.year)}</span>
               {item.status.length > 0 ? <StatusChip size="sm" status={item.status} /> : null}
             </button>

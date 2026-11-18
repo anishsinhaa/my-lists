@@ -16,7 +16,6 @@ import { StatsStrip } from './StatsStrip'
 import { useSaveItem } from './useSaveItem'
 import { ItemModal } from './views/ItemModal'
 import { ListTable } from './views/ListTable'
-import { CARD_POSTER, cardHoverClass } from './cards/cardHover'
 import { PosterCard } from './views/PosterCard'
 
 const QUERY_NOW = new Date('2026-01-01T00:00:00.000Z')
@@ -151,10 +150,8 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
           <h2 className="mb-2 font-['Cinzel',serif]">Currently</h2>
           <Rail align={current.length === 1 ? 'start' : 'center'} label="Currently">
             {current.map((item) => (
-              <button key={item.id} type="button" data-rail-card="true" className={`w-[clamp(7.5rem,20cqi,11rem)] shrink-0 snap-start text-left ${cardHoverClass()}`} onClick={() => show(item)}>
-                <span className={`${CARD_POSTER} block`}>
-                  <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
-                </span>
+              <button key={item.id} type="button" data-rail-card="true" className="w-[clamp(7.5rem,20cqi,11rem)] shrink-0 snap-start text-left" onClick={() => show(item)}>
+                <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
                 <StatusBadge listId={item.listId} status={item.status} />
               </button>
             ))}

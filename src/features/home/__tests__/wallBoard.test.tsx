@@ -32,6 +32,7 @@ const tiles: WallTile[] = [
     id: 'watching',
     title: 'Now watching',
     href: '/shelf/watching',
+    filter: { statuses: ['In progress'] },
     items: [
       item({ id: 'anime:live', listId: 'anime', title: 'Live anime' }),
       item({ id: 'series:live', listId: 'series', title: 'Live show' }),
@@ -65,7 +66,7 @@ describe('home wall posters', () => {
     expect(titles.length).toBeGreaterThan(0)
     for (const link of titles) expect(link.getAttribute('href')).toBe('/shelf/watching')
     expect(screen.getAllByText('2').length).toBeGreaterThan(0)
-    for (const link of screen.getAllByRole('link', { name: 'Live anime' })) expect(link.getAttribute('href')).toBe('/lists/anime?item=anime%3Alive')
-    for (const link of screen.getAllByRole('link', { name: 'Live show' })) expect(link.getAttribute('href')).toBe('/lists/series?item=series%3Alive')
+    for (const link of screen.getAllByRole('link', { name: 'Live anime' })) expect(link.getAttribute('href')).toBe('/lists/anime?status=In+progress&item=anime%3Alive')
+    for (const link of screen.getAllByRole('link', { name: 'Live show' })) expect(link.getAttribute('href')).toBe('/lists/series?status=In+progress&item=series%3Alive')
   })
 })

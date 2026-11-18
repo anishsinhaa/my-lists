@@ -21,6 +21,7 @@ function themeFor(pathname: string): ThemeId {
 export function AppShell() {
   const location = useLocation()
   const online = useOnline()
+  const showFooter = location.pathname === '/' || location.pathname === '/lists'
   return (
     <ThemeProvider themeId={themeFor(location.pathname)}>
       {online ? null : <p className="bg-(--accent-2) px-3 py-2 text-sm text-(--bg)">You are offline. Showing saved lists.</p>}
@@ -28,11 +29,11 @@ export function AppShell() {
       <TopBar />
       <SearchDock />
       <ErrorBoundary>
-        <div id="content" className="w-full min-w-0 overflow-x-clip pb-28 md:pb-16">
+        <div id="content" className={`w-full min-w-0 overflow-x-clip ${showFooter ? 'pb-28 md:pb-16' : 'pb-20 md:pb-6'}`}>
           <PageTransition />
         </div>
       </ErrorBoundary>
-      <ArchiveFooter />
+      {showFooter ? <ArchiveFooter /> : null}
       <BottomNav />
       <Toaster />
     </ThemeProvider>

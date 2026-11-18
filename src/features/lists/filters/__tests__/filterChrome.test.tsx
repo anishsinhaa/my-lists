@@ -31,24 +31,27 @@ function filtersButton(): HTMLElement {
 }
 
 describe('filter chips', () => {
-  it('gives the selected status a filled state and a check, and leaves the others off', () => {
-    renderChrome()
-    const maybe = chip('Maybe 0')
-    const want = chip('Want to 0')
-    expect(maybe.getAttribute('aria-pressed')).toBe('true')
-    expect(maybe.className).toContain('bg-accent')
-    expect(maybe.querySelectorAll('svg').length).toBe(2)
-    expect(want.getAttribute('aria-pressed')).toBe('false')
-    expect(want.className).not.toContain('bg-accent')
-    expect(want.querySelectorAll('svg').length).toBe(1)
-    expect(chip('All').getAttribute('aria-pressed')).toBe('false')
+  it('leaves status to the counts on movies, series, anime, and games', () => {
+    for (const listId of ['movies', 'series', 'anime', 'games'] as const) {
+      renderChrome(listId)
+      expect(screen.queryByRole('group', { name: 'Status' })).toBeNull()
+      cleanup()
+    }
+  })
+
+  it('keeps the status row where the counts do not already filter', () => {
+    renderChrome('books', { ...DEFAULT_QUERY, view: 'shelves', statuses: ['Reading'] })
+    const reading = chip('Reading 0')
+    expect(reading.getAttribute('aria-pressed')).toBe('true')
+    expect(reading.className).toContain('bg-accent')
+    expect(chip('Want to buy 0').getAttribute('aria-pressed')).toBe('false')
   })
 
   it('adds a status from the bar and can clear it', () => {
     const onChange = vi.fn()
-    renderChrome('movies', { ...DEFAULT_QUERY, view: 'shelves', statuses: ['Maybe'] }, onChange)
-    fireEvent.click(chip('Want to 0'))
-    expect(onChange).toHaveBeenCalledWith({ statuses: ['Maybe', 'Want to'] })
+    renderChrome('books', { ...DEFAULT_QUERY, view: 'shelves', statuses: ['Reading'] }, onChange)
+    fireEvent.click(chip('Want to buy 0'))
+    expect(onChange).toHaveBeenCalledWith({ statuses: ['Reading', 'Want to buy'] })
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }))
     expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ statuses: [], smart: null, q: '' }))
   })

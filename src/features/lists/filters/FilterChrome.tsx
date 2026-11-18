@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useDismiss } from '@/hooks/useDismiss'
 import { ArrowDownUp, Calendar, Check, ChevronDown, Eraser, Gamepad2, Group, Layers, LayoutGrid, Rows3, SlidersHorizontal, Sparkles, Star, Table2, Tags, UserRound, X } from 'lucide-react'
 import { IconButton } from '@/design/IconButton'
@@ -69,6 +69,8 @@ function Choice({ listId, pressed, onClick, children, count, icon, slim = false 
   )
 }
 
+const COUNTS_FILTER = new Set<ListId>(['movies', 'series', 'anime', 'games'])
+
 function statusOn(listId: ListId, selected: string[], value: string): boolean {
   const canonical = matchStatus(listId, value).value
   return selected.some((status) => matchStatus(listId, status).value === canonical)
@@ -78,6 +80,37 @@ function toggleStatus(listId: ListId, query: ListQuery, value: string): string[]
   const canonical = matchStatus(listId, value).value
   if (statusOn(listId, query.statuses, canonical)) return query.statuses.filter((status) => matchStatus(listId, status).value !== canonical)
   return [...query.statuses, canonical]
+}
+
+function StatusRow({ listId, items, query, onChange }: {
+  listId: ListId
+  items: MediaItem[]
+  query: ListQuery
+  onChange: (partial: Partial<ListQuery>) => void
+}) {
+  const counts = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const item of items) {
+      const key = matchStatus(listId, item.status).value
+      map.set(key, (map.get(key) ?? 0) + 1)
+    }
+    return map
+  }, [items, listId])
+  const rows = useMemo(() => {
+    const known = [...shelfOrder(listId)]
+    const extra = [...counts.keys()].filter((key) => key !== 'No status' && !known.some((row) => row.value === key))
+    const next = [...known, ...extra.map((value) => matchStatus(listId, value))]
+    if ((counts.get('No status') ?? 0) > 0) next.push(matchStatus(listId, ''))
+    return next
+  }, [counts, listId])
+  return (
+    <div role="group" aria-label="Status" className="flex flex-nowrap gap-2 overflow-x-auto py-1 pb-1">
+      <Choice listId={listId} pressed={query.statuses.length === 0} onClick={() => onChange({ statuses: [] })}>All</Choice>
+      {rows.map((row) => (
+        <Choice key={row.value} count={counts.get(row.value) ?? 0} icon={<StatusGlyph name={row.icon} />} listId={listId} pressed={statusOn(listId, query.statuses, row.value)} onClick={() => onChange({ statuses: toggleStatus(listId, query, row.value) })}>{row.value}</Choice>
+      ))}
+    </div>
+  )
 }
 
 function FilterSections({ listId, items, query, onChange }: {
@@ -265,8 +298,6 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
   onChange: (partial: Partial<ListQuery>) => void
   onShuffle?: () => void
 }) {
-  const [slim, setSlim] = useState(false)
-  const [hot, setHot] = useState(false)
   const [pinned, setPinned] = useState(false)
   const [hover, setHover] = useState(false)
   const [drawer, setDrawer] = useState(false)
@@ -279,37 +310,12 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
   const closeDrawer = useCallback(() => setDrawer(false), [])
   useDismiss(pinned || hover, closePanel, panelRef)
   useDismiss(drawer, closeDrawer, drawerRef)
-  const collapsed = slim && !hot
   const panel = pinned || hover
-  const counts = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const item of items) {
-      const key = matchStatus(listId, item.status).value
-      map.set(key, (map.get(key) ?? 0) + 1)
-    }
-    return map
-  }, [items, listId])
-  const rows = useMemo(() => {
-    const known = [...shelfOrder(listId)]
-    const extra = [...counts.keys()].filter((key) => key !== 'No status' && !known.some((row) => row.value === key))
-    const next = [...known, ...extra.map((value) => matchStatus(listId, value))]
-    if ((counts.get('No status') ?? 0) > 0) next.push(matchStatus(listId, ''))
-    return next
-  }, [counts, listId])
   const chips = activeChips(listId, query)
-
-  useEffect(() => {
-    const onScroll = () => {
-      const desktop = window.matchMedia?.('(min-width: 768px)').matches === true
-      setSlim(desktop && window.scrollY > 80)
-    }
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  const statusRow = !COUNTS_FILTER.has(listId)
 
   return (
-    <div className="filter-sticky space-y-2 bg-(--bg)/90 py-2 backdrop-blur" onMouseEnter={() => setHot(true)} onMouseLeave={() => setHot(false)}>
+    <div className="filter-sticky space-y-2 bg-(--bg)/90 py-2 backdrop-blur">
       <div className="flex flex-wrap items-center gap-2">
         <input id="list-search" value={query.q} onChange={(event) => onChange({ q: event.target.value })} placeholder="Search this list" aria-label="Search this list" className="h-11 w-full min-w-0 flex-1 rounded-md border border-border bg-(--surface) px-3 sm:w-auto sm:min-w-40" />
         <button type="button" className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 px-3 text-sm md:hidden" onClick={() => setDrawer(true)}>
@@ -334,12 +340,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
         </div>
         {onShuffle !== undefined ? <button type="button" className="h-11 px-3 text-sm" onClick={onShuffle}>Shuffle</button> : null}
       </div>
-      <div role="group" aria-label="Status" className={`flex flex-nowrap gap-2 overflow-x-auto pb-1 ${collapsed ? '' : 'py-1'}`}>
-        <Choice listId={listId} pressed={query.statuses.length === 0} slim={collapsed} onClick={() => onChange({ statuses: [] })}>All</Choice>
-        {rows.map((row) => (
-          <Choice key={row.value} count={counts.get(row.value) ?? 0} icon={<StatusGlyph name={row.icon} />} listId={listId} pressed={statusOn(listId, query.statuses, row.value)} slim={collapsed} onClick={() => onChange({ statuses: toggleStatus(listId, query, row.value) })}>{row.value}</Choice>
-        ))}
-      </div>
+      {statusRow ? <StatusRow items={items} listId={listId} query={query} onChange={onChange} /> : null}
       <div className="flex flex-wrap items-center gap-2">
         {chips.map((chip) => (
           <button key={chip.key} type="button" aria-label={`Remove ${chip.label}`} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-(--brass)/50 bg-(--surface) pr-2 pl-3 text-sm" onClick={() => onChange(chip.clear)}>

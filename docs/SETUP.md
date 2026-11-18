@@ -10,7 +10,7 @@ Copy `.env.example` to `.env` and fill in the values below. Never commit `.env`.
 4. Copy `client_email` to `GOOGLE_SERVICE_ACCOUNT_EMAIL` and `private_key` to `GOOGLE_PRIVATE_KEY` (keep the `\n` sequences, wrap the value in double quotes).
 5. Open the Sheet > Share > add the service account email as **Editor**.
 6. The sheet id is the long string in the sheet URL between `/d/` and `/edit`. Put it in `GOOGLE_SHEET_ID`.
-7. Add the new header cells yourself (see PLAN.md section 4.3). The app never edits headers. The service account is a normal Editor; there are no protected ranges.
+7. Add the new header cells yourself. The app never edits headers. The service account is a normal Editor; there are no protected ranges.
 
 ## 2. TMDB
 

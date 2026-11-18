@@ -63,3 +63,24 @@ export function createSheetsClient(env: Env): SheetsClient {
     },
   }
 }
+
+export async function ensureSheet(env: Env, title: string): Promise<void> {
+  const jwt = new auth.JWT({
+    email: env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    key: env.GOOGLE_PRIVATE_KEY,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
+  const api = sheets({ version: 'v4', auth: jwt })
+  const meta = await api.spreadsheets.get({ spreadsheetId: env.GOOGLE_SHEET_ID, fields: 'sheets.properties.title' })
+  const exists = (meta.data.sheets ?? []).some((sheet) => sheet.properties?.title === title)
+  if (exists) return
+  try {
+    await api.spreadsheets.batchUpdate({
+      spreadsheetId: env.GOOGLE_SHEET_ID,
+      requestBody: { requests: [{ addSheet: { properties: { title, hidden: true } } }] },
+    })
+  } catch (error) {
+    if (statusOf(error) === 400) return
+    throw new Error('Could not save settings')
+  }
+}

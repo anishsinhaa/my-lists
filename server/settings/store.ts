@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { PICKS_IDS, type PicksId } from '../../src/types/lists.js'
 import type { LastRun, PicksToggles } from '../../src/types/settings.js'
+import { readSheetSettings, writeSheetSettings } from './sheetStore.js'
 
 export interface SettingsFile {
   picks: PicksToggles
@@ -43,6 +44,68 @@ export function readSettings(): SettingsFile {
 export function writeSettings(next: SettingsFile): void {
   mkdirSync(dirname(filePath), { recursive: true })
   writeFileSync(filePath, JSON.stringify(next, null, 2))
+}
+
+function isLastRun(value: unknown): value is LastRun {
+  if (typeof value !== 'object' || value === null) return false
+  const row = value as Partial<LastRun>
+  return typeof row.startedAt === 'string' && typeof row.finishedAt === 'string' && (row.mode === 'fill' || row.mode === 'force') && typeof row.tab === 'string' && typeof row.ok === 'boolean' && typeof row.summary === 'string' && typeof row.failed === 'number' && Array.isArray(row.lines)
+}
+
+export function settingsFromRows(values: unknown[][]): SettingsFile {
+  const picksCell = values[0]?.[1]
+  const lastCell = values[1]?.[1]
+  let picks = { ...DEFAULTS.picks }
+  if (typeof picksCell === 'string' && picksCell.length > 0) {
+    try {
+      const parsed: unknown = JSON.parse(picksCell)
+      if (isToggle(parsed)) picks = parsed
+    } catch {
+      picks = { ...DEFAULTS.picks }
+    }
+  }
+  let lastRun: LastRun | null = null
+  if (typeof lastCell === 'string' && lastCell.length > 0) {
+    try {
+      const parsed: unknown = JSON.parse(lastCell)
+      if (isLastRun(parsed)) lastRun = parsed
+    } catch {
+      lastRun = null
+    }
+  }
+  return { picks, lastRun }
+}
+
+function onVercel(): boolean {
+  return process.env.VERCEL === '1'
+}
+
+let memory: { at: number; data: SettingsFile } | undefined
+
+export function peekSettings(): SettingsFile {
+  if (!onVercel()) return readSettings()
+  return memory?.data ?? defaultSettings()
+}
+
+export async function loadSettings(): Promise<SettingsFile> {
+  if (!onVercel()) return readSettings()
+  if (memory !== undefined && Date.now() - memory.at < 15_000) return memory.data
+  try {
+    const data = await readSheetSettings()
+    memory = { at: Date.now(), data }
+    return data
+  } catch {
+    return memory?.data ?? defaultSettings()
+  }
+}
+
+export async function saveSettings(next: SettingsFile): Promise<void> {
+  if (!onVercel()) {
+    writeSettings(next)
+    return
+  }
+  await writeSheetSettings(next)
+  memory = { at: Date.now(), data: { picks: { ...next.picks }, lastRun: next.lastRun } }
 }
 
 export function effectivePicks(picks: PicksToggles, hardOff: boolean): Pick<PicksToggles, 'movies' | 'series' | 'games'> {

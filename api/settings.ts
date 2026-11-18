@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getEnv } from '../server/config/env.js'
 import { fail, methodGuard, ok } from '../server/http/respond.js'
 import { withAuth } from '../server/http/withAuth.js'
-import { effectivePicks, readSettings, writeSettings } from '../server/settings/store.js'
+import { effectivePicks, loadSettings, saveSettings } from '../server/settings/store.js'
 import { resetListsCache } from '../server/sheets/cache.js'
 
 const picksSchema = z.object({
@@ -13,8 +13,8 @@ const picksSchema = z.object({
   games: z.boolean(),
 })
 
-function view() {
-  const stored = readSettings()
+async function view() {
+  const stored = await loadSettings()
   const hardOff = getEnv().FEATURE_PICKS !== 'true'
   return { hardOff, picks: stored.picks, effective: effectivePicks(stored.picks, hardOff), lastRun: stored.lastRun }
 }
@@ -22,7 +22,7 @@ function view() {
 async function settings(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!methodGuard(req, res, ['GET', 'PUT'])) return
   if (req.method === 'GET') {
-    ok(res, view())
+    ok(res, await view())
     return
   }
   const parsed = picksSchema.safeParse(req.body)
@@ -30,10 +30,15 @@ async function settings(req: VercelRequest, res: VercelResponse): Promise<void> 
     fail(res, 'bad_request', 'Invalid settings', 400)
     return
   }
-  const stored = readSettings()
-  writeSettings({ picks: parsed.data, lastRun: stored.lastRun })
+  try {
+    const stored = await loadSettings()
+    await saveSettings({ picks: parsed.data, lastRun: stored.lastRun })
+  } catch {
+    fail(res, 'internal', 'Could not save settings', 500)
+    return
+  }
   resetListsCache()
-  ok(res, view())
+  ok(res, await view())
 }
 
 export default withAuth(settings)

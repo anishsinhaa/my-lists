@@ -5,6 +5,7 @@ import { backfillAll, toReportLine } from '../../server/images/backfill.js'
 import { fail, methodGuard, ok } from '../../server/http/respond.js'
 import { withAuth } from '../../server/http/withAuth.js'
 import { enrichStatus, startEnrichJob } from '../../server/settings/enrichJob.js'
+import { loadSettings } from '../../server/settings/store.js'
 import { createSheetsClient } from '../../server/sheets/client.js'
 import { POSTER_LISTS, type ListId } from '../../src/types/lists.js'
 
@@ -26,6 +27,7 @@ async function enrich(req: VercelRequest, res: VercelResponse): Promise<void> {
   }
   const tabs: readonly ListId[] = parsed.data.tab === 'all' ? POSTER_LISTS : [parsed.data.tab]
   const mode = parsed.data.force ? 'force' : 'fill'
+  await loadSettings()
   const started = startEnrichJob({
     mode,
     target: parsed.data.tab,

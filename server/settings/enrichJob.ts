@@ -1,6 +1,6 @@
 import type { ListId } from '../../src/types/lists.js'
 import type { EnrichProgress, EnrichReportLine, LastRun } from '../../src/types/settings.js'
-import { readSettings, writeSettings } from './store.js'
+import { peekSettings, saveSettings } from './store.js'
 
 export interface EnrichRequest {
   mode: 'fill' | 'force'
@@ -30,13 +30,13 @@ export function resetEnrichJob(): void {
 }
 
 export function enrichStatus(): EnrichProgress {
-  return { ...current, lines: current.lines.map((line) => ({ ...line, failures: [...line.failures] })), lastRun: readSettings().lastRun }
+  return { ...current, lines: current.lines.map((line) => ({ ...line, failures: [...line.failures] })) }
 }
 
 export function startEnrichJob(request: EnrichRequest): boolean {
   if (current.running) return false
   const startedAt = new Date().toISOString()
-  current = { ...idle(), running: true, startedAt, mode: request.mode, target: request.target, lastRun: readSettings().lastRun }
+  current = { ...idle(), running: true, startedAt, mode: request.mode, target: request.target, lastRun: peekSettings().lastRun }
   void request.run((update) => {
     if (!current.running) return
     current = { ...current, tab: update.tab, done: update.done, total: update.total, failed: update.failed }
@@ -59,11 +59,6 @@ function remember(startedAt: string, finishedAt: string, request: EnrichRequest,
     ? error
     : lines.map((line) => `${line.tab}: posters ${line.posterFilled} filled, ${line.posterMissing} missing; ratings ${line.imdbFilled} filled, ${line.imdbMissing} missing`).join('; ')
   const lastRun: LastRun = { startedAt, finishedAt, mode: request.mode, tab: request.target, ok, summary: summary.length === 0 ? 'Nothing to fill' : summary, failed, lines }
-  const stored = readSettings()
-  try {
-    writeSettings({ picks: stored.picks, lastRun })
-  } catch {
-    // The page still gets the result from the in-memory job.
-  }
+  void saveSettings({ picks: peekSettings().picks, lastRun }).catch(() => undefined)
   return lastRun
 }

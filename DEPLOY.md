@@ -37,6 +37,8 @@ Set these in Project Settings → Environment Variables. Copy the names from `.e
 
 Share the sheet with `GOOGLE_SERVICE_ACCOUNT_EMAIL` as an editor. Do not set the sheet to "Anyone with the link".
 
+On Vercel, the picks toggles are stored in a hidden `Settings` tab in that spreadsheet. The service account needs to be an editor so it can add that tab. Locally they stay in `data/settings.json`.
+
 ## After the first deploy
 
 Sign in once and confirm a rating change writes back to the sheet. The site sends `X-Robots-Tag: noindex, nofollow` and a matching robots meta tag.

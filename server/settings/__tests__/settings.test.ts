@@ -9,7 +9,7 @@ import settings from '../../../api/settings.js'
 import { resetEnvCache } from '../../config/env.js'
 import { signToken } from '../../auth/tokens.js'
 import { resetEnrichJob, enrichStatus } from '../enrichJob.js'
-import { effectivePicks, readSettings, setSettingsPath, skippedPicks, writeSettings } from '../store.js'
+import { effectivePicks, readSettings, setSettingsPath, settingsFromRows, skippedPicks, writeSettings } from '../store.js'
 
 const { backfillAll } = vi.hoisted(() => ({ backfillAll: vi.fn() }))
 
@@ -130,6 +130,12 @@ describe('settings routes', () => {
     const lastRun = poll.body().data?.lastRun as { tab?: string; failed?: number } | null
     expect(lastRun?.tab).toBe('games')
     expect(readSettings().lastRun?.ok).toBe(true)
+  })
+
+  it('reads picks from the settings sheet cells and ignores a broken cell', () => {
+    expect(settingsFromRows([['picks', '{"enabled":false,"movies":true,"series":true,"games":false}'], ['lastRun', '']]).picks).toEqual({ enabled: false, movies: true, series: true, games: false })
+    expect(settingsFromRows([['picks', 'not-json']]).picks.enabled).toBe(true)
+    expect(settingsFromRows([]).lastRun).toBeNull()
   })
 
   it('stores the master toggle without clearing the individual ones', () => {

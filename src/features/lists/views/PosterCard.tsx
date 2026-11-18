@@ -12,6 +12,7 @@ import { AnimeCard } from '../cards/AnimeCard'
 import { BookCard } from '../cards/BookCard'
 import { GameCard } from '../cards/GameCard'
 import { CardCaption, MovieCard } from '../cards/MovieCard'
+import { CARD_POSTER, cardHoverClass } from '../cards/cardHover'
 import { SeriesCard } from '../cards/SeriesCard'
 
 export interface PosterCardProps {
@@ -29,8 +30,8 @@ function themed(props: PosterCardProps) {
   if (item.listId === 'games') return <GameCard {...props} />
   if (item.listId === 'books') return <BookCard {...props} />
   return (
-    <button type="button" className="block w-full text-left" onClick={() => props.onOpen?.(item)}>
-      <span className="relative block">
+    <button type="button" className={`block w-full text-left ${cardHoverClass()}`} onClick={() => props.onOpen?.(item)}>
+      <span className={`${CARD_POSTER} relative block`}>
         <PosterImage alt="" kind={LIST_KIND[item.listId]} src={item.poster} title={displayTitle(item.title, item.year)} />
         <span className="absolute top-2 left-2"><StatusChip size="sm" status={item.status} /></span>
       </span>

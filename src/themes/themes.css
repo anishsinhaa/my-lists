@@ -72,6 +72,19 @@
 @media (prefers-reduced-motion: reduce) {
   .game-box { transform: none; }
 }
+.card-hover { transition: transform 300ms ease, box-shadow 300ms ease; }
+.card-tilt-a { transform: rotate(-1.5deg); }
+.card-tilt-b { transform: rotate(1.5deg); }
+.card-hover-poster { transition: transform 300ms ease; }
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover { transform: translateY(-6px) rotate(0deg); box-shadow: 0 16px 34px #00000073; }
+  .card-hover:hover .card-hover-poster { transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-hover, .card-hover:hover, .card-hover-poster, .card-tilt-a, .card-tilt-b { transition: none; transform: none; }
+  .card-hover:hover { box-shadow: none; }
+  .card-hover:hover .card-hover-poster { transform: none; }
+}
 .edge { padding-inline: clamp(0.75rem, 2vw, 1.5rem); }
 .app-topbar { box-sizing: border-box; min-height: var(--app-bar); padding-top: max(0.625rem, env(safe-area-inset-top, 0px)); padding-bottom: 0.375rem; }
 .app-topbar-row { min-height: 3.5rem; }

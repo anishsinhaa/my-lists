@@ -1,20 +1,18 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'motion/react'
-import { Link, useNavigate } from 'react-router-dom'
-import { PosterImage } from '@/components/common/PosterImage'
+import { useNavigate } from 'react-router-dom'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Skeletons } from '@/components/common/Skeletons'
 import { BRAND } from '@/config/branding'
 import { Button } from '@/design/Button'
 import { LogoMark } from '@/design/LogoMark'
-import { Rail } from '@/design/Rail'
 import { thumbnailUrl } from '@/design/archive'
 import { useAuth } from '@/features/auth/AuthContext'
-import { displayTitle } from '@/lib/displayTitle'
 import { useLists } from '@/features/data/useLists'
 import { usePicksVisibility } from '@/features/settings/useSettings'
 import { DUR, EASE, fadeIn } from '@/themes/motion'
-import { LIST_IDS, LIST_KIND } from '@/types/lists'
+import { LIST_IDS } from '@/types/lists'
+import { WallBoard } from './WallBoard'
 import { GlobalSearch } from './GlobalSearch'
 import { TonightModal } from './TonightModal'
 import { readTonight, tonightMatches, type TonightChoice } from './tonight'
@@ -68,20 +66,8 @@ export function HomePage() {
           <GlobalSearch />
         </div>
       </section>
-      <section className="edge grid w-full gap-4 py-4 md:grid-cols-12">
-        {tiles.map((tile) => (
-          <Link key={tile.id} to={tile.href} className="rounded-md border border-(--brass)/40 bg-[#17130f]/80 p-3 md:col-span-4">
-            <span className="font-['Cinzel',serif] text-sm tracking-wide">{tile.title}</span>
-            <span className="mt-1 block text-xs text-(--ink-muted)">{tile.items.length}</span>
-            <span className="mt-3 flex gap-2 overflow-hidden">
-              {tile.items.slice(0, 4).map((item) => (
-                <span key={item.id} className="w-14 shrink-0">
-                  <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={displayTitle(item.title, item.year)} />
-                </span>
-              ))}
-            </span>
-          </Link>
-        ))}
+      <WallBoard tiles={tiles} />
+      <section className="edge grid w-full gap-4 pb-4 md:grid-cols-12">
         <div className="rounded-md border border-(--brass)/40 p-4 md:col-span-12">
           <p className="font-['Cinzel',serif] text-3xl tabular-nums">{stats.total}</p>
           <p className="text-sm text-(--ink-muted)">{stats.finished} finished{stats.average === null ? '' : ` · my average ${stats.average}`}</p>
@@ -91,20 +77,6 @@ export function HomePage() {
           <span className="mt-1 block text-sm text-(--ink-muted)">{pool.length === 0 ? 'Nothing matches' : `${pool.length} to pick from`}</span>
         </button>
       </section>
-      <div className="md:hidden">
-        {tiles.map((tile) => (
-          <section key={`${tile.id}-rail`} className="edge pb-4">
-            <h2 className="mb-2 font-['Cinzel',serif] text-sm">{tile.title}</h2>
-            <Rail label={tile.title}>
-              {tile.items.slice(0, 8).map((item) => (
-                <Link key={item.id} to={tile.href} data-rail-card="true" className="w-[clamp(4.5rem,18cqi,7.5rem)] shrink-0 snap-start">
-                  <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={displayTitle(item.title, item.year)} />
-                </Link>
-              ))}
-            </Rail>
-          </section>
-        ))}
-      </div>
       {tonight ? <TonightModal lists={data.lists} onClose={() => { setChoice(readTonight(data.lists)); setTonight(false) }} /> : null}
     </main>
   )

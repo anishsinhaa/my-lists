@@ -4,6 +4,7 @@ import { AuthProvider } from '@/features/auth/AuthProvider'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
 import { HomePage } from '@/features/home/HomePage'
+import { ShelfPage } from '@/features/home/ShelfPage'
 import { ListPage } from '@/features/lists/ListPage'
 import { MyListsPage } from '@/features/lists/MyListsPage'
 import { PicksPage } from '@/features/picks/PicksPage'
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
             element: <AppShell />,
             children: [
               { path: '/', element: <HomePage /> },
+              { path: '/shelf/:tileId', element: <ShelfPage /> },
               { path: '/lists', element: <MyListsPage /> },
               { path: '/lists/:listId', element: <ListPage /> },
               { path: '/picks', element: <PicksPage /> },

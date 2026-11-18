@@ -51,10 +51,16 @@ const books: StatusDef[] = [
   { value: 'Read', family: 'done', icon: 'check', flavour: 'Back on the shelf' },
 ]
 
+const ANIME_ORDER = ['In progress', 'Paused', 'Next season out', 'Waiting for next season', 'Rewatch from start', 'On hold', 'Want to', 'Maybe later', 'Watched', 'Dropped']
+
 export const STATUS_TABLE: Record<ListId, readonly StatusDef[]> = {
   movies: movie,
   series,
-  anime: series.map((row) => (row.value === 'In progress' ? { ...row, flavour: 'Now streaming' } : row)),
+  anime: ANIME_ORDER.map((value) => {
+    const row = series.find((entry) => entry.value === value)
+    if (row === undefined) return { value, family: 'none', icon: 'bookmark', flavour: '' }
+    return value === 'In progress' ? { ...row, flavour: 'Now streaming' } : row
+  }),
   games,
   books,
   other: [],

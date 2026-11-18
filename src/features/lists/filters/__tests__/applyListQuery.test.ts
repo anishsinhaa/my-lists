@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 import { applyListQuery } from '../applyListQuery'
 import { DEFAULT_QUERY, type ListQuery } from '../listQuery'
@@ -27,8 +28,8 @@ function item(partial: Partial<MediaItem> & Pick<MediaItem, 'title'>): MediaItem
   }
 }
 
-function run(items: MediaItem[], query: Partial<ListQuery>) {
-  return applyListQuery(items, { ...DEFAULT_QUERY, ...query }, { now: new Date('2026-01-01T00:00:00.000Z') }).map((entry) => entry.title)
+function run(items: MediaItem[], query: Partial<ListQuery>, listId?: ListId) {
+  return applyListQuery(items, { ...DEFAULT_QUERY, ...query }, { now: new Date('2026-01-01T00:00:00.000Z'), listId }).map((entry) => entry.title)
 }
 
 describe('applyListQuery', () => {
@@ -68,6 +69,17 @@ describe('applyListQuery', () => {
       item({ title: 'Undated', extra: {} }),
     ]
     expect(run(dated, { sort: 'finished', dir: 'desc' })).toEqual(['Later', 'Earlier', 'Undated'])
+  })
+
+  it('sorts anime statuses with Paused right after In progress', () => {
+    const rows = [
+      item({ title: 'Hold', status: 'On hold', listId: 'anime' }),
+      item({ title: 'Paused', status: 'Paused', listId: 'anime' }),
+      item({ title: 'Season', status: 'Next season out', listId: 'anime' }),
+      item({ title: 'Now', status: 'In progress', listId: 'anime' }),
+    ]
+    expect(run(rows, { sort: 'status', dir: 'asc' }, 'anime')).toEqual(['Now', 'Paused', 'Season', 'Hold'])
+    expect(run(rows, { sort: 'status', dir: 'asc' })).toEqual(['Now', 'Season', 'Hold', 'Paused'])
   })
 
   it('keeps a stable order and logs a 500-item filter', () => {

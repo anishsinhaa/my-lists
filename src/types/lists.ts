@@ -42,7 +42,7 @@ export const PICKS_TARGET: Record<PicksId, ListId> = {
 
 export const STATUSES = {
   series: ['In progress', 'Paused', 'Waiting for next season', 'Rewatch from start', 'Next season out', 'On hold', 'Want to', 'Maybe later', 'Watched', 'Dropped'],
-  anime: ['In progress', 'Paused', 'Waiting for next season', 'Rewatch from start', 'Next season out', 'On hold', 'Want to', 'Maybe later', 'Watched', 'Dropped'],
+  anime: ['In progress', 'Paused', 'Next season out', 'Waiting for next season', 'Rewatch from start', 'On hold', 'Want to', 'Maybe later', 'Watched', 'Dropped'],
   movies: ['In progress', 'Must watch', 'Want to', 'Maybe', 'Watched', 'Dropped'],
   games: ['Want to', 'Playing', 'Played', 'Completed', 'Dropped', 'Paused', 'Replay from start', 'On hold'],
 } as const

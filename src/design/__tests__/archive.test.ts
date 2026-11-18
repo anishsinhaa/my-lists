@@ -37,7 +37,8 @@ describe('statusConfig', () => {
 
   it('covers every shelf status from the category tables', () => {
     expect(STATUS_TABLE.movies.map((row) => row.value)).toEqual(['In progress', 'Must watch', 'Want to', 'Maybe', 'Watched', 'Dropped'])
-    expect(STATUS_TABLE.series.map((row) => row.value)).toContain('Next season out')
+    expect(STATUS_TABLE.series.map((row) => row.value)).toEqual(['In progress', 'Next season out', 'Waiting for next season', 'Rewatch from start', 'Paused', 'On hold', 'Want to', 'Maybe later', 'Watched', 'Dropped'])
+    expect(STATUS_TABLE.anime.map((row) => row.value)).toEqual(['In progress', 'Paused', 'Next season out', 'Waiting for next season', 'Rewatch from start', 'On hold', 'Want to', 'Maybe later', 'Watched', 'Dropped'])
     expect(STATUS_TABLE.anime.find((row) => row.value === 'In progress')?.flavour).toBe('Now streaming')
     expect(STATUS_TABLE.games[0]?.value).toBe('Playing')
     expect(STATUS_TABLE.books.map((row) => row.value)).toEqual(['Reading', 'On hold', 'Want to buy', 'Bought', 'Read'])

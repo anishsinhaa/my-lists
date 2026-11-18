@@ -1,4 +1,4 @@
-import { matchStatus } from '@/design/statusConfig'
+import { matchStatus, shelfOrder } from '@/design/statusConfig'
 import { effectiveRating } from '@/lib/rating'
 import { normalizeTitle } from '@/lib/normalize'
 import type { ListId } from '@/types/lists'
@@ -21,10 +21,16 @@ function chosenRating(item: MediaItem, query: ListQuery): number | null {
   return effectiveRating(item)
 }
 
-function sortValue(item: MediaItem, sort: SortKey): number | string | null {
+function sortValue(item: MediaItem, sort: SortKey, listId?: ListId): number | string | null {
   if (sort === 'title') return item.titleKey
   if (sort === 'year') return item.year
-  if (sort === 'status') return item.status.length === 0 ? null : item.status.toLowerCase()
+  if (sort === 'status') {
+    if (item.status.trim().length === 0) return null
+    if (listId !== 'anime') return item.status.trim().toLowerCase()
+    const value = matchStatus('anime', item.status).value
+    const index = shelfOrder('anime').findIndex((row) => row.value === value)
+    return index === -1 ? shelfOrder('anime').length : index
+  }
   if (sort === 'myRating') return item.myRating
   if (sort === 'imdbRating') return item.imdbRating
   if (sort === 'finished') {
@@ -72,7 +78,7 @@ export function applyListQuery(items: MediaItem[], query: ListQuery, ctx: { now:
   return filtered
     .map((item, index) => ({ item, index }))
     .sort((left, right) => {
-      const compared = compareValues(sortValue(left.item, query.sort), sortValue(right.item, query.sort), query.dir)
+      const compared = compareValues(sortValue(left.item, query.sort, ctx.listId), sortValue(right.item, query.sort, ctx.listId), query.dir)
       return compared === 0 ? left.index - right.index : compared
     })
     .map((entry) => entry.item)

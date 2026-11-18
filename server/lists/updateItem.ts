@@ -9,7 +9,7 @@ const DONE = new Set(['watched', 'played', 'completed', 'read'])
 const ALLOWED: Record<ListId, readonly string[]> = {
   movies: ['In progress', 'Must watch', 'Want to', 'Maybe', 'Watched', 'Dropped'],
   series: ['In progress', 'Next season out', 'Waiting for next season', 'Rewatch from start', 'Paused', 'On hold', 'Want to', 'Maybe later', 'Watched', 'Dropped'],
-  anime: ['In progress', 'Next season out', 'Waiting for next season', 'Rewatch from start', 'Paused', 'On hold', 'Want to', 'Maybe later', 'Watched', 'Dropped'],
+  anime: ['In progress', 'Paused', 'Next season out', 'Waiting for next season', 'Rewatch from start', 'On hold', 'Want to', 'Maybe later', 'Watched', 'Dropped'],
   games: ['Playing', 'Replay from start', 'Paused', 'On hold', 'Want to', 'Played', 'Completed', 'Dropped'],
   books: ['Reading', 'On hold', 'Want to buy', 'Bought', 'Read'],
   other: [],

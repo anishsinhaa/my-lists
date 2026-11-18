@@ -147,8 +147,8 @@
 .series-antenna::before, .series-antenna::after { content: ""; position: absolute; bottom: 0; width: 2px; height: 1.35rem; background: #c4a574; transform-origin: bottom center; }
 .series-antenna::before { left: 18%; transform: rotate(-28deg); }
 .series-antenna::after { left: 30%; transform: rotate(22deg); }
-.series-cabinet { display: grid; gap: 0.75rem; padding: 0.7rem; border-radius: 1.1rem 1.1rem 0.7rem 0.7rem; background-color: #6b4423; background-image: repeating-linear-gradient(90deg, #00000026 0 2px, transparent 2px 7px), repeating-linear-gradient(#5a3418, #8a5a32 2px, #3e2412 4px); box-shadow: inset 0 0 0 3px #3e2412, 0 12px 24px #00000055; }
-.series-screen { position: relative; min-height: 9.5rem; overflow: hidden; border-radius: 1.4rem; border: 8px solid #1a2426; background: #071314; box-shadow: inset 0 0 36px #f4b86066, 0 0 18px #f4b86033; }
+.series-cabinet { display: flex; flex-direction: column; gap: 0.55rem; padding: 1.65rem 0.7rem 0.7rem; border-radius: 1.1rem 1.1rem 0.7rem 0.7rem; background-color: #6b4423; background-image: repeating-linear-gradient(90deg, #00000026 0 2px, transparent 2px 7px), repeating-linear-gradient(#5a3418, #8a5a32 2px, #3e2412 4px); box-shadow: inset 0 0 0 3px #3e2412, 0 12px 24px #00000055; }
+.series-screen { position: relative; height: 11.5rem; min-height: 9.5rem; overflow: hidden; border-radius: 1.4rem; border: 8px solid #1a2426; background: #071314; box-shadow: inset 0 0 36px #f4b86066, 0 0 18px #f4b86033; }
 .series-reel { display: flex; height: 100%; width: max-content; animation: series-reel 42s linear infinite; }
 .series-reel img { height: 100%; width: 11rem; flex: 0 0 11rem; object-fit: cover; }
 .series-bars { display: flex; height: 100%; min-height: 9.5rem; }
@@ -165,14 +165,11 @@
 .series-osd { position: absolute; right: 0.6rem; bottom: 0.45rem; left: 0.6rem; color: #f3ead8; text-shadow: 0 2px 8px #000000; }
 .series-osd p { margin: 0; color: #f4b860; font-family: 'VT323', monospace; font-size: 1.15rem; letter-spacing: 0.08em; text-shadow: 0 0 8px #f4b860; }
 .series-osd h2 { margin: 0; font-family: 'Special Elite', cursive; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1; }
-.series-side { display: none; }
 .series-cabinet { position: relative; }
-.series-knobs { position: absolute; right: 0.7rem; bottom: 0.45rem; z-index: 2; display: flex; gap: 0.4rem; }
+.series-knobs { position: absolute; top: 0.4rem; right: 0.7rem; z-index: 2; display: flex; gap: 0.4rem; }
 .series-knobs span { width: 1rem; height: 1rem; border-radius: 999px; background: radial-gradient(circle at 35% 35%, #e7d2b4, #6b4423 55%, #2a180e); box-shadow: inset 0 0 0 2px #2a180e; }
-.series-dials { min-width: 0; flex-direction: column; gap: 0.25rem; overflow: auto; }
-.series-dials-row { display: flex; flex-direction: row; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem; }
-.series-side .series-dials { display: none; }
-.series-channel { display: inline-flex; min-height: 2.75rem; min-width: 8.5rem; flex: 0 0 auto; align-items: center; gap: 0.35rem; border: 1px solid #6e8f8a; border-radius: 0.55rem; background: #1b3336; color: #f3ead8; padding: 0.25rem 0.55rem; font-family: 'Nunito Variable', sans-serif; font-size: 0.8rem; text-align: left; }
+.series-dials { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.4rem; }
+.series-channel { display: inline-flex; min-height: 2.75rem; min-width: 0; width: 100%; align-items: center; justify-content: center; gap: 0.35rem; border: 1px solid #6e8f8a; border-radius: 0.55rem; background: #1b3336; color: #f3ead8; padding: 0.3rem 0.55rem; font-family: 'Nunito Variable', sans-serif; font-size: 0.8rem; line-height: 1.15; text-align: center; }
 .series-channel.is-on { border-color: transparent; background: #f4b860; color: #0f1d1f; }
 .series-channel.series-tone-next.is-on { background: #e4572e; color: #0f1d1f; }
 .series-channel.series-tone-watched.is-on { background: #7fb685; color: #0f1d1f; }
@@ -183,13 +180,7 @@
 @keyframes series-reel { to { transform: translateX(-50%); } }
 @keyframes star-pop { 0% { transform: scale(1) rotate(0); } 40% { transform: scale(1.4) rotate(-12deg); } 100% { transform: scale(1) rotate(0); } }
 @media (min-width: 768px) {
-  .series-cabinet { height: 220px; grid-template-columns: minmax(0, 1fr) 13.5rem; align-items: stretch; }
-  .series-screen { height: 100%; min-height: 0; }
-  .series-knobs { top: 0.55rem; bottom: auto; }
-  .series-side { display: flex; min-height: 0; flex-direction: column; gap: 0.4rem; padding-top: 1.5rem; }
-  .series-side .series-dials { display: flex; min-height: 0; }
-  .series-dials-row { display: none; }
-  .series-channel { min-width: 0; min-height: 1.7rem; width: 100%; }
+  .series-screen { height: 13rem; }
 }
 .tonight-slot { animation: tonight-slot 140ms var(--ease); }
 @keyframes tonight-slot { from { transform: translateY(18%); opacity: 0.35; } to { transform: none; opacity: 1; } }

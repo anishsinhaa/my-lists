@@ -328,7 +328,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
             Filters
           </button>
           {panel ? (
-            <div className="absolute right-0 z-30 mt-1 max-h-[80vh] w-[40rem] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-md border border-(--brass)/40 bg-(--bg) p-4 shadow-xl">
+            <div className="absolute right-0 z-30 mt-1 max-h-[80vh] w-160 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-md border border-(--brass)/40 bg-(--bg) p-4 shadow-xl">
               <FilterSections items={items} listId={listId} query={query} onChange={onChange} />
             </div>
           ) : null}

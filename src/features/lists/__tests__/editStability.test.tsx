@@ -20,6 +20,7 @@ function row(partial: Partial<MediaItem> & Pick<MediaItem, 'id' | 'title'>): Med
     listId: 'movies', titleKey: partial.title.toLowerCase(), status: 'Watched', statusGroup: 'done', year: null,
     genres: [], why: '', updatedAt: null, poster: null, creator: null, franchise: null, myRating: null, imdbRating: null, platform: null, extra: {},
     ...partial,
+    notes: partial.notes ?? '',
   }
 }
 

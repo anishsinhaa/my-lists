@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { SheetsClient } from '../client.js'
-import { assertWritable, WriteForbiddenError } from '../writeGuard.js'
+import { assertWritable, WRITE_POLICY, WriteForbiddenError } from '../writeGuard.js'
 import { writeCells, type CellWrite } from '../writeCells.js'
 
 function memory(rows: unknown[][]): SheetsClient & { rows: unknown[][] } {
@@ -57,6 +57,13 @@ describe('writeCells', () => {
     expect(client.rows[1]?.[2]).toBe('https://img.example/new.jpg')
     expect(client.rows[1]?.[5]).toBe(9)
     expect(client.rows[1]?.[6]).toBe('8.8')
+  })
+
+  it('never lets a fill write description, notes, or genre', () => {
+    const banned = ['description', 'why', 'notes', 'note', 'genre', 'genres']
+    for (const fields of Object.values(WRITE_POLICY)) {
+      expect(fields.some((field) => banned.includes(field))).toBe(false)
+    }
   })
 
   it('skips ambiguous duplicates and a missing column', async () => {

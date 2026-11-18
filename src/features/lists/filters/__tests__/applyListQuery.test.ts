@@ -13,6 +13,7 @@ function item(partial: Partial<MediaItem> & Pick<MediaItem, 'title'>): MediaItem
     year: null,
     genres: [],
     why: '',
+    notes: '',
     updatedAt: null,
     poster: null,
     creator: null,
@@ -36,6 +37,13 @@ describe('applyListQuery', () => {
     item({ title: 'C', status: 'Watched', year: null, genres: ['Drama'], myRating: 6, imdbRating: 9, updatedAt: null }),
     item({ title: 'D', status: 'Dropped', year: 1999, myRating: null, imdbRating: 5, updatedAt: '2019-01-01T00:00:00.000Z' }),
   ]
+
+  it('matches any genre and searches every genre', () => {
+    const mix = item({ title: 'Mix', genres: ['Fantasy', 'Action', 'Drama'] })
+    expect(run([mix], { genres: ['Action'] })).toEqual(['Mix'])
+    expect(run([mix], { genres: ['Comedy'] })).toEqual([])
+    expect(run([mix], { q: 'drama' })).toEqual(['Mix'])
+  })
 
   it('ORs statuses and ANDs other fields, with an inclusive year range', () => {
     expect(run(rows, { statuses: ['Watched', 'Dropped'], genres: ['Drama'] })).toEqual(['A', 'C'])

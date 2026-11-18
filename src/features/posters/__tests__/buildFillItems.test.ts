@@ -21,6 +21,7 @@ function movie(partial: Partial<MediaItem> & Pick<MediaItem, 'title' | 'titleKey
     platform: null,
     extra: {},
     ...partial,
+    notes: partial.notes ?? '',
   }
 }
 

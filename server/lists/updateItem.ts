@@ -75,7 +75,7 @@ export async function updateListItem(client: SheetsClient, input: ItemUpdate, no
   const statusIndex = map.index.status
   const ratingIndex = map.index.myRating
   const updatedIndex = map.index.updatedAt
-  if (titleIndex === undefined || statusIndex === undefined || ratingIndex === undefined || updatedIndex === undefined) return { outcome: 'invalid', detail: 'missing_column' }
+  if (titleIndex === undefined || statusIndex === undefined || ratingIndex === undefined) return { outcome: 'invalid', detail: 'missing_column' }
   const finishedColumn = map.extras.find((column) => column.header === 'date finished')
   const matches: number[] = []
   for (let index = 1; index < values.length; index += 1) {
@@ -102,12 +102,14 @@ export async function updateListItem(client: SheetsClient, input: ItemUpdate, no
   const updates: Array<{ range: string; value: string | number; prior: string | number }> = [
     { range: `'${TAB_NAME[input.listId]}'!${columnLetter(statusIndex)}${rowIndex + 1}`, value: nextStatus, prior: row[statusIndex] === undefined ? '' : row[statusIndex] as string | number },
     { range: `'${TAB_NAME[input.listId]}'!${columnLetter(ratingIndex)}${rowIndex + 1}`, value: input.myRating ?? '', prior: row[ratingIndex] === undefined ? '' : row[ratingIndex] as string | number },
-    { range: `'${TAB_NAME[input.listId]}'!${columnLetter(updatedIndex)}${rowIndex + 1}`, value: stamp, prior: row[updatedIndex] === undefined ? '' : row[updatedIndex] as string | number },
   ]
-  if (input.why !== undefined && map.index.why !== undefined) {
+  if (updatedIndex !== undefined) {
+    updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(updatedIndex)}${rowIndex + 1}`, value: stamp, prior: row[updatedIndex] === undefined ? '' : row[updatedIndex] as string | number })
+  }
+  if (input.why !== undefined && map.index.notes !== undefined) {
     const note = cleanNote(input.why)
     if (note === null) return { outcome: 'invalid' }
-    updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(map.index.why)}${rowIndex + 1}`, value: note, prior: row[map.index.why] === undefined ? '' : row[map.index.why] as string | number })
+    updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(map.index.notes)}${rowIndex + 1}`, value: note, prior: row[map.index.notes] === undefined ? '' : row[map.index.notes] as string | number })
   }
   if (setFinished && finishedColumn !== undefined) {
     updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(finishedColumn.index)}${rowIndex + 1}`, value: today, prior: row[finishedColumn.index] === undefined ? '' : row[finishedColumn.index] as string | number })

@@ -21,7 +21,7 @@ function deferred<T>() {
 function item(myRating: number | null = null): MediaItem {
   return {
     id: 'movies:argo:2012', listId: 'movies', title: 'Argo (2012)', titleKey: 'argo', status: 'Want to', statusGroup: 'planned',
-    year: 2012, genres: [], why: '', updatedAt: null, poster: null, creator: null, franchise: null, myRating, imdbRating: null, platform: null, extra: {},
+    year: 2012, genres: [], why: '', notes: '', updatedAt: null, poster: null, creator: null, franchise: null, myRating, imdbRating: null, platform: null, extra: {},
   }
 }
 

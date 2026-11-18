@@ -17,6 +17,7 @@ function movie(patch: Partial<MediaItem> = {}): MediaItem {
     year: 2012,
     genres: ['Drama', 'Thriller'],
     why: '',
+    notes: '',
     updatedAt: '2020-01-01T00:00:00.000Z',
     poster: null,
     creator: 'Ben Affleck',
@@ -34,10 +35,14 @@ describe('item details', () => {
     const onOpen = vi.fn()
     const second = movie({ id: 'movies:heat:1995', title: 'Heat', titleKey: 'heat', year: 1995 })
     render(<ItemModal item={movie()} items={[movie(), second]} listId="movies" onClose={() => undefined} onOpen={onOpen} onSave={vi.fn()} />)
-    expect(screen.getByText("Why it's on my list")).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Add a note' })).toBeTruthy()
+    expect(screen.queryByText('About')).toBeNull()
+    expect(screen.queryByText('My notes')).toBeNull()
+    expect(screen.queryByText("Why it's on my list")).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Add a note' })).toBeNull()
     expect(screen.queryByText('Why')).toBeNull()
     expect(screen.queryByText('Updated')).toBeNull()
+    expect(screen.getByText('Drama')).toBeTruthy()
+    expect(screen.getByText('Thriller')).toBeTruthy()
     expect(screen.queryByText('–')).toBeNull()
     expect(screen.queryByText('Franchise')).toBeNull()
     expect(screen.getByText('Ben Affleck')).toBeTruthy()
@@ -68,8 +73,17 @@ describe('item details', () => {
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ title: 'Argo (2012)' }), { myRating: 7.5 })
   })
 
+  it('shows About and My notes without a Why label', () => {
+    render(<ItemModal item={movie({ why: 'A rescue in Tehran', notes: 'Watched the commentary' })} items={[movie()]} listId="movies" onClose={() => undefined} onOpen={() => undefined} onSave={vi.fn()} />)
+    expect(screen.getByText('About')).toBeTruthy()
+    expect(screen.getByText('A rescue in Tehran')).toBeTruthy()
+    expect(screen.getByText('My notes')).toBeTruthy()
+    expect(screen.getByText('Watched the commentary')).toBeTruthy()
+    expect(screen.queryByText('Why')).toBeNull()
+  })
+
   it('shows a poster, the notes on hover, and no updated column', () => {
-    render(<ListTable items={[movie({ why: 'A long note about why this stayed on the list', franchise: 'None' })]} listId="movies" onOpen={() => undefined} />)
+    render(<ListTable items={[movie({ notes: 'A long note about why this stayed on the list', franchise: 'None' })]} listId="movies" onOpen={() => undefined} />)
     expect(screen.getByRole('columnheader', { name: 'Poster' })).toBeTruthy()
     expect(screen.queryByRole('columnheader', { name: 'Updated' })).toBeNull()
     const note = screen.getByTitle('A long note about why this stayed on the list')

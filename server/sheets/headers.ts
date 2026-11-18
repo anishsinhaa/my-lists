@@ -1,12 +1,15 @@
-export type MainField = 'title' | 'status' | 'year' | 'genre' | 'why' | 'updatedAt' | 'poster' | 'creator' | 'franchise' | 'myRating' | 'imdbRating' | 'platform'
+export type MainField = 'title' | 'status' | 'year' | 'genre' | 'why' | 'notes' | 'updatedAt' | 'poster' | 'creator' | 'franchise' | 'myRating' | 'imdbRating' | 'platform'
 export type PicksField = 'title' | 'because' | 'year' | 'genre' | 'status' | 'why' | 'poster'
+
+const DESCRIPTION = ['description', 'why', 'reason', "notes / why it's on the list", "notes / why it’s on the list", "why it's on the list", "why it's on my list"]
 
 export const MAIN_ALIASES: Record<MainField, string[]> = {
   title: ['title', 'name'],
   status: ['status'],
   year: ['year', 'release year'],
   genre: ['genre', 'genres'],
-  why: ['why', 'notes', 'note', 'reason', "notes / why it's on the list", "notes / why it’s on the list", "why it's on the list", "why it's on my list"],
+  why: DESCRIPTION,
+  notes: ['notes', 'note', 'my notes'],
   updatedAt: ['updated at', 'updated', 'last updated'],
   poster: ['poster', 'poster url', 'cover'],
   creator: ['director/creator', 'director', 'creator', 'author', 'developer'],
@@ -22,7 +25,7 @@ export const PICKS_ALIASES: Record<PicksField, string[]> = {
   year: ['year'],
   genre: ['genre', 'genres'],
   status: ['status'],
-  why: ['why', 'reason'],
+  why: DESCRIPTION,
   poster: ['poster', 'poster url', 'cover'],
 }
 
@@ -38,13 +41,27 @@ export interface ColumnMap<F extends string> {
 
 export function buildColumnMap<F extends string>(headerRow: unknown[], aliases: Record<F, string[]>): ColumnMap<F> {
   const index: Partial<Record<F, number>> = {}
+  const chosen: Partial<Record<F, string>> = {}
   const extras: Array<{ header: string; index: number }> = []
   const labels = headerRow.map((cell) => normalizeHeader(cell))
   labels.forEach((label, column) => {
     if (label.length === 0) return
-    const field = (Object.keys(aliases) as F[]).find((candidate) => aliases[candidate].includes(label) && index[candidate] === undefined)
-    if (field === undefined) extras.push({ header: label, index: column })
-    else index[field] = column
+    const field = (Object.keys(aliases) as F[]).find((candidate) => aliases[candidate].includes(label))
+    if (field === undefined) {
+      extras.push({ header: label, index: column })
+      return
+    }
+    const current = index[field]
+    const names = aliases[field]
+    const nextRank = names.indexOf(label)
+    const currentRank = names.indexOf(chosen[field] ?? '')
+    if (current === undefined || (nextRank !== -1 && nextRank < currentRank)) {
+      if (current !== undefined) extras.push({ header: chosen[field] ?? '', index: current })
+      index[field] = column
+      chosen[field] = label
+      return
+    }
+    extras.push({ header: label, index: column })
   })
   return { index, extras, headerRow: labels }
 }

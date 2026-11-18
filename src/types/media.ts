@@ -10,6 +10,7 @@ export interface MediaItem {
   year: number | null
   genres: string[]
   why: string
+  notes: string
   updatedAt: string | null
   poster: string | null
   creator: string | null

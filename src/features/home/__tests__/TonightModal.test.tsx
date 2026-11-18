@@ -10,7 +10,7 @@ import { TonightModal } from '../TonightModal'
 
 function item(partial: Partial<MediaItem> & Pick<MediaItem, 'id' | 'listId' | 'title' | 'status'>): MediaItem {
   return {
-    titleKey: partial.title.toLowerCase(), statusGroup: 'planned', year: 2012, genres: ['Thriller'], why: 'Because', updatedAt: null,
+    titleKey: partial.title.toLowerCase(), statusGroup: 'planned', year: 2012, genres: ['Thriller'], why: 'Because', notes: '', updatedAt: null,
     poster: null, creator: 'Ben Affleck', franchise: null, myRating: null, imdbRating: null, platform: null, extra: {}, ...partial,
   }
 }
@@ -78,7 +78,7 @@ describe('Tonight modal', () => {
       fireEvent.click(screen.getByRole('button', { name: 'All' }))
       fireEvent.click(screen.getByRole('button', { name: 'Pick' }))
       expect(screen.getByRole('heading', { name: 'Argo' })).toBeTruthy()
-      expect(screen.getByText("Why it's on my list")).toBeTruthy()
+      expect(screen.getByText('About')).toBeTruthy()
       expect(screen.getByText('Because')).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: 'Pick another' }))
       expect(screen.getByRole('heading', { name: 'Heat' })).toBeTruthy()
@@ -105,6 +105,6 @@ describe('opening a picked item', () => {
       </QueryClientProvider>,
     )
     expect(screen.getByRole('heading', { name: 'Argo' })).toBeTruthy()
-    expect(screen.getAllByText("Why it's on my list").length).toBeGreaterThan(0)
+    expect(screen.getAllByText('About').length).toBeGreaterThan(0)
   })
 })

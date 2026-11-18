@@ -248,10 +248,18 @@ export function TonightModal({ lists, preset, onClose }: {
                     {shown.genres.map((genre) => <span key={genre} className="rounded-full border border-(--border) px-2 py-0.5 text-xs">{genre}</span>)}
                   </div>
                 )}
-                <div className="space-y-1">
-                  <p className="text-xs tracking-wide text-(--ink-muted)">Why it's on my list</p>
-                  <p className="text-base">{shown.why.trim().length === 0 ? 'No note yet' : shown.why}</p>
-                </div>
+                {shown.why.trim().length === 0 ? null : (
+                  <div className="space-y-1">
+                    <p className="text-xs tracking-wide text-(--ink-muted)">About</p>
+                    <p className="text-base">{shown.why}</p>
+                  </div>
+                )}
+                {shown.notes.trim().length === 0 ? null : (
+                  <div className="space-y-1">
+                    <p className="text-xs tracking-wide text-(--ink-muted)">My notes</p>
+                    <p className="text-base">{shown.notes}</p>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={pick}>Pick another</Button>
                   <Button variant="ghost" onClick={() => setPhase('choose')}>Change filters</Button>

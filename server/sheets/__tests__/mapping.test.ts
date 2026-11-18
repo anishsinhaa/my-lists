@@ -21,6 +21,8 @@ describe('mapMainTab', () => {
     expect(result.items[0]?.myRating).toBe(9)
     expect(result.items[0]?.imdbRating).toBe(8.1)
     expect(result.items[1]?.myRating).toBeNull()
+    expect(result.items[0]?.why).toBe('')
+    expect(result.items[0]?.notes).toBe('dreams')
     expect(result.items[0]?.creator).toBe('Christopher Nolan')
     expect(result.items[0]?.extra['box office']).toBe('')
     expect(result.warnings.some((warning) => warning.code === 'duplicate_title')).toBe(true)
@@ -36,14 +38,42 @@ describe('mapMainTab', () => {
     expect(result.items[0]?.imdbRating).toBeNull()
   })
 
-  it('maps the notes header and keeps date finished as an extra', () => {
+  it('maps the legacy why header and keeps date finished as an extra', () => {
     const result = mapMainTab('movies', [
       ['Title', "Notes / Why it's on the list", 'Date finished', 'IMDb Rating'],
       ['Heat', 'a heist', '2020-01-02', ''],
     ])
     expect(result.items[0]?.why).toBe('a heist')
+    expect(result.items[0]?.notes).toBe('')
     expect(result.items[0]?.extra['date finished']).toBe('2020-01-02')
     expect(result.items[0]?.updatedAt).toBeNull()
+  })
+
+  it('splits comma-separated genres and keeps Description apart from Notes', () => {
+    const result = mapMainTab('series', [
+      ['Title', 'Why', 'Description', 'Genre', 'Notes'],
+      ['Arcane', 'old blurb', 'A city split in two', 'Fantasy, Action, Drama', 'Season 2'],
+    ])
+    expect(result.items[0]?.why).toBe('A city split in two')
+    expect(result.items[0]?.notes).toBe('Season 2')
+    expect(result.items[0]?.genres).toEqual(['Fantasy', 'Action', 'Drama'])
+    expect(result.items[0]?.extra.why).toBe('old blurb')
+  })
+
+  it('leaves description, notes, and genres empty when those columns are missing', () => {
+    const result = mapMainTab('movies', [['Title'], ['Heat']])
+    expect(result.items[0]?.why).toBe('')
+    expect(result.items[0]?.notes).toBe('')
+    expect(result.items[0]?.genres).toEqual([])
+  })
+
+  it('maps a picks Description column and ignores a missing Notes column', () => {
+    const result = mapPicksTab('movies-picks', [
+      ['Title', 'Description', 'Genre'],
+      ['Dune', 'A desert epic', 'Sci-fi, Adventure'],
+    ])
+    expect(result.items[0]?.why).toBe('A desert epic')
+    expect(result.items[0]?.genres).toEqual(['Sci-fi', 'Adventure'])
   })
 
   it('warns and returns nothing when Title is missing', () => {

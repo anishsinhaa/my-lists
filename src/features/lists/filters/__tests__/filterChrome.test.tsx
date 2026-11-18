@@ -84,7 +84,7 @@ describe('filter chips', () => {
     const onChange = vi.fn()
     const movie: MediaItem = {
       id: 'argo', listId: 'movies', title: 'Argo', titleKey: 'argo', status: 'Want to', statusGroup: 'planned',
-      year: 2012, genres: ['Thriller'], why: '', updatedAt: null, poster: null, creator: 'Ben Affleck', franchise: null,
+      year: 2012, genres: ['Thriller'], why: '', notes: '', updatedAt: null, poster: null, creator: 'Ben Affleck', franchise: null,
       myRating: null, imdbRating: null, platform: null, extra: {},
     }
     renderChrome('movies', { ...DEFAULT_QUERY, view: 'grid' }, onChange)

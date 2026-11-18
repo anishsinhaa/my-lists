@@ -15,6 +15,7 @@ function item(title: string, status: string, poster: string | null): MediaItem {
     year: null,
     genres: [],
     why: '',
+    notes: '',
     updatedAt: null,
     poster,
     creator: null,

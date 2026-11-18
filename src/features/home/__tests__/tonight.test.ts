@@ -19,6 +19,7 @@ function item(partial: Partial<MediaItem> & Pick<MediaItem, 'id' | 'listId' | 't
     platform: null,
     extra: {},
     ...partial,
+    notes: partial.notes ?? '',
   }
 }
 

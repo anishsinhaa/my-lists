@@ -9,6 +9,8 @@ describe('headers', () => {
     expect(map.index.myRating).toBe(1)
     expect(map.index.imdbRating).toBe(4)
     expect(map.index.creator).toBe(5)
+    expect(map.index.notes).toBe(3)
+    expect(map.index.why).toBeUndefined()
     expect(map.extras).toEqual([])
     const unknown = buildColumnMap(['Title', 'Box office'], MAIN_ALIASES)
     expect(unknown.extras).toEqual([{ header: 'box office', index: 1 }])
@@ -25,6 +27,15 @@ describe('headers', () => {
 
   it('maps a legacy Director header to creator', () => {
     expect(buildColumnMap(['Director'], MAIN_ALIASES).index.creator).toBe(0)
+  })
+
+  it('prefers Description over Why and keeps Notes separate', () => {
+    const map = buildColumnMap(['Why', 'Notes', 'Description', 'Genre'], MAIN_ALIASES)
+    expect(map.index.why).toBe(2)
+    expect(map.index.notes).toBe(1)
+    expect(map.extras).toEqual([{ header: 'why', index: 0 }])
+    expect(buildColumnMap(['Why'], MAIN_ALIASES).index.why).toBe(0)
+    expect(buildColumnMap(['Title'], MAIN_ALIASES).index.notes).toBeUndefined()
   })
 
   it('converts column indexes to letters', () => {

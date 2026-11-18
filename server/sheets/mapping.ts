@@ -70,6 +70,7 @@ export function mapMainTab(listId: ListId, values: unknown[][]): MapResult<Media
       year,
       genres: splitGenres(cell(row, map.index.genre)),
       why: text(cell(row, map.index.why)),
+      notes: text(cell(row, map.index.notes)),
       updatedAt: parseUpdatedAt(cell(row, map.index.updatedAt)),
       poster: sanitizePosterUrl(cell(row, map.index.poster)),
       creator: text(cell(row, map.index.creator)) || null,

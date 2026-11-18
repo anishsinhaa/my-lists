@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState, type ReactNode } from 'react'
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PosterImage } from '@/components/common/PosterImage'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
@@ -28,10 +28,31 @@ function creatorLabel(listId: ListId): string {
   return 'Creator'
 }
 
-function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
-  const text = shown(value)
-  if (text === null) return null
-  return <p className="text-sm"><span className="text-(--ink-muted)">{label}: </span>{text}</p>
+function DetailGrid({ rows }: { rows: Array<{ label: string; value: string | number | null | undefined }> }) {
+  const visible = rows.flatMap((row) => {
+    const text = shown(row.value)
+    return text === null ? [] : [{ label: row.label, text }]
+  })
+  if (visible.length === 0) return null
+  return (
+    <dl className="grid grid-cols-1 gap-y-1 text-sm min-[480px]:grid-cols-[max-content_minmax(0,1fr)] min-[480px]:gap-x-3">
+      {visible.map((row) => (
+        <Fragment key={row.label}>
+          <dt className="text-(--ink-muted)">{row.label}</dt>
+          <dd className="min-w-0 wrap-break-word">{row.text}</dd>
+        </Fragment>
+      ))}
+    </dl>
+  )
+}
+
+function TextBlock({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-xs tracking-wide text-(--ink-muted)">{label}</p>
+      <div className="text-sm leading-snug">{children}</div>
+    </div>
+  )
 }
 
 export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpenInList, theme }: {
@@ -44,10 +65,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
   onOpenInList?: () => void
   theme?: ThemeId
 }) {
-  const [draft, setDraft] = useState<{ id: string; text: string; editing: boolean } | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
-  const note = draft !== null && draft.id === item?.id ? draft.text : (item?.why ?? '')
-  const editingNote = draft !== null && draft.id === item?.id && draft.editing
   const index = item === null ? -1 : items.findIndex((entry) => entry.id === item.id)
   const previous = index > 0 ? items[index - 1] : undefined
   const next = index >= 0 && index < items.length - 1 ? items[index + 1] : undefined
@@ -97,7 +115,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
             <div className="bg-(--surface) p-4">
               <PosterImage alt="" className="mx-auto w-full max-w-56 md:max-w-none" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w500')} title={displayTitle(item.title, item.year)} priority />
             </div>
-            <div className="min-h-0 space-y-4 overflow-y-auto p-4 pr-12 md:p-6 md:pr-12">
+            <div className="min-h-0 space-y-3 overflow-y-auto p-4 pr-12 md:p-5 md:pr-12">
               <div className="flex items-start gap-2">
                 <button type="button" aria-label="Previous" className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-(--border) disabled:opacity-30" disabled={previous === undefined} onClick={() => { if (previous !== undefined) onOpen(previous) }}>
                   <ChevronLeft aria-hidden="true" className="size-5" />
@@ -112,46 +130,34 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                   <ChevronRight aria-hidden="true" className="size-5" />
                 </button>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs tracking-wide text-(--ink-muted)">Why it's on my list</p>
-                {editingNote ? (
-                  <textarea aria-label="Why it's on my list" className="min-h-24 w-full rounded-md border border-(--border) bg-(--surface) p-2 text-base" value={note} onChange={(event) => setDraft({ id: item.id, text: event.target.value, editing: true })} onBlur={() => { setDraft((current) => current === null ? null : { ...current, editing: false }); if (note !== item.why) save({ why: note }) }} />
-                ) : shown(item.why) === null ? (
-                  <button type="button" className="text-sm text-(--ink-muted) italic" onClick={() => setDraft({ id: item.id, text: item.why, editing: true })}>Add a note</button>
-                ) : (
-                  <button type="button" className="text-left text-base" onClick={() => setDraft({ id: item.id, text: item.why, editing: true })}>{item.why}</button>
-                )}
-              </div>
-              <Field label="Year" value={item.year} />
+              {shown(item.why) === null ? null : <TextBlock label="About">{item.why}</TextBlock>}
               {item.genres.length === 0 ? null : (
                 <div className="flex flex-wrap gap-1.5">
                   {item.genres.map((genre) => <span key={genre} className="rounded-full border border-(--border) px-2 py-0.5 text-xs">{genre}</span>)}
                 </div>
               )}
-              <Field label={creatorLabel(listId)} value={item.creator} />
-              <Field label="Franchise" value={item.franchise} />
-              {listId === 'games' ? <Field label="Platform" value={item.platform} /> : null}
+              <DetailGrid rows={[
+                { label: 'Year', value: item.year },
+                { label: creatorLabel(listId), value: item.creator },
+                { label: 'Franchise', value: item.franchise },
+                { label: 'Platform', value: listId === 'games' ? item.platform : null },
+                { label: 'My Rating', value: item.myRating },
+                { label, value: external },
+                { label: 'Date finished', value: finished },
+              ]} />
               {shown(item.status) === null ? null : <StatusBadge listId={listId} status={item.status} />}
-              {shown(item.myRating) === null ? null : <p className="text-sm"><span className="text-(--ink-muted)">My Rating: </span>{item.myRating}</p>}
-              {external === null ? null : <p className="text-sm"><span className="text-(--ink-muted)">{label}: </span>{external}</p>}
-              {finished === null ? null : <p className="text-sm"><span className="text-(--ink-muted)">Date finished: </span>{finished}</p>}
               {STATUS_TABLE[listId].length === 0 ? null : (
-                <div className="space-y-2">
-                  <p className="text-xs tracking-wide text-(--ink-muted)">Status</p>
-                  <div className="flex flex-wrap gap-2">
-                    {STATUS_TABLE[listId].map((entry) => (
-                      <button key={entry.value} type="button" aria-pressed={item.status.trim().toLowerCase() === entry.value.toLowerCase()} className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-(--border) px-3 text-sm aria-pressed:bg-(--accent) aria-pressed:text-(--bg)" onClick={() => { if (item.status.trim().toLowerCase() !== entry.value.toLowerCase()) save({ status: entry.value }) }}>
-                        <StatusGlyph name={entry.icon} />
-                        {entry.value}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {STATUS_TABLE[listId].map((entry) => (
+                    <button key={entry.value} type="button" aria-pressed={item.status.trim().toLowerCase() === entry.value.toLowerCase()} className="inline-flex min-h-8 items-center gap-1 rounded-full border border-(--border) px-2.5 text-xs aria-pressed:bg-(--accent) aria-pressed:text-(--bg)" onClick={() => { if (item.status.trim().toLowerCase() !== entry.value.toLowerCase()) save({ status: entry.value }) }}>
+                      <StatusGlyph name={entry.icon} className="size-3" />
+                      {entry.value}
+                    </button>
+                  ))}
                 </div>
               )}
-              <div className="space-y-2">
-                <p className="text-xs tracking-wide text-(--ink-muted)">My Rating</p>
-                <StarRating value={item.myRating} onChange={(myRating) => save({ myRating })} />
-              </div>
+              {shown(item.notes) === null ? null : <TextBlock label="My notes">{item.notes}</TextBlock>}
+              <StarRating value={item.myRating} onChange={(myRating) => save({ myRating })} />
             </div>
           </div>
         )}

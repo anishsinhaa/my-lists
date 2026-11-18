@@ -14,6 +14,7 @@ function movie(title: string, extra: Partial<MediaItem> = {}): MediaItem {
     year: 2010,
     genres: ['Sci-fi'],
     why: '',
+    notes: '',
     updatedAt: null,
     poster: null,
     creator: 'Christopher Nolan',
@@ -71,5 +72,8 @@ describe('searchIndex', () => {
     expect(searchIndex(index, 'field').some((hit) => hit.listId === 'other')).toBe(true)
     expect(searchIndex(index, 'oddity').some((hit) => hit.listId === 'curious')).toBe(true)
     expect(searchIndex(index, 'i')).toEqual([])
+    const mixed = buildSearchIndex(payload({ movies: [movie('Arcane', { genres: ['Fantasy', 'Action', 'Drama'] })] }))
+    expect(searchIndex(mixed, 'action').map((hit) => hit.source.kind === 'item' ? hit.source.item.title : '')).toEqual(['Arcane'])
+    expect(searchIndex(mixed, 'drama').map((hit) => hit.source.kind === 'item' ? hit.source.item.title : '')).toEqual(['Arcane'])
   })
 })

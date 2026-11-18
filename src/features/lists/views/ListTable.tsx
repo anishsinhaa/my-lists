@@ -45,7 +45,7 @@ export function ListTable({ items, listId, onOpen }: { items: MediaItem[]; listI
               <td className="p-2">{cell(item.status)}</td>
               <td className="p-2">{cell(item.myRating)}</td>
               <td className="p-2">{cell(item.imdbRating)}</td>
-              <td className="max-w-48 truncate p-2" title={item.why}>{cell(item.why)}</td>
+              <td className="max-w-48 truncate p-2" title={item.notes}>{cell(item.notes)}</td>
             </tr>
           ))}
         </tbody>

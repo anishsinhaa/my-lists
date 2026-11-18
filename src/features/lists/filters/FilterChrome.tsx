@@ -162,7 +162,7 @@ function FilterSections({ listId, items, query, onChange }: {
       {config.show.genre && genres.length > 0 ? (
         <Section icon={<Tags className="size-4" aria-hidden="true" />} open={open === 'genre'} title="Genre" onToggle={() => toggle('genre')}>
           <div className="flex flex-wrap gap-2">
-            {genres.slice(0, 24).map((genre) => (
+            {genres.map((genre) => (
               <Choice key={genre} listId={listId} pressed={query.genres.includes(genre)} onClick={() => onChange({ genres: query.genres.includes(genre) ? query.genres.filter((value) => value !== genre) : [...query.genres, genre] })}>{genre}</Choice>
             ))}
           </div>

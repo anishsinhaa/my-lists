@@ -25,12 +25,12 @@ function client(rows: unknown[][]): SheetsClient & { rows: unknown[][] } {
   }
 }
 
-const header = ['Title', 'Year', 'Status', 'My Rating', 'Updated at', "Notes / Why it's on the list", 'Date finished', 'Poster', 'IMDb Rating']
+const header = ['Title', 'Year', 'Status', 'My Rating', 'Updated at', 'Description', 'Date finished', 'Poster', 'IMDb Rating', 'Genre', 'Notes']
 const now = new Date('2026-11-17T12:00:00.000Z')
 
 describe('updateListItem', () => {
   it('writes status, rating, and an IST timestamp, and sets date finished when a title is newly watched', async () => {
-    const sheet = client([header, ['Heat', 1995, 'Want to', '', '', 'a heist', '', 'https://img.example/old.jpg', '']])
+    const sheet = client([header, ['Heat', 1995, 'Want to', '', '', 'a heist', '', 'https://img.example/old.jpg', '', 'Crime', 'old note']])
     const result = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Watched', myRating: 9, why: 'still a heist' }, now)
     expect(result.outcome).toBe('written')
     expect(result.updatedAt).toBe('2026-11-17 17:30')
@@ -38,10 +38,12 @@ describe('updateListItem', () => {
     expect(sheet.rows[1]?.[2]).toBe('Watched')
     expect(sheet.rows[1]?.[3]).toBe(9)
     expect(sheet.rows[1]?.[4]).toBe('2026-11-17 17:30')
-    expect(sheet.rows[1]?.[5]).toBe('still a heist')
+    expect(sheet.rows[1]?.[5]).toBe('a heist')
     expect(sheet.rows[1]?.[6]).toBe('2026-11-17')
     expect(sheet.rows[1]?.[7]).toBe('https://img.example/old.jpg')
     expect(sheet.rows[1]?.[8]).toBe('')
+    expect(sheet.rows[1]?.[9]).toBe('Crime')
+    expect(sheet.rows[1]?.[10]).toBe('still a heist')
   })
 
   it('clears a rating without touching a date that is already set', async () => {
@@ -73,10 +75,12 @@ describe('updateListItem', () => {
     const sheet = client([header, ['Heat', 1995, 'Want to', '', '', '', '', '', '']])
     const written = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: null, why: 'a\u0000line\nkeep\tthis' }, now)
     expect(written.outcome).toBe('written')
-    expect(sheet.rows[1]?.[5]).toBe('aline\nkeep\tthis')
+    expect(sheet.rows[1]?.[5]).toBe('')
+    expect(sheet.rows[1]?.[10]).toBe('aline\nkeep\tthis')
     const huge = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: null, why: 'x'.repeat(2001) }, now)
     expect(huge.outcome).toBe('invalid')
-    expect(sheet.rows[1]?.[5]).toBe('aline\nkeep\tthis')
+    expect(sheet.rows[1]?.[5]).toBe('')
+    expect(sheet.rows[1]?.[10]).toBe('aline\nkeep\tthis')
   })
 
   it('reports a missing row and an ambiguous title', async () => {

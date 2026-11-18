@@ -21,6 +21,7 @@ function item(partial: Partial<MediaItem> & Pick<MediaItem, 'title' | 'status'>)
     platform: null,
     extra: {},
     ...partial,
+    notes: partial.notes ?? '',
   }
 }
 

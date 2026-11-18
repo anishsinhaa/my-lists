@@ -4,7 +4,7 @@ import { normalizeTitle } from '@/lib/normalize'
 import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 import type { ListQuery, SortKey } from './listQuery'
-import { isUnratedStarted } from './unrated'
+import { isNotStarted, isUnratedStarted } from './unrated'
 
 function statusAllowed(raw: string, selected: string[], listId?: ListId): boolean {
   if (selected.length === 0) return true
@@ -65,6 +65,8 @@ export function applyListQuery(items: MediaItem[], query: ListQuery, ctx: { now:
     if (query.poster === 'has' && !hasPoster) return false
     if (query.poster === 'missing' && hasPoster) return false
     if (query.unrated && !isUnratedStarted(ctx.listId, item)) return false
+    if (query.favWant && !(item.favourite && isNotStarted(ctx.listId, item.status))) return false
+    if (query.favWatched && !(item.favourite && !isNotStarted(ctx.listId, item.status))) return false
     return true
   })
   return filtered

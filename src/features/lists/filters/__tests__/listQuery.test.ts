@@ -47,6 +47,11 @@ describe('list query shelves and posters', () => {
     expect(serializeListQuery({ ...DEFAULT_QUERY, unrated: true }).get('unrated')).toBe('1')
     expect(serializeListQuery(DEFAULT_QUERY).get('unrated')).toBeNull()
     expect(hasActiveFilters({ ...DEFAULT_QUERY, unrated: true })).toBe(true)
+    expect(parseListQuery(new URLSearchParams('favwant=1&favwatched=1')).favWant).toBe(true)
+    expect(parseListQuery(new URLSearchParams('favwant=1&favwatched=1')).favWatched).toBe(true)
+    expect(serializeListQuery({ ...DEFAULT_QUERY, favWant: true, favWatched: true }).get('favwant')).toBe('1')
+    expect(serializeListQuery({ ...DEFAULT_QUERY, favWant: true, favWatched: true }).get('favwatched')).toBe('1')
+    expect(serializeListQuery({ ...DEFAULT_QUERY, ...CLEARED_FILTERS, view: 'shelves' }).get('favwant')).toBeNull()
   })
 
   it('defaults to title A–Z and drops an Updated at sort', () => {

@@ -20,6 +20,8 @@ export interface ListQuery {
   smart: string | null
   poster: 'any' | 'has' | 'missing'
   unrated: boolean
+  favWant: boolean
+  favWatched: boolean
 }
 
 export const DEFAULT_QUERY: ListQuery = {
@@ -40,9 +42,11 @@ export const DEFAULT_QUERY: ListQuery = {
   smart: null,
   poster: 'any',
   unrated: false,
+  favWant: false,
+  favWatched: false,
 }
 
-export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'unrated'> = {
+export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'unrated' | 'favWant' | 'favWatched'> = {
   q: '',
   statuses: [],
   genres: [],
@@ -56,6 +60,8 @@ export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yea
   smart: null,
   poster: 'any',
   unrated: false,
+  favWant: false,
+  favWatched: false,
 }
 
 export function hasActiveFilters(query: ListQuery): boolean {
@@ -72,6 +78,8 @@ export function hasActiveFilters(query: ListQuery): boolean {
     || (query.smart !== null && query.smart.length > 0)
     || query.poster !== 'any'
     || query.unrated
+    || query.favWant
+    || query.favWatched
 }
 
 const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status']
@@ -112,6 +120,8 @@ export function parseListQuery(params: URLSearchParams): ListQuery {
     smart: params.get('smart'),
     poster: poster === 'has' || poster === 'missing' ? poster : 'any',
     unrated: params.get('unrated') === '1',
+    favWant: params.get('favwant') === '1',
+    favWatched: params.get('favwatched') === '1',
   }
 }
 
@@ -135,5 +145,7 @@ export function serializeListQuery(query: ListQuery): URLSearchParams {
   if (query.smart !== null && query.smart.length > 0) params.set('smart', query.smart)
   if (query.poster !== 'any') params.set('poster', query.poster)
   if (query.unrated) params.set('unrated', '1')
+  if (query.favWant) params.set('favwant', '1')
+  if (query.favWatched) params.set('favwatched', '1')
   return params
 }

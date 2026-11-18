@@ -22,7 +22,7 @@ function deferred<T>() {
 function item(myRating: number | null = null): MediaItem {
   return {
     id: 'movies:argo:2012', listId: 'movies', title: 'Argo (2012)', titleKey: 'argo', status: 'Want to', statusGroup: 'planned',
-    year: 2012, genres: [], why: '', notes: '', updatedAt: null, poster: null, creator: null, franchise: null, myRating, imdbRating: null, platform: null, extra: {},
+    year: 2012, genres: [], why: '', notes: '', updatedAt: null, poster: null, creator: null, franchise: null, myRating, imdbRating: null, platform: null, favourite: false, extra: {},
   }
 }
 
@@ -73,6 +73,20 @@ describe('useSaveItem', () => {
     expect(saveItem).toHaveBeenCalledWith(expect.objectContaining({ notes: 'Season 3', status: 'Want to' }))
     await act(async () => { finish({ outcome: 'not_found' }) })
     await waitFor(() => expect((client.getQueryData(['lists']) as ListsPayload).lists.movies[0]?.notes).toBe(''))
+    expect(toast.error).toHaveBeenCalled()
+  })
+
+  it('shows a favourite immediately and restores it when the sheet write fails', async () => {
+    let finish: (value: { outcome: 'not_found' }) => void = () => undefined
+    vi.mocked(saveItem).mockImplementation(() => new Promise((resolve) => { finish = resolve }))
+    const { result } = renderHook(() => useSaveItem(), {
+      wrapper: ({ children }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>,
+    })
+    await act(async () => { void result.current(item(), { favourite: true }).catch(() => undefined) })
+    expect((client.getQueryData(['lists']) as ListsPayload).lists.movies[0]?.favourite).toBe(true)
+    expect(saveItem).toHaveBeenCalledWith(expect.objectContaining({ favourite: true, status: 'Want to' }))
+    await act(async () => { finish({ outcome: 'not_found' }) })
+    await waitFor(() => expect((client.getQueryData(['lists']) as ListsPayload).lists.movies[0]?.favourite).toBe(false))
     expect(toast.error).toHaveBeenCalled()
   })
 })

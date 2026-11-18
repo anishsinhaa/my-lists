@@ -137,14 +137,9 @@ function FilterSections({ listId, items, query, onChange }: {
   }
   return (
     <div>
-      <div className="border-b border-border">
-        <button type="button" aria-pressed={query.unrated} className="flex min-h-11 w-full items-center justify-between gap-3 text-left text-sm" onClick={() => onChange({ unrated: !query.unrated })}>
-          <span>Unrated</span>
-          <span className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full border px-0.5 ${query.unrated ? 'justify-end border-transparent bg-accent' : 'border-(--brass)/40 bg-(--surface)'}`}>
-            <span className="size-5 rounded-full bg-(--bg)" />
-          </span>
-        </button>
-      </div>
+      <FilterSwitch label="Unrated" pressed={query.unrated} onClick={() => onChange({ unrated: !query.unrated })} />
+      <FilterSwitch label="Fav Want to" pressed={query.favWant} onClick={() => onChange({ favWant: !query.favWant })} />
+      <FilterSwitch label="Fav Watched" pressed={query.favWatched} onClick={() => onChange({ favWatched: !query.favWatched })} />
       <Section icon={<ArrowDownUp className="size-4" aria-hidden="true" />} open={open === 'sort'} title="Sort by" onToggle={() => toggle('sort')}>
         <div role="radiogroup" aria-label="Sort by" className="flex flex-wrap gap-2">
           {sorts.map((option) => {
@@ -241,6 +236,19 @@ function FilterSections({ listId, items, query, onChange }: {
   )
 }
 
+function FilterSwitch({ label, pressed, onClick }: { label: string; pressed: boolean; onClick: () => void }) {
+  return (
+    <div className="border-b border-border">
+      <button type="button" aria-pressed={pressed} className="flex min-h-11 w-full items-center justify-between gap-3 text-left text-sm" onClick={onClick}>
+        <span>{label}</span>
+        <span className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full border px-0.5 ${pressed ? 'justify-end border-transparent bg-accent' : 'border-(--brass)/40 bg-(--surface)'}`}>
+          <span className="size-5 rounded-full bg-(--bg)" />
+        </span>
+      </button>
+    </div>
+  )
+}
+
 function Section({ icon, title, open, onToggle, children }: { icon: ReactNode; title: string; open: boolean; onToggle: () => void; children: ReactNode }) {
   return (
     <div className="border-b border-border">
@@ -314,6 +322,8 @@ function activeChips(listId: ListId, query: ListQuery): ActiveChip[] {
   const chips: ActiveChip[] = []
   if (query.q.length > 0) chips.push({ key: 'q', label: `Search: ${query.q}`, clear: { q: '' } })
   if (query.unrated) chips.push({ key: 'unrated', label: 'Unrated', clear: { unrated: false } })
+  if (query.favWant) chips.push({ key: 'fav-want', label: 'Fav Want to', clear: { favWant: false } })
+  if (query.favWatched) chips.push({ key: 'fav-watched', label: 'Fav Watched', clear: { favWatched: false } })
   for (const status of query.statuses) {
     const label = matchStatus(listId, status).value
     chips.push({
@@ -400,7 +410,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
           </button>
         ))}
         {chips.length > 0 ? (
-          <button type="button" className="inline-flex min-h-11 items-center gap-1 px-2 text-sm" onClick={() => onChange({ statuses: [], genres: [], smart: null, poster: 'any', q: '', yearMin: null, yearMax: null, ratingMin: null, creator: null, franchise: null, platform: null, unrated: false })}>
+          <button type="button" className="inline-flex min-h-11 items-center gap-1 px-2 text-sm" onClick={() => onChange({ statuses: [], genres: [], smart: null, poster: 'any', q: '', yearMin: null, yearMax: null, ratingMin: null, creator: null, franchise: null, platform: null, unrated: false, favWant: false, favWatched: false })}>
             <Eraser aria-hidden="true" className="size-4" />
             Clear all
           </button>

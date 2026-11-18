@@ -35,7 +35,7 @@ function findRow(values: unknown[][], write: CellWrite): { found: Found } | { ou
   const columns = map.index as Partial<Record<string, number>>
   const titleIndex = columns.title
   const fieldIndex = columns[columnField(write.field)]
-  const protectedColumns = [columns.why, columns.notes, columns.genre].filter((column) => column !== undefined)
+  const protectedColumns = [columns.why, columns.notes, columns.genre, columns.favourite].filter((column) => column !== undefined)
   if (titleIndex === undefined || fieldIndex === undefined) return { outcome: 'skipped_missing_column' }
   if (protectedColumns.includes(fieldIndex)) return { outcome: 'skipped_policy' }
   const matches: number[] = []

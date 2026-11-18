@@ -1,3 +1,4 @@
+import { Heart } from 'lucide-react'
 import { PosterImage } from '@/components/common/PosterImage'
 import { RatingBadge } from '@/components/common/RatingBadge'
 import { StatusChip } from '@/components/common/StatusChip'
@@ -39,16 +40,26 @@ function themed(props: PosterCardProps) {
   )
 }
 
+function FavouriteMark({ side }: { side: 'left' | 'right' }) {
+  return (
+    <span className={`pointer-events-none absolute top-2 z-10 inline-flex size-6 items-center justify-center rounded-full bg-black/70 ${side === 'left' ? 'left-2' : 'right-2'}`}>
+      <Heart aria-hidden="true" className="size-3.5 fill-(--accent) text-(--accent)" />
+      <span className="sr-only">Favourite</span>
+    </span>
+  )
+}
+
 export function PosterCard(props: PosterCardProps) {
   const card = themed(props)
-  if (props.item.listId === 'anime') return card
+  const anime = props.item.listId === 'anime'
   const rating = visibleRating(props.item)
   const shown = rating.my ?? rating.external
   return (
     <div className="relative">
       {card}
-      <span className="pointer-events-none absolute top-2 left-2 z-10"><StatusBadge listId={props.item.listId} status={props.item.status} /></span>
-      {shown === null ? null : (
+      {props.item.favourite ? <FavouriteMark side={anime ? 'left' : 'right'} /> : null}
+      {anime ? null : <span className="pointer-events-none absolute top-2 left-2 z-10"><StatusBadge listId={props.item.listId} status={props.item.status} /></span>}
+      {anime || shown === null ? null : (
         <span className="group absolute right-2 bottom-16 z-10 rounded-full bg-black/75 px-2 py-1 text-xs text-white">
           <span>{shown}</span>
           <span className="hidden group-hover:block group-focus-within:block">

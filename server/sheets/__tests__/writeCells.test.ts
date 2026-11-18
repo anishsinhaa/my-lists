@@ -60,7 +60,7 @@ describe('writeCells', () => {
   })
 
   it('never lets a fill write description, notes, or genre', () => {
-    const banned = ['description', 'why', 'notes', 'note', 'genre', 'genres']
+    const banned = ['description', 'why', 'notes', 'note', 'genre', 'genres', 'favourite', 'favorite']
     for (const fields of Object.values(WRITE_POLICY)) {
       expect(fields.some((field) => banned.includes(field))).toBe(false)
     }

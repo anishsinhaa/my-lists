@@ -27,6 +27,7 @@ function movie(patch: Partial<MediaItem> = {}): MediaItem {
     platform: null,
     extra: { 'date finished': '' },
     ...patch,
+    favourite: patch.favourite ?? false,
   }
 }
 
@@ -90,6 +91,15 @@ describe('item details', () => {
     expect(notes.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
+  it('toggles a favourite for any status', () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    render(<ItemModal item={movie()} items={[movie()]} listId="movies" onClose={() => undefined} onOpen={() => undefined} onSave={onSave} />)
+    const heart = screen.getByRole('button', { name: 'Favourite' })
+    expect(heart.getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(heart)
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ status: 'Want to' }), { favourite: true })
+  })
+
   it('saves a note on Enter and drops it on Escape', () => {
     const onSave = vi.fn().mockResolvedValue(undefined)
     render(<ItemModal item={movie()} items={[movie()]} listId="movies" onClose={() => undefined} onOpen={() => undefined} onSave={onSave} />)
@@ -103,6 +113,11 @@ describe('item details', () => {
     fireEvent.change(again, { target: { value: 'On season 3' } })
     fireEvent.keyDown(again, { key: 'Enter' })
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ title: 'Argo (2012)' }), { notes: 'On season 3' })
+  })
+
+  it('marks a favourite in the table', () => {
+    render(<ListTable items={[movie({ favourite: true })]} listId="movies" onOpen={() => undefined} />)
+    expect(screen.getByLabelText('Favourite')).toBeTruthy()
   })
 
   it('shows a poster, the notes on hover, and no updated column', () => {

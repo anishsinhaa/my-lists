@@ -21,6 +21,7 @@ function row(partial: Partial<MediaItem> & Pick<MediaItem, 'id' | 'title'>): Med
     genres: [], why: '', updatedAt: null, poster: null, creator: null, franchise: null, myRating: null, imdbRating: null, platform: null, extra: {},
     ...partial,
     notes: partial.notes ?? '',
+    favourite: partial.favourite ?? false,
   }
 }
 

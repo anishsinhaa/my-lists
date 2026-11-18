@@ -1,4 +1,4 @@
-export type MainField = 'title' | 'status' | 'year' | 'genre' | 'why' | 'notes' | 'updatedAt' | 'poster' | 'creator' | 'franchise' | 'myRating' | 'imdbRating' | 'platform'
+export type MainField = 'title' | 'status' | 'year' | 'genre' | 'why' | 'notes' | 'updatedAt' | 'poster' | 'creator' | 'franchise' | 'myRating' | 'imdbRating' | 'platform' | 'favourite'
 export type PicksField = 'title' | 'because' | 'year' | 'genre' | 'status' | 'why' | 'poster'
 
 const DESCRIPTION = ['description', 'why', 'reason', "notes / why it's on the list", "notes / why it’s on the list", "why it's on the list", "why it's on my list"]
@@ -17,6 +17,7 @@ export const MAIN_ALIASES: Record<MainField, string[]> = {
   myRating: ['my rating', 'my score', 'rating'],
   imdbRating: ['imdb rating', 'imdb', 'external rating', 'mal score', 'metacritic'],
   platform: ['platform', 'platforms'],
+  favourite: ['favourite', 'favorite'],
 }
 
 export const PICKS_ALIASES: Record<PicksField, string[]> = {

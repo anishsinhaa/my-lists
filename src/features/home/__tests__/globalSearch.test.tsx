@@ -19,7 +19,7 @@ vi.mock('@/features/data/useLists', () => ({
         movies: [{
           id: 'movies:argo:2012', listId: 'movies', title: 'Argo', titleKey: 'argo', status: 'Want to', statusGroup: 'planned',
           year: 2012, genres: ['Thriller'], why: 'A rescue', notes: '', updatedAt: null, poster: null, creator: 'Ben Affleck', franchise: null,
-          myRating: null, imdbRating: 7.7, platform: null, extra: {},
+          myRating: null, imdbRating: 7.7, platform: null, favourite: false, extra: {},
         }],
         series: [], anime: [], games: [], books: [], other: [], curious: [],
       },

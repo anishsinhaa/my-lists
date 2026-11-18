@@ -18,6 +18,7 @@ export interface MediaItem {
   myRating: number | null
   imdbRating: number | null
   platform: string | null
+  favourite: boolean
   extra: Record<string, string>
 }
 

@@ -23,6 +23,7 @@ describe('mapMainTab', () => {
     expect(result.items[1]?.myRating).toBeNull()
     expect(result.items[0]?.why).toBe('')
     expect(result.items[0]?.notes).toBe('dreams')
+    expect(result.items[0]?.favourite).toBe(false)
     expect(result.items[0]?.creator).toBe('Christopher Nolan')
     expect(result.items[0]?.extra['box office']).toBe('')
     expect(result.warnings.some((warning) => warning.code === 'duplicate_title')).toBe(true)
@@ -60,10 +61,21 @@ describe('mapMainTab', () => {
     expect(result.items[0]?.extra.why).toBe('old blurb')
   })
 
+  it('reads Favourite as Yes and leaves a blank cell off', () => {
+    const result = mapMainTab('movies', [
+      ['Title', 'Favourite'],
+      ['Heat', 'Yes'],
+      ['Dune', ''],
+      ['Alien', 'yes'],
+    ])
+    expect(result.items.map((item) => item.favourite)).toEqual([true, false, true])
+  })
+
   it('leaves description, notes, and genres empty when those columns are missing', () => {
     const result = mapMainTab('movies', [['Title'], ['Heat']])
     expect(result.items[0]?.why).toBe('')
     expect(result.items[0]?.notes).toBe('')
+    expect(result.items[0]?.favourite).toBe(false)
     expect(result.items[0]?.genres).toEqual([])
   })
 

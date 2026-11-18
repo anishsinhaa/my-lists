@@ -12,7 +12,8 @@ function isUpdate(body: unknown): body is ItemUpdate {
   const record = body as Record<string, unknown>
   const rating = record.myRating
   const note = record.notes ?? record.why
-  return typeof record.listId === 'string' && (LIST_IDS as readonly string[]).includes(record.listId) && typeof record.id === 'string' && typeof record.title === 'string' && (typeof record.year === 'number' || record.year === null) && typeof record.status === 'string' && (rating === null || typeof rating === 'number') && (note === undefined || typeof note === 'string')
+  const favourite = record.favourite
+  return typeof record.listId === 'string' && (LIST_IDS as readonly string[]).includes(record.listId) && typeof record.id === 'string' && typeof record.title === 'string' && (typeof record.year === 'number' || record.year === null) && typeof record.status === 'string' && (rating === null || typeof rating === 'number') && (note === undefined || typeof note === 'string') && (favourite === undefined || typeof favourite === 'boolean')
 }
 
 async function item(req: VercelRequest, res: VercelResponse): Promise<void> {

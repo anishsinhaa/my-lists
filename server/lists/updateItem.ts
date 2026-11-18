@@ -25,6 +25,7 @@ export interface ItemUpdate {
   myRating: number | null
   notes?: string
   why?: string
+  favourite?: boolean
 }
 
 export interface ItemUpdateResult {
@@ -61,6 +62,14 @@ function cleanNote(value: string): string | null {
   return trimmed
 }
 
+function headerEnd(header: unknown[]): number {
+  let last = -1
+  header.forEach((cell, index) => {
+    if (text(cell).length > 0) last = index
+  })
+  return last + 1
+}
+
 function duplicateIndex(id: string): number | null {
   const match = /~(\d+)$/.exec(id)
   return match === null ? null : Number(match[1])
@@ -69,7 +78,7 @@ function duplicateIndex(id: string): number | null {
 export async function updateListItem(client: SheetsClient, input: ItemUpdate, now = new Date()): Promise<ItemUpdateResult> {
   if (!(LIST_IDS as readonly string[]).includes(input.listId)) return { outcome: 'invalid' }
   if (!validRating(input.myRating)) return { outcome: 'invalid' }
-  const [batch] = await client.batchGetValues([`'${TAB_NAME[input.listId]}'!A1:Z3000`])
+  const [batch] = await client.batchGetValues([`'${TAB_NAME[input.listId]}'!A1:AZ3000`])
   const values = batch?.values ?? []
   const map = buildColumnMap<MainField>(values[0] ?? [], MAIN_ALIASES)
   const titleIndex = map.index.title
@@ -117,8 +126,17 @@ export async function updateListItem(client: SheetsClient, input: ItemUpdate, no
   if (setFinished && finishedColumn !== undefined) {
     updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(finishedColumn.index)}${rowIndex + 1}`, value: today, prior: row[finishedColumn.index] === undefined ? '' : row[finishedColumn.index] as string | number })
   }
+  if (input.favourite !== undefined) {
+    let favouriteIndex = map.index.favourite
+    if (favouriteIndex === undefined) {
+      favouriteIndex = headerEnd(values[0] ?? [])
+      updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(favouriteIndex)}1`, value: 'Favourite', prior: '' })
+    }
+    const current = text(row[favouriteIndex])
+    updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(favouriteIndex)}${rowIndex + 1}`, value: input.favourite ? 'Yes' : '', prior: current })
+  }
   await client.batchUpdateValues(updates.map((update) => ({ range: update.range, value: update.value })))
-  const [verified] = await client.batchGetValues([`'${TAB_NAME[input.listId]}'!A1:Z3000`])
+  const [verified] = await client.batchGetValues([`'${TAB_NAME[input.listId]}'!A1:AZ3000`])
   const after = verified?.values ?? []
   const afterRow = after[rowIndex] ?? []
   const afterMap = buildColumnMap<MainField>(after[0] ?? [], MAIN_ALIASES)

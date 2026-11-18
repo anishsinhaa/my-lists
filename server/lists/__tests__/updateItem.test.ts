@@ -46,6 +46,20 @@ describe('updateListItem', () => {
     expect(sheet.rows[1]?.[10]).toBe('still a heist')
   })
 
+  it('adds a Favourite column on the first write and can clear it later', async () => {
+    const sheet = client([header, ['Heat', 1995, 'Want to', 8, '', 'a heist', '', '', '', 'Crime', 'note']])
+    const added = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: 8, favourite: true }, now)
+    expect(added.outcome).toBe('written')
+    expect(sheet.rows[0]?.[11]).toBe('Favourite')
+    expect(sheet.rows[1]?.[11]).toBe('Yes')
+    expect(sheet.rows[1]?.[5]).toBe('a heist')
+    expect(sheet.rows[1]?.[10]).toBe('note')
+    const cleared = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: 8, favourite: false }, now)
+    expect(cleared.outcome).toBe('written')
+    expect(sheet.rows[0]?.filter((cell) => cell === 'Favourite')).toEqual(['Favourite'])
+    expect(sheet.rows[1]?.[11]).toBe('')
+  })
+
   it('writes a notes field into the Notes column and leaves Description and Genre alone', async () => {
     const sheet = client([header, ['Heat', 1995, 'Want to', 8, '', 'a heist', '', '', '', 'Crime', '']])
     const result = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: 8, notes: 'Season 3' }, now)

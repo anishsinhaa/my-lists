@@ -8,7 +8,7 @@ const TABS = [...LIST_IDS, ...PICKS_IDS] as const
 const EMPTY_COLUMNS: Record<EnrichField, boolean> = { poster: false, creator: false, franchise: false, imdbRating: false }
 
 function rangeFor(tabName: string): string {
-  return `'${tabName}'!A1:Z3000`
+  return `'${tabName}'!A1:AZ3000`
 }
 
 function rangeMatches(range: string, tabName: string): boolean {

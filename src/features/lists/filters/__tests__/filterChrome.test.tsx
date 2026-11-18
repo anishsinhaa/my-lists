@@ -85,7 +85,7 @@ describe('filter chips', () => {
     const movie: MediaItem = {
       id: 'argo', listId: 'movies', title: 'Argo', titleKey: 'argo', status: 'Want to', statusGroup: 'planned',
       year: 2012, genres: ['Thriller'], why: '', notes: '', updatedAt: null, poster: null, creator: 'Ben Affleck', franchise: null,
-      myRating: null, imdbRating: null, platform: null, extra: {},
+      myRating: null, imdbRating: null, platform: null, favourite: false, extra: {},
     }
     renderChrome('movies', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
     expect(screen.queryByRole('radiogroup', { name: 'Sort by' })).toBeNull()
@@ -138,7 +138,7 @@ describe('filter chips', () => {
     fireEvent.click(filtersButton())
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
     expect(onChange).toHaveBeenCalledWith({
-      q: '', statuses: [], genres: [], yearMin: null, yearMax: null, franchise: null, creator: null, platform: null, ratingMin: null, ratingBy: 'best', smart: null, poster: 'any', unrated: false,
+      q: '', statuses: [], genres: [], yearMin: null, yearMax: null, franchise: null, creator: null, platform: null, ratingMin: null, ratingBy: 'best', smart: null, poster: 'any', unrated: false, favWant: false, favWatched: false,
     })
   })
 
@@ -149,6 +149,10 @@ describe('filter chips', () => {
     fireEvent.click(filtersButton())
     fireEvent.click(screen.getByRole('button', { name: 'Unrated' }))
     expect(onChange).toHaveBeenCalledWith({ unrated: true })
+    fireEvent.click(screen.getByRole('button', { name: 'Fav Want to' }))
+    expect(onChange).toHaveBeenCalledWith({ favWant: true })
+    fireEvent.click(screen.getByRole('button', { name: 'Fav Watched' }))
+    expect(onChange).toHaveBeenCalledWith({ favWatched: true })
     cleanup()
     onChange.mockClear()
     renderChrome('series', { ...DEFAULT_QUERY, view: 'grid', unrated: true }, onChange)

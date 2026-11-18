@@ -24,6 +24,7 @@ function item(partial: Partial<MediaItem> & Pick<MediaItem, 'title' | 'status'>)
     platform: null,
     extra: {},
     ...partial,
+    favourite: partial.favourite ?? false,
   }
 }
 
@@ -77,5 +78,21 @@ describe('unrated', () => {
     ]
     const shown = applyListQuery(rows, { ...DEFAULT_QUERY, unrated: true, genres: ['Drama'] }, { now: new Date('2026-01-01T00:00:00.000Z'), listId: 'movies' })
     expect(shown.map((entry) => entry.title)).toEqual(['Drama'])
+  })
+
+  it('splits favourites into not-started and everything else', () => {
+    const rows = [
+      item({ title: 'Queue', status: 'Want to', favourite: true }),
+      item({ title: 'Maybe film', status: 'Maybe', favourite: true }),
+      item({ title: 'Seen', status: 'Watched', favourite: true }),
+      item({ title: 'Later', status: 'Maybe later', favourite: true, listId: 'series' }),
+      item({ title: 'Now', status: 'In progress', favourite: true }),
+      item({ title: 'Plain', status: 'Watched', favourite: false }),
+      item({ title: 'Shelf', status: 'Bought', favourite: true, listId: 'books' }),
+    ]
+    const want = applyListQuery(rows, { ...DEFAULT_QUERY, favWant: true }, { now: new Date('2026-01-01T00:00:00.000Z'), listId: 'movies' })
+    const watched = applyListQuery(rows, { ...DEFAULT_QUERY, favWatched: true }, { now: new Date('2026-01-01T00:00:00.000Z'), listId: 'movies' })
+    expect(want.map((entry) => entry.title)).toEqual(['Maybe film', 'Queue', 'Shelf'])
+    expect(watched.map((entry) => entry.title)).toEqual(['Later', 'Now', 'Seen'])
   })
 })

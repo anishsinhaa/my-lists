@@ -38,6 +38,14 @@ describe('headers', () => {
     expect(buildColumnMap(['Title'], MAIN_ALIASES).index.notes).toBeUndefined()
   })
 
+  it('maps Favourite by header name and keeps it apart from Notes', () => {
+    const map = buildColumnMap(['Title', 'Notes', 'Favourite'], MAIN_ALIASES)
+    expect(map.index.favourite).toBe(2)
+    expect(map.index.notes).toBe(1)
+    expect(buildColumnMap(['Title', 'Favorite'], MAIN_ALIASES).index.favourite).toBe(1)
+    expect(buildColumnMap(['Title'], MAIN_ALIASES).index.favourite).toBeUndefined()
+  })
+
   it('converts column indexes to letters', () => {
     expect(columnLetter(0)).toBe('A')
     expect(columnLetter(25)).toBe('Z')

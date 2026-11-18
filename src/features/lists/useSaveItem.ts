@@ -14,12 +14,14 @@ export interface ItemPatch {
   status?: string
   myRating?: number | null
   notes?: string
+  favourite?: boolean
 }
 
 interface Desired {
   status: string
   myRating: number | null
   notes?: string
+  favourite?: boolean
 }
 
 interface Lane {
@@ -44,10 +46,12 @@ function message(outcome: string): string {
 
 function combine(current: MediaItem, pending: Desired | null, patch: ItemPatch): Desired {
   const notes = patch.notes !== undefined ? patch.notes : pending?.notes
+  const favourite = patch.favourite !== undefined ? patch.favourite : pending?.favourite
   return {
     status: patch.status ?? pending?.status ?? current.status,
     myRating: patch.myRating !== undefined ? patch.myRating : pending?.myRating !== undefined ? pending.myRating : current.myRating,
     ...(notes === undefined ? {} : { notes }),
+    ...(favourite === undefined ? {} : { favourite }),
   }
 }
 
@@ -55,7 +59,7 @@ function apply(item: MediaItem, patch: Desired): MediaItem {
   const extra = { ...item.extra }
   const finished = (extra['date finished'] ?? '').trim()
   if (!DONE.has(item.status) && DONE.has(patch.status) && finished.length === 0) extra['date finished'] = formatIstDay(new Date())
-  return { ...item, status: patch.status, statusGroup: statusGroupOf(patch.status), myRating: patch.myRating, notes: patch.notes ?? item.notes, extra }
+  return { ...item, status: patch.status, statusGroup: statusGroupOf(patch.status), myRating: patch.myRating, notes: patch.notes ?? item.notes, favourite: patch.favourite ?? item.favourite, extra }
 }
 
 function holdScroll(applyChange: () => void): void {
@@ -116,6 +120,7 @@ async function drain(item: MediaItem, queryClient: QueryClient): Promise<void> {
         status: desired.status,
         myRating: desired.myRating,
         ...(desired.notes === undefined ? {} : { notes: desired.notes }),
+        ...(desired.favourite === undefined ? {} : { favourite: desired.favourite }),
       })
       if (result.outcome !== 'written') throw new Error(message(result.outcome))
     }

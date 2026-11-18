@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
-import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Heart } from 'lucide-react'
 import { PosterImage } from '@/components/common/PosterImage'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { StatusBadge } from '@/design/StatusBadge'
@@ -211,7 +211,12 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                   <ChevronLeft aria-hidden="true" className="size-5" />
                 </button>
                 <div className="min-w-0 flex-1">
-                  <DialogTitle className="font-(--font-display) text-2xl leading-tight">{displayTitle(item.title, item.year)}</DialogTitle>
+                  <div className="flex items-start gap-1">
+                    <DialogTitle className="min-w-0 flex-1 font-(--font-display) text-2xl leading-tight">{displayTitle(item.title, item.year)}</DialogTitle>
+                    <button type="button" aria-label="Favourite" aria-pressed={item.favourite} className="inline-flex size-11 shrink-0 items-center justify-center" onClick={() => save({ favourite: !item.favourite })}>
+                      <Heart aria-hidden="true" className={`size-5 ${item.favourite ? 'fill-(--accent) text-(--accent)' : 'text-(--ink-muted)'}`} />
+                    </button>
+                  </div>
                   <DialogDescription className="sr-only">{displayTitle(item.title, item.year)}</DialogDescription>
                   {savedId === item.id ? <p aria-live="polite" className="mt-1 inline-flex items-center gap-1 text-sm text-(--accent)"><Check aria-hidden="true" className="size-4" />Saved</p> : null}
                   {onOpenInList ? <button type="button" className="mt-2 min-h-11 text-sm underline" onClick={onOpenInList}>Open in list</button> : null}

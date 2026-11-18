@@ -44,6 +44,7 @@ export interface ItemUpdateRequest {
   myRating: number | null
   notes?: string
   why?: string
+  favourite?: boolean
 }
 
 export interface ItemUpdateResult {

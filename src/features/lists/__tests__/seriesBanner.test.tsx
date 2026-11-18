@@ -23,6 +23,7 @@ function item(title: string, status: string, poster: string | null): MediaItem {
     myRating: null,
     imdbRating: null,
     platform: null,
+    favourite: false,
     extra: {},
   }
 }

@@ -78,6 +78,7 @@ export function mapMainTab(listId: ListId, values: unknown[][]): MapResult<Media
       myRating: parseRating(cell(row, map.index.myRating)),
       imdbRating: parseRating(cell(row, map.index.imdbRating)),
       platform: text(cell(row, map.index.platform)) || null,
+      favourite: text(cell(row, map.index.favourite)).toLowerCase() === 'yes',
       extra,
     })
   }

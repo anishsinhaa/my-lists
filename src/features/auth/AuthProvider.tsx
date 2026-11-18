@@ -7,12 +7,11 @@ import { AuthContext, type AuthContextValue } from './AuthContext'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
-  const stored = authService.getSession()
   const [user, setUser] = useState<AuthUser | null>(null)
-  const [status, setStatus] = useState<AuthContextValue['status']>(stored === null ? 'anonymous' : 'checking')
+  const [status, setStatus] = useState<AuthContextValue['status']>('checking')
 
   useEffect(() => {
-    if (stored === null) return
+    localStorage.removeItem('ml.auth.v1')
     let cancelled = false
     apiFetch<{ user: AuthUser }>('/api/auth/me')
       .then((data) => {

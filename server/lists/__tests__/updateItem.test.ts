@@ -69,6 +69,16 @@ describe('updateListItem', () => {
     expect(sheet.rows[1]?.[3]).toBe(7.5)
   })
 
+  it('strips control characters from a note and rejects one longer than 2000 characters', async () => {
+    const sheet = client([header, ['Heat', 1995, 'Want to', '', '', '', '', '', '']])
+    const written = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: null, why: 'a\u0000line\nkeep\tthis' }, now)
+    expect(written.outcome).toBe('written')
+    expect(sheet.rows[1]?.[5]).toBe('aline\nkeep\tthis')
+    const huge = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: null, why: 'x'.repeat(2001) }, now)
+    expect(huge.outcome).toBe('invalid')
+    expect(sheet.rows[1]?.[5]).toBe('aline\nkeep\tthis')
+  })
+
   it('reports a missing row and an ambiguous title', async () => {
     const sheet = client([header, ['Heat', 1995, 'Want to', '', '', '', '', '', ''], ['Heat', 1995, 'Want to', '', '', '', '', '', '']])
     expect((await updateListItem(sheet, { listId: 'movies', id: 'movies:missing:1995', title: 'Missing', year: 1995, status: 'Watched', myRating: 8 }, now)).outcome).toBe('not_found')

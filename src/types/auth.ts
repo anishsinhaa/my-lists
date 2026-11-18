@@ -4,7 +4,6 @@ export interface AuthUser {
 }
 
 export interface AuthSession {
-  token: string
   expiresAt: string
   user: AuthUser
 }

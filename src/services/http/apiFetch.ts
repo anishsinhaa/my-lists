@@ -19,10 +19,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers)
   if (init?.body !== undefined && !headers.has('content-type')) headers.set('content-type', 'application/json')
-  const token = authService.getToken()
-  if (token !== null) headers.set('authorization', `Bearer ${token}`)
 
-  const response = await fetch(path, { ...init, headers })
+  const response = await fetch(path, { ...init, headers, credentials: 'include' })
   const payload: unknown = await response.json()
   if (!isRecord(payload) || typeof payload.ok !== 'boolean') {
     throw new ApiError('internal', response.status, 'Unexpected response')

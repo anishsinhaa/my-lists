@@ -44,6 +44,22 @@ function validRating(value: number | null): boolean {
   return Math.abs(steps - Math.round(steps)) < 1e-6
 }
 
+function cleanNote(value: string): string | null {
+  let cleaned = ''
+  for (const char of value) {
+    const code = char.codePointAt(0) ?? 0
+    if (code === 9 || code === 10) {
+      cleaned += char
+      continue
+    }
+    if (code < 32 || code === 127) continue
+    cleaned += char
+  }
+  const trimmed = cleaned.trim()
+  if (trimmed.length > 2000) return null
+  return trimmed
+}
+
 function duplicateIndex(id: string): number | null {
   const match = /~(\d+)$/.exec(id)
   return match === null ? null : Number(match[1])
@@ -89,7 +105,9 @@ export async function updateListItem(client: SheetsClient, input: ItemUpdate, no
     { range: `'${TAB_NAME[input.listId]}'!${columnLetter(updatedIndex)}${rowIndex + 1}`, value: stamp, prior: row[updatedIndex] === undefined ? '' : row[updatedIndex] as string | number },
   ]
   if (input.why !== undefined && map.index.why !== undefined) {
-    updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(map.index.why)}${rowIndex + 1}`, value: input.why, prior: row[map.index.why] === undefined ? '' : row[map.index.why] as string | number })
+    const note = cleanNote(input.why)
+    if (note === null) return { outcome: 'invalid' }
+    updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(map.index.why)}${rowIndex + 1}`, value: note, prior: row[map.index.why] === undefined ? '' : row[map.index.why] as string | number })
   }
   if (setFinished && finishedColumn !== undefined) {
     updates.push({ range: `'${TAB_NAME[input.listId]}'!${columnLetter(finishedColumn.index)}${rowIndex + 1}`, value: today, prior: row[finishedColumn.index] === undefined ? '' : row[finishedColumn.index] as string | number })

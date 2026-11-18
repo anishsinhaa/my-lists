@@ -2,6 +2,7 @@ import { SignJWT } from 'jose'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import login from '../../../api/auth/login.js'
+import logout from '../../../api/auth/logout.js'
 import me from '../../../api/auth/me.js'
 import { resetEnvCache } from '../../config/env.js'
 import { resetRateLimits } from '../../http/rateLimit.js'
@@ -31,8 +32,8 @@ afterEach(() => {
   resetEnvCache()
 })
 
-function capture(): { res: VercelResponse; status: () => number; body: () => unknown } {
-  const state = { statusCode: 200, payload: undefined as unknown }
+function capture(): { res: VercelResponse; status: () => number; body: () => unknown; header: (name: string) => string | undefined } {
+  const state = { statusCode: 200, payload: undefined as unknown, headers: {} as Record<string, string> }
   const res = {
     status(code: number) {
       state.statusCode = code
@@ -41,11 +42,12 @@ function capture(): { res: VercelResponse; status: () => number; body: () => unk
     json(data: unknown) {
       state.payload = data
     },
-    setHeader() {
+    setHeader(name: string, value: string) {
+      state.headers[name.toLowerCase()] = value
       return this
     },
   }
-  return { res: res as unknown as VercelResponse, status: () => state.statusCode, body: () => state.payload }
+  return { res: res as unknown as VercelResponse, status: () => state.statusCode, body: () => state.payload, header: (name: string) => state.headers[name.toLowerCase()] }
 }
 
 describe('EnvAuthProvider', () => {
@@ -75,20 +77,28 @@ describe('tokens', () => {
 })
 
 describe('login and me', () => {
-  it('returns a token for the right password and the same error for both wrong fields', async () => {
+  it('sets an httpOnly cookie for the right password and the same error for both wrong fields', async () => {
     useEnv()
     const good = capture()
     await login({ method: 'POST', body: { username: 'anish', password: PASSWORD }, headers: { 'x-forwarded-for': '1.1.1.1' } } as unknown as VercelRequest, good.res)
     expect(good.status()).toBe(200)
-    const payload = good.body() as { ok: boolean; data: { token: string; user: { username: string } } }
+    const payload = good.body() as { ok: boolean; data: { user: { username: string }; token?: string } }
     expect(payload.ok).toBe(true)
     expect(payload.data.user.username).toBe('anish')
+    expect(payload.data.token).toBeUndefined()
+    const setCookie = good.header('set-cookie') ?? ''
+    expect(setCookie).toContain('ml.session=')
+    expect(setCookie).toContain('HttpOnly')
+    expect(setCookie).toContain('SameSite=Lax')
+    expect(setCookie.split(';').slice(1).join(';')).not.toContain('Secure')
+    const cookie = setCookie.split(';')[0] ?? ''
 
     const wrongPassword = capture()
     await login({ method: 'POST', body: { username: 'anish', password: 'nope' }, headers: { 'x-forwarded-for': '2.2.2.2' } } as unknown as VercelRequest, wrongPassword.res)
     const wrongUser = capture()
     await login({ method: 'POST', body: { username: 'other', password: PASSWORD }, headers: { 'x-forwarded-for': '3.3.3.3' } } as unknown as VercelRequest, wrongUser.res)
     expect(wrongPassword.body()).toEqual(wrongUser.body())
+    expect(wrongPassword.body()).toEqual({ ok: false, error: { code: 'unauthorized', message: 'Invalid credentials' } })
     expect(wrongPassword.status()).toBe(401)
 
     const missing = capture()
@@ -96,9 +106,14 @@ describe('login and me', () => {
     expect(missing.status()).toBe(401)
 
     const present = capture()
-    await me({ method: 'GET', headers: { authorization: `Bearer ${payload.data.token}` } } as unknown as VercelRequest, present.res)
+    await me({ method: 'GET', headers: { cookie } } as unknown as VercelRequest, present.res)
     expect(present.status()).toBe(200)
     expect(present.body()).toEqual({ ok: true, data: { user: { id: 'local', username: 'anish' } } })
+
+    const signedOut = capture()
+    await logout({ method: 'POST', headers: {} } as unknown as VercelRequest, signedOut.res)
+    expect(signedOut.status()).toBe(200)
+    expect(signedOut.header('set-cookie')).toContain('Max-Age=0')
   }, 20_000)
 
   it('rate limits the 6th failure', async () => {

@@ -45,9 +45,9 @@ export function startEnrichJob(request: EnrichRequest): boolean {
     const failed = lines.reduce((sum, line) => sum + line.failures.length, 0)
     const lastRun = remember(startedAt, finishedAt, request, true, failed, lines, null)
     current = { ...current, running: false, finishedAt, failed, error: null, lines, lastRun }
-  }).catch((error: unknown) => {
+  }).catch(() => {
     const finishedAt = new Date().toISOString()
-    const message = error instanceof Error ? error.message : 'Refresh failed'
+    const message = 'Refresh failed'
     const lastRun = remember(startedAt, finishedAt, request, false, current.failed, current.lines, message)
     current = { ...current, running: false, finishedAt, error: message, lastRun }
   })

@@ -14,11 +14,11 @@ export function GameCard({ item, onOpen }: PosterCardProps) {
   return (
     <button
       type="button"
-      className="block w-full text-left"
+      className="group block w-full cursor-pointer text-left"
       onClick={() => onOpen?.(item)}
       onPointerMove={(event) => {
         const node = box.current
-        if (node === null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+        if (node === null) return
         const rect = node.getBoundingClientRect()
         const x = (event.clientX - rect.left) / rect.width
         const y = (event.clientY - rect.top) / rect.height
@@ -30,7 +30,7 @@ export function GameCard({ item, onOpen }: PosterCardProps) {
         box.current?.style.removeProperty('--tilt-x')
       }}
     >
-      <span ref={box} className="game-box relative block bg-[#100e21] shadow-[12px_16px_24px_#00000088]">
+      <span ref={box} className="game-box relative block bg-[#100e21] shadow-[12px_16px_24px_#00000088] transition-shadow duration-200 group-hover:shadow-[0_0_28px_rgba(0,240,255,0.55)]">
         <span aria-hidden="true" className="absolute inset-y-0 left-0 w-3 bg-[#2b2760]" />
         <PosterImage alt="" kind="game" src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
         <span className="absolute right-2 bottom-2 rounded-sm bg-black/70 px-1 text-[10px] tracking-widest text-white">PC</span>

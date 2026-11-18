@@ -150,7 +150,7 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
           <h2 className="mb-2 font-['Cinzel',serif]">Currently</h2>
           <Rail align={current.length === 1 ? 'start' : 'center'} label="Currently">
             {current.map((item) => (
-              <button key={item.id} type="button" data-rail-card="true" className="w-[clamp(7.5rem,20cqi,11rem)] shrink-0 snap-start text-left" onClick={() => show(item)}>
+              <button key={item.id} type="button" data-rail-card="true" className="w-[clamp(7.5rem,20cqi,11rem)] shrink-0 cursor-pointer snap-start text-left" onClick={() => show(item)}>
                 <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
                 <StatusBadge listId={item.listId} status={item.status} />
               </button>

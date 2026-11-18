@@ -68,24 +68,11 @@
   .marquee-bulbs { animation: bulb-chase 1.4s linear infinite; }
 }
 @keyframes bulb-chase { to { background-position: 16px 0; } }
-.game-box { transform: perspective(800px) rotateY(var(--tilt-y, -16deg)) rotateX(var(--tilt-x, 0deg)); transform-style: preserve-3d; }
-@media (prefers-reduced-motion: reduce) {
-  .game-box { transform: none; }
-}
-.series-card { transition: transform 280ms ease; }
-.book-cover { transition: transform 420ms ease; transform-origin: left center; }
+.game-box { transform: perspective(800px) rotateY(var(--tilt-y, -16deg)) rotateX(var(--tilt-x, 0deg)); transform-style: preserve-3d; transition: transform 120ms linear; }
 .other-row { transition: transform 180ms ease; }
 .curious-row { transition: background-color 180ms ease, box-shadow 180ms ease; }
-@media (hover: hover) and (pointer: fine) {
-  .series-card:hover { transform: translateY(-10px); }
-  .book-cover:hover { transform: rotateY(-14deg); }
-  .other-row:hover { transform: translateX(8px); }
-  .curious-row:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .series-card, .series-card:hover, .book-cover, .book-cover:hover, .other-row, .other-row:hover { transition: none; transform: none; }
-  .curious-row, .curious-row:hover { transition: none; box-shadow: none; }
-}
+.other-row:hover { transform: translateX(8px); }
+.curious-row:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
 .edge { padding-inline: clamp(0.75rem, 2vw, 1.5rem); }
 .app-topbar { box-sizing: border-box; min-height: var(--app-bar); padding-top: max(0.625rem, env(safe-area-inset-top, 0px)); padding-bottom: 0.375rem; }
 .app-topbar-row { min-height: 3.5rem; }

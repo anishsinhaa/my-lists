@@ -8,8 +8,8 @@ import { CardCaption } from './MovieCard'
 
 export function SeriesCard({ item, onOpen }: PosterCardProps) {
   return (
-    <button type="button" className="series-card block w-full text-left" onClick={() => onOpen?.(item)}>
-      <span className="relative block overflow-hidden rounded-[22px] shadow-(--shadow-card)">
+    <button type="button" className="block w-full cursor-pointer text-left transition-transform duration-300 ease-out hover:-translate-y-3" onClick={() => onOpen?.(item)}>
+      <span className="relative block overflow-hidden rounded-[22px] shadow-(--shadow-card) transition-shadow duration-300 hover:shadow-[0_18px_28px_#00000080]">
         <PosterImage alt="" kind="series" src={item.poster} title={displayTitle(item.title, item.year)} />
         <span className="absolute top-2 left-2"><StatusChip size="sm" status={item.status} /></span>
         <span className="ticket-chip absolute bottom-2 left-2 bg-accent px-2 py-0.5 text-(--bg)">

@@ -232,6 +232,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                 { label: 'Franchise', value: item.franchise },
                 { label: 'Platform', value: listId === 'games' ? item.platform : null },
                 { label, value: external },
+                { label: 'My rating', value: item.myRating },
                 { label: 'Date finished', value: finished },
               ]} />
               {item.genres.length === 0 ? null : (

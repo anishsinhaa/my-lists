@@ -2,9 +2,9 @@ export function RatingBadge({ myRating, externalRating, externalLabel, size = 's
   if (myRating === null && externalRating === null) return null
   const text = size === 'md' ? 'text-sm' : 'text-xs'
   return (
-    <span className={`inline-flex items-center gap-1.5 ${text}`}>
-      {myRating !== null ? <span className="text-accent">★ {myRating}</span> : null}
+    <span className={`inline-flex flex-col items-start leading-tight ${text}`}>
       {externalRating !== null ? <span className="text-(--ink-muted)">{externalLabel} {externalRating}</span> : null}
+      {myRating !== null ? <span className="text-accent">My rating {myRating}</span> : null}
     </span>
   )
 }

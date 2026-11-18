@@ -1,7 +1,9 @@
 import { useRef } from 'react'
+import { RatingBadge } from '@/components/common/RatingBadge'
 import { PosterImage } from '@/components/common/PosterImage'
 import { thumbnailUrl } from '@/design/archive'
 import { displayTitle } from '@/lib/displayTitle'
+import { externalRatingLabel } from '@/lib/rating'
 import type { PosterCardProps } from '../views/PosterCard'
 import { CardCaption } from './MovieCard'
 
@@ -35,6 +37,7 @@ export function GameCard({ item, onOpen }: PosterCardProps) {
         {score === null ? null : <span className={`absolute top-2 right-2 rounded-sm bg-black/70 px-1 text-xs ${tone}`}>{score}</span>}
       </span>
       <CardCaption item={item} />
+      <RatingBadge externalLabel={externalRatingLabel(item.listId)} externalRating={item.imdbRating} myRating={item.myRating} />
     </button>
   )
 }

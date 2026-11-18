@@ -53,19 +53,15 @@ export function PosterCard(props: PosterCardProps) {
   const card = themed(props)
   const anime = props.item.listId === 'anime'
   const rating = visibleRating(props.item)
-  const shown = rating.my ?? rating.external
   return (
     <div className="relative">
       {card}
       {props.item.favourite ? <FavouriteMark side={anime ? 'left' : 'right'} /> : null}
       {anime ? null : <span className="pointer-events-none absolute top-2 left-2 z-10"><StatusBadge listId={props.item.listId} status={props.item.status} /></span>}
-      {anime || shown === null ? null : (
-        <span className="group absolute right-2 bottom-16 z-10 rounded-full bg-black/75 px-2 py-1 text-xs text-white">
-          <span>{shown}</span>
-          <span className="hidden group-hover:block group-focus-within:block">
-            {rating.my === null ? null : <span className="block">My rating {rating.my}</span>}
-            {rating.external === null ? null : <span className="block">{rating.externalLabel} {rating.external}</span>}
-          </span>
+      {anime || (rating.my === null && rating.external === null) ? null : (
+        <span className="absolute right-2 bottom-16 z-10 rounded-md bg-black/75 px-2 py-1 text-left text-xs leading-tight text-white">
+          {rating.external === null ? null : <span className="block">{rating.externalLabel} {rating.external}</span>}
+          {rating.my === null ? null : <span className="block">My rating {rating.my}</span>}
         </span>
       )}
     </div>

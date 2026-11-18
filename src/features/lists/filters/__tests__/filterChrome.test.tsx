@@ -115,4 +115,42 @@ describe('filter chips', () => {
     fireEvent.click(within(grouped).getByRole('button', { name: 'None' }))
     expect(onChange).toHaveBeenLastCalledWith({ group: 'none', view: 'grid' })
   })
+
+  it('clears every filter from the panel and stays disabled when nothing is set', () => {
+    const onChange = vi.fn()
+    renderChrome('movies', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
+    fireEvent.click(filtersButton())
+    expect((screen.getByRole('button', { name: 'Clear filters' }) as HTMLButtonElement).disabled).toBe(true)
+    cleanup()
+    renderChrome('movies', {
+      ...DEFAULT_QUERY,
+      view: 'shelves',
+      statuses: ['Watched'],
+      genres: ['Drama'],
+      yearMin: 1990,
+      q: 'heat',
+      smart: 'nolan',
+      poster: 'missing',
+      creator: 'Nolan',
+      ratingMin: 8,
+      ratingBy: 'my',
+    }, onChange)
+    fireEvent.click(filtersButton())
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
+    expect(onChange).toHaveBeenCalledWith({
+      q: '', statuses: [], genres: [], yearMin: null, yearMax: null, franchise: null, creator: null, platform: null, ratingMin: null, ratingBy: 'best', smart: null, poster: 'any',
+    })
+  })
+
+  it('switches the view from one menu and closes it', () => {
+    const onChange = vi.fn()
+    renderChrome('movies', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
+    expect(screen.queryByRole('button', { name: 'Shelves' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+    const current = screen.getAllByRole('button', { name: 'Grid' }).find((button) => button.getAttribute('aria-pressed') === 'true')
+    expect(current).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Table' }))
+    expect(onChange).toHaveBeenCalledWith({ view: 'table' })
+    expect(screen.queryByRole('button', { name: 'Table' })).toBeNull()
+  })
 })

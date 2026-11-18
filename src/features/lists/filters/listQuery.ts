@@ -40,6 +40,36 @@ export const DEFAULT_QUERY: ListQuery = {
   poster: 'any',
 }
 
+export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster'> = {
+  q: '',
+  statuses: [],
+  genres: [],
+  yearMin: null,
+  yearMax: null,
+  franchise: null,
+  creator: null,
+  platform: null,
+  ratingMin: null,
+  ratingBy: 'best',
+  smart: null,
+  poster: 'any',
+}
+
+export function hasActiveFilters(query: ListQuery): boolean {
+  return query.q.length > 0
+    || query.statuses.length > 0
+    || query.genres.length > 0
+    || query.yearMin !== null
+    || query.yearMax !== null
+    || (query.franchise !== null && query.franchise.length > 0)
+    || (query.creator !== null && query.creator.length > 0)
+    || (query.platform !== null && query.platform.length > 0)
+    || query.ratingMin !== null
+    || query.ratingBy !== DEFAULT_QUERY.ratingBy
+    || (query.smart !== null && query.smart.length > 0)
+    || query.poster !== 'any'
+}
+
 const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status']
 const GROUPS: readonly GroupKey[] = ['none', 'status', 'genre', 'year', 'franchise', 'creator', 'platform']
 

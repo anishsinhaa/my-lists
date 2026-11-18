@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useDismiss } from '@/hooks/useDismiss'
 import { ArrowDownUp, Calendar, Check, ChevronDown, Eraser, Gamepad2, Group, Layers, LayoutGrid, Rows3, SlidersHorizontal, Sparkles, Star, Table2, Tags, UserRound, X } from 'lucide-react'
-import { IconButton } from '@/design/IconButton'
 import { StatusGlyph } from '@/design/icons'
 import { matchStatus, shelfOrder } from '@/design/statusConfig'
 import { externalRatingLabel } from '@/lib/rating'
@@ -11,7 +10,7 @@ import { groupOptions } from '../groupOptions'
 import { hasFinishedColumn, sortChipLabel, sortOptions } from '../sortOptions'
 import { finishedOn, SMART_VIEWS } from '../smart/smartViews'
 import { FILTER_CONFIG } from './filterConfig'
-import type { ListQuery, RatingBy } from './listQuery'
+import { CLEARED_FILTERS, hasActiveFilters, type ListQuery, type RatingBy } from './listQuery'
 
 const KEPT_VIEWS = new Set(['nolan', 'marvel', 'top-rated', 'recent'])
 
@@ -253,6 +252,50 @@ function yearValue(raw: string): number | null {
   return Number.isFinite(value) ? value : null
 }
 
+const VIEWS = [['shelves', Rows3, 'Shelves'], ['grid', LayoutGrid, 'Grid'], ['table', Table2, 'Table']] as const
+
+function ClearFilters({ query, onChange }: { query: ListQuery; onChange: (partial: Partial<ListQuery>) => void }) {
+  return (
+    <div className="mb-2 flex justify-end border-b border-(--border) pb-2">
+      <button type="button" className="inline-flex min-h-11 items-center gap-1.5 px-1 text-sm text-(--ink-muted) disabled:opacity-40" disabled={!hasActiveFilters(query)} onClick={() => onChange(CLEARED_FILTERS)}>
+        <X aria-hidden="true" className="size-3.5" />
+        Clear filters
+      </button>
+    </div>
+  )
+}
+
+function ViewMenu({ view, onChange }: { view: ListQuery['view']; onChange: (partial: Partial<ListQuery>) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const close = useCallback(() => setOpen(false), [])
+  useDismiss(open, close, ref)
+  const current = VIEWS.find(([value]) => value === view) ?? VIEWS[1]
+  const Icon = current[1]
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" aria-expanded={open} aria-label={`${current[2]} view`} className="inline-flex h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 bg-(--surface) px-2.5 text-sm" onClick={() => setOpen((value) => !value)}>
+        <Icon aria-hidden="true" className="size-4" />
+        <span className="hidden md:inline">{current[2]}</span>
+      </button>
+      {open ? (
+        <div className="absolute right-0 z-30 mt-1 min-w-40 rounded-md border border-(--brass)/40 bg-(--bg) p-1 shadow-xl">
+          {VIEWS.map(([value, ItemIcon, name]) => {
+            const on = view === value
+            return (
+              <button key={value} type="button" aria-pressed={on} className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 text-left text-sm aria-pressed:bg-(--accent) aria-pressed:text-(--bg)" onClick={() => { setOpen(false); if (!on) onChange({ view: value }) }}>
+                <ItemIcon aria-hidden="true" className="size-4" />
+                <span className="min-w-0 flex-1">{name}</span>
+                {on ? <Check aria-hidden="true" className="size-4" /> : null}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 interface ActiveChip {
   key: string
   label: string
@@ -329,15 +372,12 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
           </button>
           {panel ? (
             <div className="absolute right-0 z-30 mt-1 max-h-[80vh] w-160 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-md border border-(--brass)/40 bg-(--bg) p-4 shadow-xl">
+              <ClearFilters query={query} onChange={onChange} />
               <FilterSections items={items} listId={listId} query={query} onChange={onChange} />
             </div>
           ) : null}
         </div>
-        <div role="radiogroup" aria-label="View" className="flex gap-1">
-          {([['shelves', Rows3, 'Shelves'], ['grid', LayoutGrid, 'Grid'], ['table', Table2, 'Table']] as const).map(([value, Icon, name]) => (
-            <IconButton key={value} aria-pressed={query.view === value} className={query.view === value ? 'bg-accent text-(--bg)' : ''} label={name} onClick={() => onChange({ view: value })}><Icon className="size-4" /></IconButton>
-          ))}
-        </div>
+        <ViewMenu view={query.view} onChange={onChange} />
         {onShuffle !== undefined ? <button type="button" className="h-11 px-3 text-sm" onClick={onShuffle}>Shuffle</button> : null}
       </div>
       {statusRow ? <StatusRow items={items} listId={listId} query={query} onChange={onChange} /> : null}
@@ -364,6 +404,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
               <h2 className="font-(--font-display) text-xl">Filters</h2>
               <button type="button" aria-label="Close" className="inline-flex size-11 items-center justify-center" onClick={() => setDrawer(false)}><X aria-hidden="true" className="size-5" /></button>
             </div>
+            <ClearFilters query={query} onChange={onChange} />
             <FilterSections items={items} listId={listId} query={query} onChange={onChange} />
           </div>
         </div>

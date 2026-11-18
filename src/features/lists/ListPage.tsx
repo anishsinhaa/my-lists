@@ -29,7 +29,7 @@ function MainList({ listId }: { listId: ListId }) {
   const enrich = usePosterFill(listId)
   const [tonight, setTonight] = useState(false)
   const [params, setParams] = useSearchParams()
-  const stored = readJson<'shelves' | 'grid' | 'table'>(`ml.view.${listId}`, listId === 'books' ? 'grid' : 'shelves')
+  const stored = readJson<'shelves' | 'grid' | 'table'>(`ml.view.${listId}`, 'grid')
   const query = parseListQuery(params)
   if (!params.has('view')) {
     query.view = stored

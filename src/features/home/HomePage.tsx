@@ -1,16 +1,19 @@
 import { useMemo, useState } from 'react'
+import { motion } from 'motion/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PosterImage } from '@/components/common/PosterImage'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Skeletons } from '@/components/common/Skeletons'
 import { BRAND } from '@/config/branding'
 import { Button } from '@/design/Button'
+import { LogoMark } from '@/design/LogoMark'
 import { Rail } from '@/design/Rail'
 import { thumbnailUrl } from '@/design/archive'
 import { useAuth } from '@/features/auth/AuthContext'
 import { displayTitle } from '@/lib/displayTitle'
 import { useLists } from '@/features/data/useLists'
 import { usePicksVisibility } from '@/features/settings/useSettings'
+import { DUR, EASE, fadeIn } from '@/themes/motion'
 import { LIST_IDS, LIST_KIND } from '@/types/lists'
 import { GlobalSearch } from './GlobalSearch'
 import { TonightModal } from './TonightModal'
@@ -50,6 +53,9 @@ export function HomePage() {
         </div>
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,#b08d5733,transparent_40%),linear-gradient(to_top,#100e0c,transparent_55%)]" />
         <div className="relative mx-auto w-full max-w-4xl space-y-5">
+          <motion.div className="w-fit" initial={fadeIn.initial} animate={fadeIn.animate} transition={{ duration: DUR.slow, ease: EASE.emphasized }}>
+            <LogoMark size={88} className="size-[4.5rem] drop-shadow-[0_0_18px_rgba(215,181,106,0.55)] sm:size-[5.5rem]" />
+          </motion.div>
           <p className="font-['Fraunces',serif] text-5xl text-[#f4ead8] md:text-7xl" style={{ textShadow: '0 2px 0 #000, 0 -1px 0 #ffffff33' }}>{BRAND.name}</p>
           <p className="font-['EB_Garamond',serif] text-xl text-[#e7d7b8] italic">{BRAND.tagline}</p>
           <p className="text-sm text-[#cbbfa8]">{salute(user?.username ?? 'there')}</p>

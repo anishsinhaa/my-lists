@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { BRAND } from '@/config/branding'
 import { IconButton } from '@/design/IconButton'
+import { LogoMark } from '@/design/LogoMark'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useLists } from '@/features/data/useLists'
 import { usePicksVisibility } from '@/features/settings/useSettings'
@@ -29,7 +30,10 @@ export function TopBar() {
               <ArrowLeft className="size-5" aria-hidden="true" />
             </button>
           ) : null}
-          <Link to="/" className="truncate py-1 font-['Fraunces',serif] text-[clamp(1.05rem,2vw,1.35rem)] leading-tight tracking-wide text-[#f4ead8]" style={{ textShadow: '0 1px 0 #000' }}>{BRAND.name}</Link>
+          <Link to="/" className="flex min-w-0 items-center gap-2 py-1 font-['Fraunces',serif] text-[clamp(1.05rem,2vw,1.35rem)] leading-tight tracking-wide text-[#f4ead8]" style={{ textShadow: '0 1px 0 #000' }}>
+            <LogoMark size={28} className="size-6 md:size-7" />
+            <span className="truncate">{BRAND.name}</span>
+          </Link>
         </div>
         <nav aria-label="Primary" className="justify-self-center">
           <div className="hidden items-center md:flex">

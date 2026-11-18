@@ -57,7 +57,7 @@ my-lists/
   .env.example            .env (git-ignored)      .gitignore
   package.json  tsconfig.json  tsconfig.app.json  tsconfig.node.json  tsconfig.api.json
   vite.config.ts  vitest.config.ts  vercel.json  components.json  eslint.config.js  index.html
-  public/  favicon.svg  manifest.webmanifest
+  public/  brand/  manifest.webmanifest
   docs/    DECISIONS.md  SETUP.md
   api/                                  # Vercel functions (thin wrappers only, <= 12 files on Hobby)
     health.ts                           # GET  /api/health

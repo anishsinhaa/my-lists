@@ -1,6 +1,7 @@
 import { SignJWT } from 'jose'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import guest from '../../../api/auth/guest.js'
 import login from '../../../api/auth/login.js'
 import logout from '../../../api/auth/logout.js'
 import me from '../../../api/auth/me.js'
@@ -24,11 +25,14 @@ function useEnv(): void {
   process.env.TMDB_READ_TOKEN = 'tmdb'
   process.env.RAWG_API_KEY = 'rawg'
   process.env.OPEN_LIBRARY_CONTACT = 'me@example.com'
+  process.env.GUEST_MODE = 'true'
+  process.env.GUEST_EXPIRES_IN = '7d'
   resetEnvCache()
   resetRateLimits()
 }
 
 afterEach(() => {
+  delete process.env.GUEST_MODE
   resetEnvCache()
 })
 
@@ -54,7 +58,7 @@ describe('EnvAuthProvider', () => {
   const provider = new EnvAuthProvider('anish', HASH)
 
   it('accepts the right password and rejects either wrong field', async () => {
-    await expect(provider.authenticate('anish', PASSWORD)).resolves.toEqual({ id: 'local', username: 'anish' })
+    await expect(provider.authenticate('anish', PASSWORD)).resolves.toEqual({ id: 'local', username: 'anish', role: 'owner', accountId: 'main' })
     await expect(provider.authenticate('anish', 'nope')).resolves.toBeNull()
     await expect(provider.authenticate('other', PASSWORD)).resolves.toBeNull()
   })
@@ -63,8 +67,8 @@ describe('EnvAuthProvider', () => {
 describe('tokens', () => {
   it('rejects expired and garbage tokens', async () => {
     useEnv()
-    const session = await signToken({ id: 'local', username: 'anish' })
-    await expect(verifyToken(session.token)).resolves.toEqual({ id: 'local', username: 'anish' })
+    const session = await signToken({ id: 'local', username: 'anish', role: 'owner', accountId: 'main' })
+    await expect(verifyToken(session.token)).resolves.toEqual({ id: 'local', username: 'anish', role: 'owner', accountId: 'main' })
     const expired = await new SignJWT({ username: 'anish' })
       .setProtectedHeader({ alg: 'HS256' })
       .setSubject('local')
@@ -108,7 +112,7 @@ describe('login and me', () => {
     const present = capture()
     await me({ method: 'GET', headers: { cookie } } as unknown as VercelRequest, present.res)
     expect(present.status()).toBe(200)
-    expect(present.body()).toEqual({ ok: true, data: { user: { id: 'local', username: 'anish' } } })
+    expect(present.body()).toEqual({ ok: true, data: { user: { id: 'local', username: 'anish', role: 'owner', accountId: 'main' } } })
 
     const signedOut = capture()
     await logout({ method: 'POST', headers: {} } as unknown as VercelRequest, signedOut.res)
@@ -127,5 +131,64 @@ describe('login and me', () => {
     await login({ method: 'POST', body: { username: 'anish', password: 'nope' }, headers: { 'x-forwarded-for': '9.9.9.9' } } as unknown as VercelRequest, blocked.res)
     expect(blocked.status()).toBe(429)
     expect(blocked.body()).toEqual({ ok: false, error: { code: 'rate_limited', message: 'Too many login attempts' } })
+  }, 20_000)
+})
+
+describe('guest sessions', () => {
+  const key = { kty: 'oct' as const, k: Buffer.from(JWT_SECRET).toString('base64url') }
+
+  it('sets a guest cookie', async () => {
+    useEnv()
+    const res = capture()
+    await guest({ method: 'POST', headers: { 'x-forwarded-for': '8.8.4.4' } } as unknown as VercelRequest, res.res)
+    expect(res.status()).toBe(200)
+    const setCookie = res.header('set-cookie') ?? ''
+    expect(setCookie).toContain('ml.session=')
+    const body = res.body() as { ok: boolean; data: { user: { role: string; accountId: string } } }
+    expect(body.ok).toBe(true)
+    expect(body.data.user).toEqual({ id: 'guest', username: 'Guest', role: 'guest', accountId: 'main' })
+  })
+
+  it('turns guest mode off and stops verifying guest tokens', async () => {
+    useEnv()
+    const session = await signToken({ id: 'guest', username: 'Guest', role: 'guest', accountId: 'main' })
+    process.env.GUEST_MODE = 'false'
+    resetEnvCache()
+    await expect(verifyToken(session.token)).resolves.toBeNull()
+    const blocked = capture()
+    await guest({ method: 'POST', headers: { 'x-forwarded-for': '4.4.4.4' } } as unknown as VercelRequest, blocked.res)
+    expect(blocked.status()).toBe(404)
+    expect(blocked.body()).toEqual({ ok: false, error: { code: 'feature_disabled', message: 'Guest mode is off' } })
+  })
+
+  it('treats a legacy owner token as the owner and rejects a role-less guest subject', async () => {
+    useEnv()
+    const legacy = await new SignJWT({ username: 'anish' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setSubject('local')
+      .setIssuer('my-lists')
+      .setExpirationTime('30d')
+      .sign(key)
+    await expect(verifyToken(legacy)).resolves.toEqual({ id: 'local', username: 'anish', role: 'owner', accountId: 'main' })
+    const stranger = await new SignJWT({ username: 'Guest' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setSubject('guest')
+      .setIssuer('my-lists')
+      .setExpirationTime('30d')
+      .sign(key)
+    await expect(verifyToken(stranger)).resolves.toBeNull()
+  })
+
+  it('rate limits the 21st guest session from the same IP', async () => {
+    useEnv()
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const res = capture()
+      await guest({ method: 'POST', headers: { 'x-forwarded-for': '7.7.7.7' } } as unknown as VercelRequest, res.res)
+      expect(res.status()).toBe(200)
+    }
+    const blocked = capture()
+    await guest({ method: 'POST', headers: { 'x-forwarded-for': '7.7.7.7' } } as unknown as VercelRequest, blocked.res)
+    expect(blocked.status()).toBe(429)
+    expect(blocked.body()).toEqual({ ok: false, error: { code: 'rate_limited', message: 'Too many guest sessions, try again later' } })
   }, 20_000)
 })

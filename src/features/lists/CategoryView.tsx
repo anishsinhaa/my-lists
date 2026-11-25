@@ -13,6 +13,7 @@ import type { ListQuery } from './filters/listQuery'
 import { focusGroup, itemGroups } from './filters/itemGroups'
 import { selectItems } from './filters/selectItems'
 import { StatsStrip } from './StatsStrip'
+import { useCanEdit } from '@/features/auth/AuthContext'
 import { useSaveItem } from './useSaveItem'
 import { ItemModal } from './views/ItemModal'
 import { ListTable } from './views/ListTable'
@@ -96,6 +97,7 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
     setTrackedItem(openItemId)
     if (openItemId !== null && openItemId.length > 0) setOpenId(openItemId)
   }
+  const canEdit = useCanEdit()
   const save = useSaveItem()
   const source = shuffled ?? items
   const visible = useMemo(() => selectItems(listId, source, query, QUERY_NOW), [listId, source, query])
@@ -185,7 +187,7 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
       {query.group !== 'none' ? groups.map((group) => (
         <GroupBlock key={group.status} group={group} listId={listId} view={query.view} onOpen={show} onSeeAll={focusGroup(query.group, group.status, group.loose) === null ? null : () => { const next = focusGroup(query.group, group.status, group.loose); if (next !== null) patch(next) }} />
       )) : null}
-      <ItemModal item={open} items={modalItems} listId={listId} onClose={hide} onOpen={show} onSave={save} />
+      <ItemModal item={open} items={modalItems} listId={listId} readOnly={!canEdit} onClose={hide} onOpen={show} onSave={save} />
     </div>
   )
 }

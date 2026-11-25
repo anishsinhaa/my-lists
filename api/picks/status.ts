@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getEnv } from '../../server/config/env.js'
 import { fail, methodGuard, ok } from '../../server/http/respond.js'
-import { withAuth } from '../../server/http/withAuth.js'
+import { requireAccountOwner } from '../../server/auth/permissions.js'
 import { PickStatusError, updatePickStatus } from '../../server/picks/updatePickStatus.js'
 import { createSheetsClient } from '../../server/sheets/client.js'
 import type { PickStatusRequest } from '../../src/types/api.js'
@@ -34,4 +34,4 @@ async function status(req: VercelRequest, res: VercelResponse): Promise<void> {
   }
 }
 
-export default withAuth(status)
+export default requireAccountOwner(status)

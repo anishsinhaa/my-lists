@@ -115,6 +115,15 @@ describe('item details', () => {
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ title: 'Argo (2012)' }), { notes: 'On season 3' })
   })
 
+  it('hides the editors in read-only mode and still shows the notes', () => {
+    render(<ItemModal readOnly item={movie({ notes: 'A quiet note' })} items={[movie({ notes: 'A quiet note' })]} listId="movies" onClose={() => undefined} onOpen={() => undefined} onSave={vi.fn()} />)
+    expect(screen.queryByRole('button', { name: 'Change status' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Rate 5' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Add a note, e.g. on Season 3' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Favourite' })).toBeNull()
+    expect(screen.getByText('A quiet note')).toBeTruthy()
+  })
+
   it('marks a favourite in the table', () => {
     render(<ListTable items={[movie({ favourite: true })]} listId="movies" onOpen={() => undefined} />)
     expect(screen.getByLabelText('Favourite')).toBeTruthy()

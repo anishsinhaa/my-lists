@@ -70,7 +70,7 @@ describe('POST /api/lists/item', () => {
     const missing = capture()
     await handler({ method: 'POST', headers: {}, body: {} } as unknown as VercelRequest, missing.res)
     expect(missing.status()).toBe(401)
-    const token = await signToken({ id: 'local', username: 'anish' })
+    const token = await signToken({ id: 'local', username: 'anish', role: 'owner', accountId: 'main' })
     const saved = capture()
     await handler({
       method: 'POST',
@@ -90,7 +90,7 @@ describe('POST /api/lists/item', () => {
 
   it('returns 400 for a body that is not an item update', async () => {
     useEnv()
-    const token = await signToken({ id: 'local', username: 'anish' })
+    const token = await signToken({ id: 'local', username: 'anish', role: 'owner', accountId: 'main' })
     const bad = capture()
     await handler({ method: 'POST', headers: { authorization: `Bearer ${token.token}` }, body: { title: 'Heat' } } as unknown as VercelRequest, bad.res)
     expect(bad.status()).toBe(400)

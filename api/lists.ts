@@ -4,12 +4,15 @@ import { loadSettings, skippedPicks } from '../server/settings/store.js'
 import { getCachedLists } from '../server/sheets/cache.js'
 import { createSheetsClient } from '../server/sheets/client.js'
 import { readAll } from '../server/sheets/readAll.js'
+import { canEdit } from '../src/types/auth.js'
+import { accountIdForRequest } from '../server/auth/permissions.js'
 import { methodGuard, ok } from '../server/http/respond.js'
 import { withAuth } from '../server/http/withAuth.js'
+import type { RequestContext } from '../server/http/types.js'
 
-async function lists(req: VercelRequest, res: VercelResponse): Promise<void> {
+async function lists(req: VercelRequest, res: VercelResponse, ctx: RequestContext): Promise<void> {
   if (!methodGuard(req, res, ['GET'])) return
-  const refresh = req.query.refresh === '1'
+  const refresh = req.query.refresh === '1' && canEdit(ctx.user, accountIdForRequest(ctx))
   const env = getEnv()
   const skipPicks = skippedPicks((await loadSettings()).picks, env.FEATURE_PICKS !== 'true')
   const data = await getCachedLists(() => readAll(createSheetsClient(env), { skipPicks }), { ttlMs: 15_000, force: refresh })

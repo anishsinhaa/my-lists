@@ -1,4 +1,4 @@
-import { ArrowLeft, Home, Library, RefreshCw, Search, Settings, Sparkles, User } from 'lucide-react'
+import { ArrowLeft, Eye, Home, Library, RefreshCw, Search, Settings, Sparkles, User } from 'lucide-react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { BRAND } from '@/config/branding'
@@ -15,7 +15,7 @@ function focusSearch() {
 export function TopBar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { logout, canEdit } = useAuth()
   const { refetch, isFetching } = useLists()
   const picks = usePicksVisibility()
   const inner = location.pathname !== '/'
@@ -44,14 +44,22 @@ export function TopBar() {
           </div>
         </nav>
         <div className="flex items-center justify-end gap-1 justify-self-end">
-          <IconButton label="Settings" onClick={() => void navigate('/settings')}><Settings className="size-4" /></IconButton>
+          {canEdit ? null : (
+            <span className="inline-flex min-h-8 items-center gap-1 rounded-full border border-(--brass)/40 px-2 text-xs whitespace-nowrap text-[#f4ead8]">
+              <Eye aria-hidden="true" className="size-3.5 shrink-0" />
+              <span className="hidden sm:inline">Guest · view only</span>
+              <span className="sm:hidden">View only</span>
+              <button type="button" className="underline" onClick={logout}>Sign in</button>
+            </span>
+          )}
+          {canEdit ? <IconButton label="Settings" onClick={() => void navigate('/settings')}><Settings className="size-4" /></IconButton> : null}
           <IconButton label="Refresh" disabled={isFetching} onClick={() => void refetch()}><RefreshCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} /></IconButton>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button type="button" aria-label="Account" className="inline-flex size-11 items-center justify-center rounded-md border border-(--brass)/40 text-[#f4ead8]"><User className="size-4" /></button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>{canEdit ? 'Log out' : 'Sign in as owner'}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

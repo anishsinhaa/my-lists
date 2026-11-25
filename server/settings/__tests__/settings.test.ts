@@ -87,7 +87,7 @@ describe('settings routes', () => {
   })
 
   it('saves picks toggles and keeps them off when FEATURE_PICKS is false', async () => {
-    const token = await signToken({ id: 'local', username: 'zeus' })
+    const token = await signToken({ id: 'local', username: 'zeus', role: 'owner', accountId: 'main' })
     const auth = { authorization: `Bearer ${token.token}` }
     const saved = capture()
     await settings({ method: 'PUT', headers: auth, body: { enabled: true, movies: true, series: false, games: true } } as unknown as VercelRequest, saved.res)
@@ -106,7 +106,7 @@ describe('settings routes', () => {
   })
 
   it('runs one refresh at a time and remembers the result', async () => {
-    const token = await signToken({ id: 'local', username: 'zeus' })
+    const token = await signToken({ id: 'local', username: 'zeus', role: 'owner', accountId: 'main' })
     const auth = { authorization: `Bearer ${token.token}` }
     let release: (value: unknown[]) => void = () => undefined
     backfillAll.mockImplementation(() => new Promise((resolve) => {

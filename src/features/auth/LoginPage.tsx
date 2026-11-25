@@ -1,19 +1,24 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Eye } from 'lucide-react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { BRAND } from '@/config/branding'
 import { LogoMark } from '@/design/LogoMark'
+import { ApiError } from '@/services/http/apiFetch'
 import { useAuth } from './AuthContext'
 
 export function LoginPage() {
-  const { status, login } = useAuth()
+  const { status, user, login, continueAsGuest } = useAuth()
+  const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [guesting, setGuesting] = useState(false)
+  const [guestOff, setGuestOff] = useState(false)
 
-  if (status === 'authenticated') return <Navigate to="/" replace />
+  if (status === 'authenticated' && user?.role === 'owner') return <Navigate to="/" replace />
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -50,6 +55,36 @@ export function LoginPage() {
           <Button type="submit" className="w-full" disabled={submitting || status === 'checking'}>
             {submitting ? 'Signing in…' : 'Sign in'}
           </Button>
+          {guestOff ? null : (
+            <>
+              <p className="text-center text-xs text-(--ink-muted)">or</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={guesting || status === 'checking'}
+                onClick={() => {
+                  setGuesting(true)
+                  setError(null)
+                  void continueAsGuest()
+                    .then(() => navigate('/', { replace: true }))
+                    .catch((caught: unknown) => {
+                      if (caught instanceof ApiError && caught.code === 'feature_disabled') {
+                        setGuestOff(true)
+                        setError('Guest mode is off.')
+                        return
+                      }
+                      setError(caught instanceof Error ? caught.message : 'Could not open a guest session')
+                    })
+                    .finally(() => setGuesting(false))
+                }}
+              >
+                <Eye aria-hidden="true" className="size-4" />
+                {guesting ? 'Opening…' : 'Continue as guest'}
+              </Button>
+              <p className="text-center text-xs text-(--ink-muted)">View only. Nothing can be changed.</p>
+            </>
+          )}
         </form>
       </div>
     </main>

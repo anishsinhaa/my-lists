@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs'
+import { DEFAULT_ACCOUNT_ID } from '../../src/types/auth.js'
 import type { AuthProvider, AuthUser } from './AuthProvider.js'
 
 const DUMMY_HASH = '$2b$12$zigsia//994jEQvd8AlEG.HG8HoftXQK5eymy9HuJcIPFnSchQzEG'
@@ -16,6 +17,6 @@ export class EnvAuthProvider implements AuthProvider {
     const userMatches = username === this.username
     const passwordMatches = await bcrypt.compare(password, userMatches ? this.passwordHash : DUMMY_HASH)
     if (!userMatches || !passwordMatches) return null
-    return { id: 'local', username: this.username }
+    return { id: 'local', username: this.username, role: 'owner', accountId: DEFAULT_ACCOUNT_ID }
   }
 }

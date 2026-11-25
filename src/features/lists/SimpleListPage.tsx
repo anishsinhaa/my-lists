@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TonightButton, TonightModal } from '@/features/home/TonightModal'
+import { useCanEdit } from '@/features/auth/AuthContext'
 import { useSaveItem } from '@/features/lists/useSaveItem'
 import { ItemModal } from '@/features/lists/views/ItemModal'
 import { Eraser, X } from 'lucide-react'
@@ -25,6 +26,7 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
     setTrackedItem(fromUrl)
     if (fromUrl !== null && fromUrl.length > 0) setOpenId(fromUrl)
   }
+  const canEdit = useCanEdit()
   const save = useSaveItem()
   const items = data?.lists[listId] ?? []
   const needle = query.trim().toLowerCase()
@@ -68,7 +70,7 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
           </li>
         ))}
       </ul>
-      <ItemModal item={open} items={shown} listId={listId} onClose={() => { setOpenId(null); if (params.has('item')) { const next = new URLSearchParams(params); next.delete('item'); setParams(next, { replace: true }) } }} onOpen={(entry) => setOpenId(entry.id)} onSave={save} />
+      <ItemModal item={open} items={shown} listId={listId} readOnly={!canEdit} onClose={() => { setOpenId(null); if (params.has('item')) { const next = new URLSearchParams(params); next.delete('item'); setParams(next, { replace: true }) } }} onOpen={(entry) => setOpenId(entry.id)} onSave={save} />
       {tonight && data !== undefined ? <TonightModal lists={data.lists} preset={listId} onClose={() => setTonight(false)} /> : null}
     </main>
   )

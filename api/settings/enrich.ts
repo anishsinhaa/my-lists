@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getEnv } from '../../server/config/env.js'
 import { backfillAll, toReportLine } from '../../server/images/backfill.js'
 import { fail, methodGuard, ok } from '../../server/http/respond.js'
-import { withAuth } from '../../server/http/withAuth.js'
+import { requireAccountOwner } from '../../server/auth/permissions.js'
 import { enrichStatus, startEnrichJob } from '../../server/settings/enrichJob.js'
 import { loadSettings } from '../../server/settings/store.js'
 import { createSheetsClient } from '../../server/sheets/client.js'
@@ -47,4 +47,4 @@ async function enrich(req: VercelRequest, res: VercelResponse): Promise<void> {
   ok(res, enrichStatus(), 202)
 }
 
-export default withAuth(enrich)
+export default requireAccountOwner(enrich)

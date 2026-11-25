@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { useOnline } from '@/hooks/useOnline'
 import type { ThemeId } from '@/types/theme'
 import { ThemeProvider } from '@/themes/ThemeProvider'
+import { useCanEdit } from '@/features/auth/AuthContext'
 import { EnrichmentRunner } from '@/features/posters/EnrichmentRunner'
 import { ArchiveFooter } from './ArchiveFooter'
 import { BottomNav } from './BottomNav'
@@ -21,11 +22,12 @@ function themeFor(pathname: string): ThemeId {
 export function AppShell() {
   const location = useLocation()
   const online = useOnline()
+  const canEdit = useCanEdit()
   const showFooter = location.pathname === '/' || location.pathname === '/lists'
   return (
     <ThemeProvider themeId={themeFor(location.pathname)}>
       {online ? null : <p className="bg-(--accent-2) px-3 py-2 text-sm text-(--bg)">You are offline. Showing saved lists.</p>}
-      <EnrichmentRunner />
+      {canEdit ? <EnrichmentRunner /> : null}
       <TopBar />
       <SearchDock />
       <ErrorBoundary>

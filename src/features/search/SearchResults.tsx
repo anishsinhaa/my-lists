@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { fadeUp } from '@/themes/motion'
 import { useNavigate } from 'react-router-dom'
 import { itemHref } from '@/features/home/tonight'
+import { useCanEdit } from '@/features/auth/AuthContext'
 import { useSaveItem } from '@/features/lists/useSaveItem'
 import { ItemModal } from '@/features/lists/views/ItemModal'
 import type { MediaItem } from '@/types/media'
@@ -12,6 +13,7 @@ import type { SearchHit } from './searchIndex'
 
 export function SearchResults({ hits, active, idPrefix = 'search-hit' }: { hits: SearchHit[]; active: number; idPrefix?: string }) {
   const navigate = useNavigate()
+  const canEdit = useCanEdit()
   const save = useSaveItem()
   const [openId, setOpenId] = useState<string | null>(null)
   const media = hits.flatMap((hit) => hit.source.kind === 'item' ? [hit.source.item] : [])
@@ -47,6 +49,7 @@ export function SearchResults({ hits, active, idPrefix = 'search-hit' }: { hits:
         onClose={() => setOpenId(null)}
         onOpen={(entry) => setOpenId(entry.id)}
         onOpenInList={open === null ? undefined : () => openInList(open)}
+        readOnly={!canEdit}
         onSave={save}
       />
     </>

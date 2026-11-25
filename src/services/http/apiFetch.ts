@@ -27,6 +27,9 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   }
   const body = payload as ApiResponse<T>
   if (!body.ok) {
+    if (response.status === 403 || body.error.code === 'forbidden') {
+      window.dispatchEvent(new Event('ml:forbidden'))
+    }
     if (response.status === 401 || body.error.code === 'unauthorized') {
       authService.logout()
       window.dispatchEvent(new Event('ml:unauthorized'))

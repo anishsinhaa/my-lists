@@ -43,3 +43,17 @@ shadcn is Step 2 and was not initialized.
 ### jsdom and Node
 
 `jsdom@31.0.1` declares `node: ^22.22.2 || ^24.15.0 || >=26.0.0`. This machine is Node `v24.11.0`, so npm printed `EBADENGINE`. The plan's `npm view` version was kept. The first test that loads jsdom needs a Node that satisfies that range, or a later decision to pin an older jsdom.
+
+## Guest mode and account-level permissions
+
+Permissions are per account, not per list. Each user will own one account (all their lists and tabs; today that is one Google Sheet, `GOOGLE_SHEET_ID`, owned by Anish). An owner can share their whole account. A guest session is tied to one `accountId` and sees that entire account read-only. `canEdit(session, accountId)` is the only permission rule, and `requireAccountOwner` is the only gate on writes.
+
+Owner-only endpoints:
+
+- POST /api/lists/item
+- POST /api/picks/status
+- POST /api/posters/fill
+- PUT /api/settings
+- POST /api/settings/enrich
+
+Later work, not built yet: an accounts registry (`accountId` to owner user and sheet id), loading data and cache keyed by `accountId` instead of the single `GOOGLE_SHEET_ID` / single `getCachedLists` cache, and share links that mint a guest session for a specific `accountId`. `canEdit` and `requireAccountOwner` stay the single gate on every write.

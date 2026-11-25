@@ -5,6 +5,8 @@ const schema = z.object({
   AUTH_PASSWORD_HASH: z.string().min(1),
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().min(1).default('30d'),
+  GUEST_MODE: z.string().default('true'),
+  GUEST_EXPIRES_IN: z.string().min(1).default('7d'),
   GOOGLE_SHEET_ID: z.string().min(1),
   GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string().min(1),
   GOOGLE_PRIVATE_KEY: z.string().min(1).transform((value) => value.replace(/\\n/g, '\n')),

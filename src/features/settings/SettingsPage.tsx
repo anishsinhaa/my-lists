@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
+import { useCanEdit } from '@/features/auth/AuthContext'
 import { useLists } from '@/features/data/useLists'
 import { dataHealth } from '@/features/lists/stats/dataHealth'
 import { fetchLists } from '@/services/sheets/listsApi'
@@ -35,6 +36,7 @@ export function SettingsPage() {
   const settings = useSettings()
   const status = useEnrichStatus()
   const lists = useLists()
+  const canEdit = useCanEdit()
   const [tab, setTab] = useState<RefreshTab>('all')
   const [notice, setNotice] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -56,6 +58,7 @@ export function SettingsPage() {
   }, [queryClient, running])
 
   async function updatePicks(next: PicksToggles): Promise<void> {
+    if (!canEdit) return
     setSaving(true)
     setNotice(null)
     try {
@@ -73,6 +76,7 @@ export function SettingsPage() {
   }
 
   async function run(force: boolean): Promise<void> {
+    if (!canEdit) return
     if (force) {
       if (tab === 'all') return
       const confirmed = window.confirm(`Overwrite Poster and IMDb Rating on ${TAB_NAME[tab]}? A cell stays as it is when the lookup returns nothing.`)
@@ -88,6 +92,7 @@ export function SettingsPage() {
   }
 
   async function fill(id: ListId): Promise<void> {
+    if (!canEdit) return
     setNotice(null)
     try {
       const started = await startEnrich({ tab: id, force: false })
@@ -127,8 +132,8 @@ export function SettingsPage() {
           </select>
         </label>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" className="min-h-11" disabled={running} onClick={() => void run(false)}>Fill missing posters & ratings</Button>
-          <Button type="button" className="min-h-11" variant="outline" disabled={running || tab === 'all'} onClick={() => void run(true)}>Force refetch</Button>
+          <Button type="button" className="min-h-11" disabled={!canEdit || running} onClick={() => void run(false)}>Fill missing posters & ratings</Button>
+          <Button type="button" className="min-h-11" variant="outline" disabled={!canEdit || running || tab === 'all'} onClick={() => void run(true)}>Force refetch</Button>
           <Button type="button" className="min-h-11" variant="outline" onClick={() => void reloadFromSheet()}>Reload from sheet</Button>
         </div>
         {running && status.data !== undefined ? (
@@ -166,7 +171,7 @@ export function SettingsPage() {
                     <li>Missing creators {health.creators}</li>
                     <li>Missing franchises {health.franchises}</li>
                   </ul>
-                  {POSTER_LISTS.includes(id) ? <Button type="button" className="min-h-11" disabled={running} onClick={() => void fill(id)}>Fill missing data</Button> : null}
+                  {POSTER_LISTS.includes(id) ? <Button type="button" className="min-h-11" disabled={!canEdit || running} onClick={() => void fill(id)}>Fill missing data</Button> : null}
                 </article>
               )
             })}
@@ -178,10 +183,10 @@ export function SettingsPage() {
         {hardOff ? <p className="text-sm">FEATURE_PICKS is off, so picks stay hidden.</p> : null}
         {settings.isLoading || picks === undefined ? <p>Loading settings.</p> : (
           <>
-            <SwitchRow label="Picks" checked={picks.enabled} disabled={hardOff || saving} onChange={(enabled) => void updatePicks({ ...picks, enabled })} />
-            <SwitchRow label="Movies picks" checked={picks.movies} disabled={hardOff || saving} onChange={(movies) => void updatePicks({ ...picks, movies })} />
-            <SwitchRow label="Series picks" checked={picks.series} disabled={hardOff || saving} onChange={(series) => void updatePicks({ ...picks, series })} />
-            <SwitchRow label="Games picks" checked={picks.games} disabled={hardOff || saving} onChange={(games) => void updatePicks({ ...picks, games })} />
+            <SwitchRow label="Picks" checked={picks.enabled} disabled={!canEdit || hardOff || saving} onChange={(enabled) => void updatePicks({ ...picks, enabled })} />
+            <SwitchRow label="Movies picks" checked={picks.movies} disabled={!canEdit || hardOff || saving} onChange={(movies) => void updatePicks({ ...picks, movies })} />
+            <SwitchRow label="Series picks" checked={picks.series} disabled={!canEdit || hardOff || saving} onChange={(series) => void updatePicks({ ...picks, series })} />
+            <SwitchRow label="Games picks" checked={picks.games} disabled={!canEdit || hardOff || saving} onChange={(games) => void updatePicks({ ...picks, games })} />
           </>
         )}
       </section>

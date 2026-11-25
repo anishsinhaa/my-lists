@@ -3,7 +3,7 @@ import { getEnv } from '../../server/config/env.js'
 import { enrichItems, parseFillItems } from '../../server/images/enrich.js'
 import { createSheetsClient } from '../../server/sheets/client.js'
 import { fail, methodGuard, ok } from '../../server/http/respond.js'
-import { withAuth } from '../../server/http/withAuth.js'
+import { requireAccountOwner } from '../../server/auth/permissions.js'
 
 async function fill(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!methodGuard(req, res, ['POST'])) return
@@ -15,4 +15,4 @@ async function fill(req: VercelRequest, res: VercelResponse): Promise<void> {
   }
 }
 
-export default withAuth(fill)
+export default requireAccountOwner(fill)

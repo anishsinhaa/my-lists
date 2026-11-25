@@ -1,11 +1,13 @@
 import { Home, Library, Search, Settings, Sparkles } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useCanEdit } from '@/features/auth/AuthContext'
 import { usePicksVisibility } from '@/features/settings/useSettings'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 export function BottomNav() {
   const mobile = useMediaQuery('(max-width: 767px)')
   const picks = usePicksVisibility()
+  const canEdit = useCanEdit()
   const navigate = useNavigate()
   if (!mobile) return null
   const item = 'flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] aria-[current=page]:text-(--brass)'
@@ -15,7 +17,7 @@ export function BottomNav() {
       <NavLink to="/lists" className={item}><Library className="size-5" aria-hidden="true" /> Lists</NavLink>
       <button type="button" className={item} onClick={() => { void navigate('/'); window.dispatchEvent(new Event('ml:search')) }}><Search className="size-5" aria-hidden="true" /> Search</button>
       {picks.any ? <NavLink to="/picks" className={item}><Sparkles className="size-5" aria-hidden="true" /> Picks</NavLink> : null}
-      <NavLink to="/settings" className={item}><Settings className="size-5" aria-hidden="true" /> Settings</NavLink>
+      {canEdit ? <NavLink to="/settings" className={item}><Settings className="size-5" aria-hidden="true" /> Settings</NavLink> : null}
     </nav>
   )
 }

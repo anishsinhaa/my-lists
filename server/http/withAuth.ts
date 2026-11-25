@@ -4,7 +4,7 @@ import { fail } from './respond.js'
 import { readCookie, SESSION_COOKIE } from './sessionCookie.js'
 import type { RequestContext } from './types.js'
 
-type AuthedHandler = (req: VercelRequest, res: VercelResponse, ctx: RequestContext) => Promise<void>
+export type AuthedHandler = (req: VercelRequest, res: VercelResponse, ctx: RequestContext) => Promise<void>
 
 function presentedToken(req: VercelRequest): string | undefined {
   const cookie = readCookie(req.headers.cookie, SESSION_COOKIE)

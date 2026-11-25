@@ -3,6 +3,7 @@ import type { EnrichField } from './media.ts'
 
 export type ApiErrorCode =
   | 'unauthorized'
+  | 'forbidden'
   | 'bad_request'
   | 'rate_limited'
   | 'upstream_error'

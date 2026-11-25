@@ -1,8 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { z } from 'zod'
 import { getEnv } from '../server/config/env.js'
+import { canEdit } from '../src/types/auth.js'
+import { accountIdForRequest } from '../server/auth/permissions.js'
 import { fail, methodGuard, ok } from '../server/http/respond.js'
 import { withAuth } from '../server/http/withAuth.js'
+import type { RequestContext } from '../server/http/types.js'
 import { effectivePicks, loadSettings, saveSettings } from '../server/settings/store.js'
 import { resetListsCache } from '../server/sheets/cache.js'
 
@@ -19,10 +22,14 @@ async function view() {
   return { hardOff, picks: stored.picks, effective: effectivePicks(stored.picks, hardOff), lastRun: stored.lastRun }
 }
 
-async function settings(req: VercelRequest, res: VercelResponse): Promise<void> {
+async function settings(req: VercelRequest, res: VercelResponse, ctx: RequestContext): Promise<void> {
   if (!methodGuard(req, res, ['GET', 'PUT'])) return
   if (req.method === 'GET') {
     ok(res, await view())
+    return
+  }
+  if (!canEdit(ctx.user, accountIdForRequest(ctx))) {
+    fail(res, 'forbidden', 'View only. Sign in as the owner to make changes.', 403)
     return
   }
   const parsed = picksSchema.safeParse(req.body)

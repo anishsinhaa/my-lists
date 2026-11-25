@@ -1,18 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getAuthProvider } from '../../server/auth/index.js'
 import { signToken } from '../../server/auth/tokens.js'
+import { clientIp } from '../../server/http/clientIp.js'
 import { recordFailure } from '../../server/http/rateLimit.js'
 import { fail, methodGuard, ok } from '../../server/http/respond.js'
 import { sessionCookieHeader } from '../../server/http/sessionCookie.js'
 
 const FAILURE_DELAY_MS = 400
-
-function clientIp(req: VercelRequest): string {
-  const forwarded = req.headers['x-forwarded-for']
-  const value = Array.isArray(forwarded) ? forwarded[0] : forwarded
-  if (typeof value === 'string' && value.length > 0) return value.split(',')[0]?.trim() || 'unknown'
-  return 'unknown'
-}
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   try {

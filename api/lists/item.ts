@@ -4,7 +4,7 @@ import { resetListsCache } from '../../server/sheets/cache.js'
 import { createSheetsClient } from '../../server/sheets/client.js'
 import { updateListItem, type ItemUpdate } from '../../server/lists/updateItem.js'
 import { fail, methodGuard, ok } from '../../server/http/respond.js'
-import { withAuth } from '../../server/http/withAuth.js'
+import { requireAccountOwner } from '../../server/auth/permissions.js'
 import { LIST_IDS } from '../../src/types/lists.js'
 
 function isUpdate(body: unknown): body is ItemUpdate {
@@ -31,4 +31,4 @@ async function item(req: VercelRequest, res: VercelResponse): Promise<void> {
   ok(res, result)
 }
 
-export default withAuth(item)
+export default requireAccountOwner(item)

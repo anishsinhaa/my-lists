@@ -145,7 +145,7 @@ function StatusMenu({ listId, status, onPick }: { listId: ListId; status: string
   )
 }
 
-export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpenInList, theme }: {
+export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpenInList, theme, readOnly = false }: {
   item: MediaItem | null
   items: MediaItem[]
   listId: ListId
@@ -154,6 +154,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
   onSave: (item: MediaItem, patch: ItemPatch) => Promise<void>
   onOpenInList?: () => void
   theme?: ThemeId
+  readOnly?: boolean
 }) {
   const [savedId, setSavedId] = useState<string | null>(null)
   const index = item === null ? -1 : items.findIndex((entry) => entry.id === item.id)
@@ -179,7 +180,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
   }, [item, next, onOpen, previous])
 
   function save(patch: ItemPatch) {
-    if (item === null) return
+    if (item === null || readOnly) return
     const id = item.id
     setSavedId(id)
     void onSave(item, patch).catch(() => setSavedId((current) => current === id ? null : current))
@@ -213,12 +214,20 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start gap-1">
                     <DialogTitle className="min-w-0 flex-1 font-(--font-display) text-2xl leading-tight">{displayTitle(item.title, item.year)}</DialogTitle>
-                    <button type="button" aria-label="Favourite" aria-pressed={item.favourite} className="inline-flex size-11 shrink-0 items-center justify-center" onClick={() => save({ favourite: !item.favourite })}>
-                      <Heart aria-hidden="true" className={`size-5 ${item.favourite ? 'fill-(--accent) text-(--accent)' : 'text-(--ink-muted)'}`} />
-                    </button>
+                    {readOnly ? (
+                      item.favourite ? (
+                        <span aria-label="Favourite" className="inline-flex size-11 shrink-0 items-center justify-center">
+                          <Heart aria-hidden="true" className="size-5 fill-(--accent) text-(--accent)" />
+                        </span>
+                      ) : null
+                    ) : (
+                      <button type="button" aria-label="Favourite" aria-pressed={item.favourite} className="inline-flex size-11 shrink-0 items-center justify-center" onClick={() => save({ favourite: !item.favourite })}>
+                        <Heart aria-hidden="true" className={`size-5 ${item.favourite ? 'fill-(--accent) text-(--accent)' : 'text-(--ink-muted)'}`} />
+                      </button>
+                    )}
                   </div>
                   <DialogDescription className="sr-only">{displayTitle(item.title, item.year)}</DialogDescription>
-                  {savedId === item.id ? <p aria-live="polite" className="mt-1 inline-flex items-center gap-1 text-sm text-(--accent)"><Check aria-hidden="true" className="size-4" />Saved</p> : null}
+                  {!readOnly && savedId === item.id ? <p aria-live="polite" className="mt-1 inline-flex items-center gap-1 text-sm text-(--accent)"><Check aria-hidden="true" className="size-4" />Saved</p> : null}
                   {onOpenInList ? <button type="button" className="mt-2 min-h-11 text-sm underline" onClick={onOpenInList}>Open in list</button> : null}
                 </div>
                 <button type="button" aria-label="Next" className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-(--border) disabled:opacity-30" disabled={next === undefined} onClick={() => { if (next !== undefined) onOpen(next) }}>
@@ -240,9 +249,13 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                   {item.genres.map((genre) => <span key={genre} className="rounded-full border border-(--border) px-2 py-0.5 text-xs">{genre}</span>)}
                 </div>
               )}
-              <StarRating value={item.myRating} onChange={(myRating) => save({ myRating })} />
-              <NotesEditor key={item.id} value={item.notes} onSave={(notes) => save({ notes })} />
-              <StatusMenu key={`${item.id}-status`} listId={listId} status={item.status} onPick={(status) => save({ status })} />
+              {readOnly ? null : <StarRating value={item.myRating} onChange={(myRating) => save({ myRating })} />}
+              {readOnly ? (
+                item.notes.trim().length === 0 ? null : <TextBlock label="My notes">{item.notes}</TextBlock>
+              ) : (
+                <NotesEditor key={item.id} value={item.notes} onSave={(notes) => save({ notes })} />
+              )}
+              {readOnly ? <StatusBadge listId={listId} size="lg" status={item.status} /> : <StatusMenu key={`${item.id}-status`} listId={listId} status={item.status} onPick={(status) => save({ status })} />}
             </div>
           </div>
         )}

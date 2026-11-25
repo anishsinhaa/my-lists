@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useCanEdit } from '@/features/auth/AuthContext'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { formatIstDay } from '@/lib/dates'
@@ -153,7 +154,12 @@ async function drain(item: MediaItem, queryClient: QueryClient): Promise<void> {
 
 export function useSaveItem() {
   const queryClient = useQueryClient()
+  const editable = useCanEdit()
   return useCallback(async (item: MediaItem, patch: ItemPatch) => {
+    if (!editable) {
+      window.dispatchEvent(new Event('ml:forbidden'))
+      return
+    }
     let lane = lanes.get(item.id)
     if (lane === undefined) {
       lane = { inflight: false, pending: null, epoch: 0, base: undefined, hasBase: false }
@@ -170,5 +176,5 @@ export function useSaveItem() {
     lane.epoch += 1
     publish(queryClient, current, desired)
     return drain(item, queryClient)
-  }, [queryClient])
+  }, [editable, queryClient])
 }

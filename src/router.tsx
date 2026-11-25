@@ -3,6 +3,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
+import { RequireOwner } from '@/features/auth/RequireOwner'
 import { HomePage } from '@/features/home/HomePage'
 import { ShelfPage } from '@/features/home/ShelfPage'
 import { ListPage } from '@/features/lists/ListPage'
@@ -42,7 +43,7 @@ export const router = createBrowserRouter([
               { path: '/lists', element: <MyListsPage /> },
               { path: '/lists/:listId', element: <ListPage /> },
               { path: '/picks', element: <PicksPage /> },
-              { path: '/settings', element: <SettingsPage /> },
+              { element: <RequireOwner />, children: [{ path: '/settings', element: <SettingsPage /> }] },
               ...(import.meta.env.DEV ? [{ path: '/dev/kit', lazy: kitLoader }] : []),
               { path: '*', element: <NotFound /> },
             ],

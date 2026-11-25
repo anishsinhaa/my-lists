@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { parseUpdatedAt, parseYear, serialToIso } from '../dates.ts'
+import { parseSheetDate, parseUpdatedAt, parseYear, serialToIso } from '../dates.ts'
 import { normalizeTitle, sanitizePosterUrl, splitGenres } from '../normalize.ts'
 import { effectiveRating, externalRatingLabel, parseRating } from '../rating.ts'
 import { PICKS_IDS, PICKS_TARGET, STATUSES } from '../../types/lists.ts'
@@ -41,6 +41,14 @@ describe('dates', () => {
     expect(parseUpdatedAt('03/15/2023')).toBe('2023-03-15T00:00:00.000Z')
     expect(parseUpdatedAt('03/04/2023')).toBe('2023-04-03T00:00:00.000Z')
     expect(parseUpdatedAt('2026-11-17 23:39')).toBe('2026-11-17T18:09:00.000Z')
+  })
+
+  it('reads a Sheets serial date and leaves real dates and blanks alone', () => {
+    expect(parseSheetDate(46138)).toBe('2026-04-26')
+    expect(parseSheetDate('46138')).toBe('2026-04-26')
+    expect(parseSheetDate('2020-01-02')).toBe('2020-01-02')
+    expect(parseSheetDate('')).toBe('')
+    expect(parseSheetDate(null)).toBe('')
   })
 
   it('reads a year from a number or the first 4-digit token', () => {

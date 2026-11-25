@@ -1,4 +1,4 @@
-import { parseUpdatedAt, parseYear } from '../../src/lib/dates.js'
+import { parseSheetDate, parseUpdatedAt, parseYear } from '../../src/lib/dates.js'
 import { normalizeTitle, sanitizePosterUrl, splitGenres } from '../../src/lib/normalize.js'
 import { parseRating } from '../../src/lib/rating.js'
 import { statusGroupOf, type ListId, type PicksId } from '../../src/types/lists.js'
@@ -59,7 +59,7 @@ export function mapMainTab(listId: ListId, values: unknown[][]): MapResult<Media
     seen.set(titleKey, count)
     if (count > 1) warnings.push({ tab: listId, code: 'duplicate_title', message: `Duplicate title "${title}"` })
     const extra: Record<string, string> = {}
-    for (const column of map.extras) extra[column.header] = text(cell(row, column.index))
+    for (const column of map.extras) extra[column.header] = column.header.includes('date') ? parseSheetDate(cell(row, column.index)) : text(cell(row, column.index))
     items.push({
       id: makeItemId(listId, titleKey, year, count),
       listId,

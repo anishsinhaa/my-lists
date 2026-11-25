@@ -50,6 +50,17 @@ describe('mapMainTab', () => {
     expect(result.items[0]?.updatedAt).toBeNull()
   })
 
+  it('turns a Sheets serial in a date column into a calendar date and leaves other numbers alone', () => {
+    const result = mapMainTab('books', [
+      ['Title', 'Date finished', 'Box office'],
+      ['Atomic Habits', 46138, 46138],
+      ['Dune', '', ''],
+    ])
+    expect(result.items[0]?.extra['date finished']).toBe('2026-04-26')
+    expect(result.items[0]?.extra['box office']).toBe('46138')
+    expect(result.items[1]?.extra['date finished']).toBe('')
+  })
+
   it('splits comma-separated genres and keeps Description apart from Notes', () => {
     const result = mapMainTab('series', [
       ['Title', 'Why', 'Description', 'Genre', 'Notes'],

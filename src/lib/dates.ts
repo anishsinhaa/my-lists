@@ -6,6 +6,21 @@ export function serialToIso(serial: number): string {
   return date.toISOString().slice(0, 10)
 }
 
+export function parseSheetDate(value: unknown): string {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    if (value >= 20_000 && value <= 80_000) return serialToIso(value)
+    return String(value)
+  }
+  if (typeof value !== 'string') return ''
+  const text = value.trim()
+  if (text.length === 0) return ''
+  if (/^\d+(?:\.\d+)?$/.test(text)) {
+    const serial = Number(text)
+    if (serial >= 20_000 && serial <= 80_000) return serialToIso(serial)
+  }
+  return text
+}
+
 export function parseYear(value: unknown): number | null {
   const source = typeof value === 'number' ? String(value) : typeof value === 'string' ? value : ''
   const match = /(\d{4})/.exec(source)

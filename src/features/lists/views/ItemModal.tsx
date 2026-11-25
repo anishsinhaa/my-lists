@@ -6,6 +6,7 @@ import { StatusBadge } from '@/design/StatusBadge'
 import { StatusGlyph } from '@/design/icons'
 import { STATUS_TABLE } from '@/design/statusConfig'
 import { thumbnailUrl } from '@/design/archive'
+import { parseSheetDate } from '@/lib/dates'
 import { displayTitle } from '@/lib/displayTitle'
 import { externalRatingLabel } from '@/lib/rating'
 import type { ThemeId } from '@/types/theme'
@@ -16,7 +17,7 @@ import { StarRating } from './StarRating'
 
 function shown(value: string | number | null | undefined): string | null {
   if (value === null || value === undefined) return null
-  const text = String(value).trim()
+  const text = parseSheetDate(value).trim()
   if (text.length === 0 || text === '-' || text === '–' || text === '—') return null
   if (/^\d{4}-\d{2}-\d{2}T/.test(text)) return text.slice(0, 10)
   return text

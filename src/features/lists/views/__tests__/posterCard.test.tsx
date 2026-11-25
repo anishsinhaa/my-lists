@@ -43,7 +43,7 @@ describe('poster rating chip', () => {
 })
 
 describe('book cover hover', () => {
-  it('lifts and opens inside the card instead of sliding into the next cell', () => {
+  it('lifts inside the card with no page strip, frame, or corner tab', () => {
     const book = movie()
     book.listId = 'books'
     book.id = 'books:dune:1965'
@@ -52,11 +52,14 @@ describe('book cover hover', () => {
     const cover = container.querySelector('.book-cover')
     expect(button?.className).toContain('book-card')
     expect(button?.className).toContain('isolate')
-    expect(button?.className).not.toContain('overflow-hidden')
-    expect(cover?.className).not.toContain('overflow-hidden')
+    expect(button?.className).not.toContain('border')
+    expect(cover?.className).not.toContain('border')
+    expect(cover?.className).not.toContain('ring')
     expect(cover?.className).not.toContain('skew')
-    expect(container.querySelector('.book-stage')).toBeTruthy()
-    expect(container.querySelector('.book-pages')).toBeTruthy()
+    expect(container.querySelector('.book-pages')).toBeNull()
+    expect(container.querySelector('.book-face')).toBeTruthy()
+    expect(container.querySelector('[data-spine]')).toBeNull()
     expect(container.innerHTML).not.toContain('clip-path')
+    expect(container.innerHTML).not.toContain('rotateY')
   })
 })

@@ -61,7 +61,7 @@ function titleSize(title: string): string {
   return 'text-xl'
 }
 
-export function FallbackCover({ title, byline = '', kind = 'other', className = '' }: { title: string; byline?: string; kind?: MediaKind; className?: string }) {
+export function FallbackCover({ title, byline = '', className = '' }: { title: string; byline?: string; kind?: MediaKind; className?: string }) {
   const palette = coverPaletteIndex(title)
   const pair = COVER_PAIRS[palette] ?? COVER_PAIRS[0]
   const from = pair?.[0] ?? COVER_PAIRS[0][0]
@@ -73,8 +73,7 @@ export function FallbackCover({ title, byline = '', kind = 'other', className = 
       className={`relative flex h-full w-full items-center justify-center overflow-hidden px-4 text-center ${className}`}
       style={{ backgroundImage: `linear-gradient(165deg, ${from}, ${to})`, color: ink, textShadow: ink === COVER_LIGHT ? '0 1px 2px rgb(0 0 0 / 0.45)' : undefined }}
     >
-      <span aria-hidden="true" className="pointer-events-none absolute inset-2 border border-current/35" />
-      {kind === 'book' ? <span aria-hidden="true" data-spine="true" className="pointer-events-none absolute inset-y-0 left-0 w-3 bg-current/20" /> : null}
+      <span aria-hidden="true" data-sheen="true" className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(120deg, rgba(255,255,255,.12), transparent 40%)' }} />
       <span className="relative z-10 flex w-full max-w-full flex-col items-center">
         <span className={`line-clamp-4 font-(--font-display) font-bold leading-tight text-balance ${titleSize(title)}`}>{title}</span>
         {byline.length === 0 ? null : (

@@ -21,6 +21,7 @@ export function SearchResults({ hits, active, idPrefix = 'search-hit' }: { hits:
 
   function choose(hit: SearchHit) {
     if (hit.source.kind === 'pick') {
+      if (!canEdit) return
       navigate(`/picks?tab=${hit.source.item.picksId}&q=${encodeURIComponent(hit.source.item.title)}`)
       return
     }

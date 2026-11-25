@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Skeletons } from '@/components/common/Skeletons'
 import { BRAND } from '@/config/branding'
 import { Button } from '@/design/Button'
 import { LogoMark } from '@/design/LogoMark'
 import { thumbnailUrl } from '@/design/archive'
-import { useAuth } from '@/features/auth/AuthContext'
+import { useAuth, useCanEdit } from '@/features/auth/AuthContext'
 import { useLists } from '@/features/data/useLists'
 import { usePicksVisibility } from '@/features/settings/useSettings'
 import { DUR, EASE, fadeIn } from '@/themes/motion'
@@ -27,6 +30,7 @@ function salute(name: string): string {
 export function HomePage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const canEdit = useCanEdit()
   const picks = usePicksVisibility()
   const { data, isLoading, error, refetch } = useLists()
   const [tonight, setTonight] = useState(false)
@@ -60,8 +64,26 @@ export function HomePage() {
           <div className="flex flex-wrap gap-3">
             <Button size="lg" onClick={() => void navigate('/lists')}>Open my lists</Button>
             <Button size="lg" variant="ghost" className="text-[#f4ead8]" disabled={archiveSize === 0} onClick={() => setTonight(true)}>Pick for tonight</Button>
-            {picks.any ? <Button size="lg" variant="ghost" className="text-[#f4ead8]" onClick={() => void navigate('/picks')}>Picks</Button> : null}
-            <button type="button" disabled className="min-h-13 rounded-full border border-[#8c6b3a] bg-[#6b2b24] px-4 text-sm text-[#f4ead8]">Soon</button>
+            {canEdit && picks.any ? <Button size="lg" variant="ghost" className="text-[#f4ead8]" onClick={() => void navigate('/picks')}>Picks</Button> : null}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    tabIndex={0}
+                    className="inline-flex cursor-not-allowed rounded-full focus-visible:outline-2 focus-visible:outline-(--brass)"
+                    onPointerUp={(event) => {
+                      if (event.pointerType === 'touch') toast.info('Coming soon')
+                    }}
+                  >
+                    <button type="button" disabled aria-disabled="true" title="Coming soon" className="pointer-events-none inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-full border border-(--brass) bg-(--surface) px-4 text-sm text-(--ink-muted) opacity-50">
+                      <Plus aria-hidden="true" className="size-4" />
+                      Add
+                    </button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Coming soon</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <GlobalSearch />
         </div>

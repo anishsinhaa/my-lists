@@ -39,7 +39,7 @@ export function TopBar() {
           <div className="hidden items-center md:flex">
             <NavLink to="/" end className={item}><Home className="size-4" aria-hidden="true" /> Home</NavLink>
             <NavLink to="/lists" className={item}><Library className="size-4" aria-hidden="true" /> My Lists</NavLink>
-            {picks.any ? <NavLink to="/picks" className={item}><Sparkles className="size-4" aria-hidden="true" /> Picks</NavLink> : null}
+            {canEdit && picks.any ? <NavLink to="/picks" className={item}><Sparkles className="size-4" aria-hidden="true" /> Picks</NavLink> : null}
             <button type="button" className={item} onClick={focusSearch}><Search className="size-4" aria-hidden="true" /> Search <span className="text-xs text-(--ink-muted)">/</span></button>
           </div>
         </nav>

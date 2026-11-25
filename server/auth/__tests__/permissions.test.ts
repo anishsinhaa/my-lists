@@ -8,7 +8,7 @@ import settings from '../../../api/settings.js'
 import enrich from '../../../api/settings/enrich.js'
 import { canEdit } from '../../../src/types/auth.js'
 import { LIST_IDS, PICKS_IDS, type TabId } from '../../../src/types/lists.js'
-import type { EnrichField, ListsPayload } from '../../../src/types/media.js'
+import type { EnrichField, ListsPayload, PickItem } from '../../../src/types/media.js'
 import { resetEnvCache } from '../../config/env.js'
 import { signToken } from '../tokens.js'
 import { resetListsCache } from '../../sheets/cache.js'
@@ -46,7 +46,29 @@ vi.mock('../../sheets/readAll.js', () => ({
     const cell: Record<EnrichField, boolean> = { poster: false, creator: false, franchise: false, imdbRating: false }
     const tabs = [...LIST_IDS, ...PICKS_IDS] as TabId[]
     const columns = Object.fromEntries(tabs.map((id) => [id, { ...cell }])) as unknown as ListsPayload['columns']
-    return { fetchedAt: '2020-01-01T00:00:00.000Z', dataHash: 'hash', lists, picks, warnings: [], columns }
+    const heat: PickItem = {
+      id: 'movies-picks:heat:1995',
+      picksId: 'movies-picks',
+      targetList: 'movies',
+      title: 'Heat',
+      titleKey: 'heat',
+      becauseYouLiked: '',
+      becauseKey: '',
+      year: 1995,
+      genres: [],
+      status: '',
+      why: '',
+      poster: null,
+    }
+    picks['movies-picks'] = [heat]
+    return {
+      fetchedAt: '2020-01-01T00:00:00.000Z',
+      dataHash: 'hash',
+      lists,
+      picks,
+      warnings: [{ tab: 'movies-picks', code: 'missing_header', message: 'picks' }],
+      columns,
+    }
   },
 }))
 
@@ -157,9 +179,24 @@ describe('owner-only writes', () => {
     const second = capture()
     await lists({ method: 'GET', headers: { authorization }, query: { refresh: '1' } } as unknown as VercelRequest, second.res)
     expect(first.status()).toBe(200)
-    expect((first.body() as { ok: boolean }).ok).toBe(true)
+    const guestBody = first.body() as { ok: boolean; data: { picks: Record<string, unknown[]>; columns: Record<string, unknown>; warnings: unknown[] } }
+    expect(guestBody.ok).toBe(true)
+    expect(guestBody.data.picks['movies-picks']).toEqual([])
+    expect(guestBody.data.picks['series-picks']).toEqual([])
+    expect(guestBody.data.picks['games-picks']).toEqual([])
+    expect(guestBody.data.columns['movies-picks']).toBeUndefined()
+    expect(guestBody.data.warnings).toEqual([])
     expect(second.status()).toBe(200)
     expect(state.reads).toBe(1)
     expect(state.updates).toBe(0)
+  })
+
+  it('keeps picks on an owner lists response', async () => {
+    const seen = capture()
+    await lists({ method: 'GET', headers: { authorization: await bearer(owner) }, query: {} } as unknown as VercelRequest, seen.res)
+    expect(seen.status()).toBe(200)
+    const body = seen.body() as { ok: boolean; data: { picks: Record<string, Array<{ title: string }>> } }
+    expect(body.ok).toBe(true)
+    expect(body.data.picks['movies-picks']?.[0]?.title).toBe('Heat')
   })
 })

@@ -42,8 +42,10 @@ export const router = createBrowserRouter([
               { path: '/shelf/:tileId', element: <ShelfPage /> },
               { path: '/lists', element: <MyListsPage /> },
               { path: '/lists/:listId', element: <ListPage /> },
-              { path: '/picks', element: <PicksPage /> },
-              { element: <RequireOwner />, children: [{ path: '/settings', element: <SettingsPage /> }] },
+              { element: <RequireOwner />, children: [
+                { path: '/picks', element: <PicksPage /> },
+                { path: '/settings', element: <SettingsPage /> },
+              ] },
               ...(import.meta.env.DEV ? [{ path: '/dev/kit', lazy: kitLoader }] : []),
               { path: '*', element: <NotFound /> },
             ],

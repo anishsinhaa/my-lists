@@ -16,7 +16,7 @@ export function BottomNav() {
       <NavLink to="/" end className={item}><Home className="size-5" aria-hidden="true" /> Home</NavLink>
       <NavLink to="/lists" className={item}><Library className="size-5" aria-hidden="true" /> Lists</NavLink>
       <button type="button" className={item} onClick={() => { void navigate('/'); window.dispatchEvent(new Event('ml:search')) }}><Search className="size-5" aria-hidden="true" /> Search</button>
-      {picks.any ? <NavLink to="/picks" className={item}><Sparkles className="size-5" aria-hidden="true" /> Picks</NavLink> : null}
+      {canEdit && picks.any ? <NavLink to="/picks" className={item}><Sparkles className="size-5" aria-hidden="true" /> Picks</NavLink> : null}
       {canEdit ? <NavLink to="/settings" className={item}><Settings className="size-5" aria-hidden="true" /> Settings</NavLink> : null}
     </nav>
   )

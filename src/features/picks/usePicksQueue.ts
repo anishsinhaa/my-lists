@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { useCanEdit } from '@/features/auth/AuthContext'
 import { useLists } from '@/features/data/useLists'
 import { postPickStatus } from '@/services/sheets/picksApi'
 import { PICKS_SKIPPED_KEY, type PickAction } from '@/types/picks'
@@ -27,7 +26,6 @@ type Undo = { type: 'skip'; id: string } | { type: 'status'; item: PickItem; sta
 export function usePicksQueue(picksId: PicksId) {
   const { data } = useLists()
   const queryClient = useQueryClient()
-  const editable = useCanEdit()
   const [skipped, setSkipped] = useState<string[]>(() => readSkipped())
   const [undoStack, setUndoStack] = useState<Undo[]>([])
   const [syncing, setSyncing] = useState(0)
@@ -49,10 +47,6 @@ export function usePicksQueue(picksId: PicksId) {
       setSkipped(next)
       writeSkipped(next)
       setUndoStack((stack) => [...stack, { type: 'skip', id: current.id }])
-      return
-    }
-    if (!editable) {
-      window.dispatchEvent(new Event('ml:forbidden'))
       return
     }
     setUndoStack((stack) => [...stack, { type: 'status', item: current, status: action.status }])
@@ -78,7 +72,6 @@ export function usePicksQueue(picksId: PicksId) {
       writeSkipped(next)
       return
     }
-    if (!editable) return
     patch(last.item, '')
     setSyncing((count) => count + 1)
     void postPickStatus({ picksId, title: last.item.title, year: last.item.year, because: last.item.becauseYouLiked, status: '', expectedCurrent: last.status })

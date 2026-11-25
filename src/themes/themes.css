@@ -61,24 +61,27 @@
 .scanlines { position: relative; }
 .scanlines::after { content: ""; pointer-events: none; position: absolute; inset: 0; background-image: repeating-linear-gradient(to bottom, transparent, transparent 2px, #00000014 3px); }
 .paper { background-image: radial-gradient(#00000010 0.4px, transparent 0.4px); background-size: 4px 4px; }
-.book-stage { perspective: 900px; }
 .book-cover { border-radius: 6px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.08); transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms; }
 .book-face { position: relative; display: block; overflow: hidden; border-radius: 6px; }
-.book-face::after { content: ""; pointer-events: none; position: absolute; inset: 0; z-index: 2; background: linear-gradient(120deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0)); transform: translateX(-120%); }
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+.book-face > * { position: relative; z-index: 1; }
+.book-face img, .book-face [data-palette] { transition: filter 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.book-face::after { content: ""; pointer-events: none; position: absolute; top: 0; bottom: 0; left: 0; z-index: 2; width: 40%; background: linear-gradient(120deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0)); transform: translateX(-160%); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .book-card:hover, .book-card:focus-visible { z-index: 1; }
-  .book-card:hover .book-cover, .book-card:focus-visible .book-cover { transform: translateY(-6px) scale(1.03) rotateX(2deg); box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1); }
+  .book-card:hover .book-cover, .book-card:focus-visible .book-cover { transform: translateY(-8px) scale(1.04); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--brass) 70%, transparent), 0 14px 28px rgba(0, 0, 0, 0.28), 0 4px 10px rgba(0, 0, 0, 0.18); }
   .book-card:hover .book-cover { will-change: transform; }
-  .book-card:hover .book-face::after, .book-card:focus-visible .book-face::after { animation: book-sheen 600ms ease-out; }
+  .book-card:hover .book-face img, .book-card:focus-visible .book-face img, .book-card:hover .book-face [data-palette], .book-card:focus-visible .book-face [data-palette] { filter: brightness(1.06); }
+  .book-card:hover .book-face::after, .book-card:focus-visible .book-face::after { animation: book-sheen 650ms ease-out; }
 }
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: reduce) {
-  .book-card:hover .book-cover, .book-card:focus-visible .book-cover { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1); }
+@media (hover: hover) and (prefers-reduced-motion: reduce) {
+  .book-card:hover, .book-card:focus-visible { z-index: 1; }
+  .book-card:hover .book-cover, .book-card:focus-visible .book-cover { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--brass) 70%, transparent), 0 14px 28px rgba(0, 0, 0, 0.28), 0 4px 10px rgba(0, 0, 0, 0.18); }
   .book-face::after { content: none; }
 }
-@media (pointer: coarse) and (prefers-reduced-motion: no-preference) {
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
   .book-card:active .book-cover { transform: scale(0.98); }
 }
-@keyframes book-sheen { to { transform: translateX(120%); } }
+@keyframes book-sheen { to { transform: translateX(310%); } }
 .chamfer { clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
 .marquee-bulbs { background-image: radial-gradient(circle, #ffe08a 2px, #6b5420 3px, transparent 4px); background-size: 16px 16px; background-repeat: repeat-x; }
 @media (prefers-reduced-motion: no-preference) {

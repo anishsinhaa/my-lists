@@ -4,7 +4,7 @@ import type { PosterCardProps } from '../views/PosterCard'
 
 export function BookCard({ item, onOpen }: PosterCardProps) {
   return (
-    <button type="button" className="book-card isolate block w-full cursor-pointer text-left outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent)" onClick={() => onOpen?.(item)}>
+    <button type="button" className="book-card relative isolate block w-full cursor-pointer text-left outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent)" onClick={() => onOpen?.(item)}>
       <span className="book-stage relative block">
         <span className="book-cover relative block">
           <span className="book-face rounded-[6px]">

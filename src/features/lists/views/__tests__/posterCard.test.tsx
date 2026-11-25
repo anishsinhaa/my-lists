@@ -31,14 +31,14 @@ function movie(): MediaItem {
 }
 
 describe('poster rating chip', () => {
-  it('renders exactly one rating chip at the top right', () => {
+  it('renders exactly one rating chip at the bottom right', () => {
     render(<PosterCard index={0} item={movie()} />)
     expect(screen.getAllByText(/My rating/)).toHaveLength(1)
     expect(screen.getAllByText(/IMDb/)).toHaveLength(1)
     const chip = screen.getByText('IMDb 7.7').parentElement
-    expect(chip?.className).toContain('top-2')
+    expect(chip?.className).toContain('bottom-16')
     expect(chip?.className).toContain('right-2')
-    expect(chip?.className).not.toContain('bottom-')
+    expect(chip?.className).not.toContain('left-2')
   })
 })
 
@@ -49,16 +49,14 @@ describe('book cover hover', () => {
     book.id = 'books:dune:1965'
     const { container } = render(<BookCard index={0} item={book} />)
     const button = container.querySelector('button')
-    const open = container.querySelector('[class*="rotateY"]')
+    const cover = container.querySelector('.book-cover')
+    expect(button?.className).toContain('book-card')
     expect(button?.className).toContain('isolate')
-    expect(button?.className).not.toContain('perspective')
-    expect(open?.className).toContain('rotateY(-12deg)')
-    expect(open?.className).toContain('translateY(-4px)')
-    expect(open?.className).toContain('scale(1.02)')
-    expect(open?.className).toContain('origin-[left_center]')
-    expect(open?.className).not.toContain('translateX')
-    expect(open?.className).not.toContain('skew')
-    expect(container.querySelector('[class*="perspective:1000px"]')).toBeTruthy()
+    expect(button?.className).not.toContain('overflow-hidden')
+    expect(cover?.className).not.toContain('overflow-hidden')
+    expect(cover?.className).not.toContain('skew')
+    expect(container.querySelector('.book-stage')).toBeTruthy()
+    expect(container.querySelector('.book-pages')).toBeTruthy()
     expect(container.innerHTML).not.toContain('clip-path')
   })
 })

@@ -21,7 +21,7 @@ export function TopBar() {
   const inner = location.pathname !== '/'
   const item = 'inline-flex min-h-11 items-center gap-1.5 border-b-2 border-transparent px-2 text-sm whitespace-nowrap xl:px-3 aria-[current=page]:border-[#b08d57]'
   return (
-    <header className="app-topbar sticky top-0 z-40 w-full overflow-visible border-b border-(--brass)/30 bg-[#100e0c]/80 backdrop-blur-md">
+    <header className="app-topbar sticky top-0 z-40 w-full overflow-visible border-b border-(--brass)/30 bg-[#100e0c]/80 text-[#f4ead8] backdrop-blur-md">
       <a href="#content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-black focus:px-3 focus:py-2">Skip to content</a>
       <div className="app-topbar-row edge grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
         <div className="flex min-w-0 items-center gap-1 justify-self-start">

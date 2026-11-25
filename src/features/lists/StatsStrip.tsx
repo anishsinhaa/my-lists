@@ -70,7 +70,7 @@ export function StatsStrip({ listId, items, query, onChange }: {
           const on = statusOn(listId, query.statuses, row.value)
           const count = counts.get(row.value) ?? 0
           return (
-            <button key={row.value} type="button" aria-pressed={on} className={`inline-flex min-h-16 min-w-28 flex-col items-start justify-center gap-1 border px-3 py-2 text-left transition-colors duration-200 ${SHAPE[listId]} ${on ? 'border-transparent bg-accent text-(--bg)' : 'bg-(--surface) text-(--ink)'}`} onClick={() => toggle(row.value)}>
+            <button key={row.value} type="button" aria-pressed={on} className={`inline-flex min-h-16 min-w-28 flex-col items-start justify-center gap-1 border px-3 py-2 text-left transition-colors duration-200 ${SHAPE[listId]} ${on ? 'border-transparent bg-accent text-(--bg)' : listId === 'books' ? 'border-(--accent) bg-(--surface) text-(--ink) shadow-[inset_0_0_0_1px_var(--accent)]' : 'bg-(--surface) text-(--ink)'}`} onClick={() => toggle(row.value)}>
               <span className="flex items-center gap-1.5 text-sm">
                 <StatusGlyph name={row.icon} />
                 {row.value}
@@ -94,7 +94,7 @@ export function StatsStrip({ listId, items, query, onChange }: {
         {stats.topGenres.map((genre) => {
           const on = query.genres.includes(genre.genre)
           return (
-            <button key={genre.genre} type="button" aria-pressed={on} className={`inline-flex min-h-8 items-center gap-1 rounded-full border px-2 text-xs ${on ? 'border-transparent bg-accent text-(--bg)' : 'border-border bg-(--surface)'}`} onClick={() => onChange({ genres: on ? query.genres.filter((value) => value !== genre.genre) : [...query.genres, genre.genre] })}>
+            <button key={genre.genre} type="button" aria-pressed={on} className={`inline-flex min-h-8 items-center gap-1 rounded-full border px-2 text-xs ${on ? 'border-transparent bg-accent text-(--bg)' : listId === 'books' ? 'border-(--accent) bg-(--surface) text-(--ink)' : 'border-border bg-(--surface)'}`} onClick={() => onChange({ genres: on ? query.genres.filter((value) => value !== genre.genre) : [...query.genres, genre.genre] })}>
               {on ? <Check aria-hidden="true" className="size-3" /> : null}
               {genre.genre}
             </button>

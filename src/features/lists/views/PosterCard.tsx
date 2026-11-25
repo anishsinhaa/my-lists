@@ -55,10 +55,10 @@ export function PosterCard(props: PosterCardProps) {
   return (
     <div className="relative">
       {card}
-      {props.item.favourite ? <FavouriteMark place={anime ? 'low-left' : showRating ? 'low-right' : 'right'} /> : null}
+      {props.item.favourite ? <FavouriteMark place={anime ? 'low-left' : 'right'} /> : null}
       {anime ? null : <span className="pointer-events-none absolute top-2 left-2 z-10"><StatusBadge listId={props.item.listId} status={props.item.status} /></span>}
       {showRating ? (
-        <span className="pointer-events-none absolute top-2 right-2 z-20 max-w-[70%] rounded-md bg-black/75 px-2 py-1 text-right text-xs leading-tight text-white">
+        <span className="pointer-events-none absolute right-2 bottom-16 z-20 max-w-[70%] rounded-md bg-black/75 px-2 py-1 text-right text-xs leading-tight text-white">
           {rating.external === null ? null : <span className="block">{rating.externalLabel} {rating.external}</span>}
           {rating.my === null ? null : <span className="block">My rating {rating.my}</span>}
         </span>

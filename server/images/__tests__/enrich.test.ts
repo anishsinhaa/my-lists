@@ -66,6 +66,10 @@ describe('enrichItems', () => {
     expect(result[0]?.written.imdbRating).toBe(true)
     expect(empty.rows[1]?.[6]).toBe(8.1)
     expect(empty.rows[1]?.[5]).toBe(9)
+    const booked = client([header, ['Dune', 1965, 'https://img.example/old.jpg', 'Frank Herbert', '', '', '']])
+    const kept = await enrichItems(booked, [{ tab: 'books', title: 'Dune', year: 1965, needs: ['poster'] }])
+    expect(kept[0]?.outcome).toBe('already_filled')
+    expect(booked.rows[1]?.[2]).toBe('https://img.example/old.jpg')
   })
 
   it('rejects myRating and other tabs', () => {

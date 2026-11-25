@@ -9,7 +9,7 @@ export function SearchResultRow({ hit, active = false, onSelect, controlId }: { 
   const pick = hit.source.kind === 'pick'
   return (
     <button id={controlId} type="button" aria-selected={active} className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-(--surface) ${active ? 'bg-(--surface)' : ''}`} onClick={onSelect}>
-      <PosterImage alt="" className="w-10 shrink-0" kind={LIST_KIND[hit.listId]} src={item.poster} title={displayTitle(item.title, item.year)} />
+      <PosterImage alt="" byline={'creator' in item && item.creator !== null ? item.creator : item.year === null ? '' : String(item.year)} className="w-10 shrink-0" kind={LIST_KIND[hit.listId]} src={item.poster} title={displayTitle(item.title, item.year)} />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{displayTitle(item.title, item.year)}</span>
         <span className="mt-1 flex flex-wrap items-center gap-1 text-xs text-(--ink-muted)">

@@ -153,7 +153,7 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
           <Rail align={current.length === 1 ? 'start' : 'center'} label="Currently">
             {current.map((item) => (
               <button key={item.id} type="button" data-rail-card="true" className="w-[clamp(7.5rem,20cqi,11rem)] shrink-0 cursor-pointer snap-start text-left" onClick={() => show(item)}>
-                <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
+                <PosterImage alt="" byline={item.creator ?? (item.year === null ? '' : String(item.year))} kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
                 <StatusBadge listId={item.listId} status={item.status} />
               </button>
             ))}

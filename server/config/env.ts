@@ -14,6 +14,7 @@ const schema = z.object({
   OMDB_API_KEY: z.string().default(''),
   RAWG_API_KEY: z.string().min(1),
   OPEN_LIBRARY_CONTACT: z.string().min(1),
+  GOOGLE_BOOKS_API_KEY: z.string().default(''),
   JIKAN_BASE_URL: z.string().url().default('https://api.jikan.moe/v4'),
   IGDB_CLIENT_ID: z.string().default(''),
   IGDB_CLIENT_SECRET: z.string().default(''),

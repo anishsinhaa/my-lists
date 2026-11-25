@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import type { MediaKind } from '@/types/lists'
-import { PosterFallback } from './PosterFallback'
+import { FallbackCover } from '@/components/FallbackCover'
 
-export function PosterImage({ src, alt, title, aspect = '2/3', className = '', priority = false, kind = 'other' }: { src: string | null; alt: string; title: string; aspect?: '2/3' | '1/1'; className?: string; priority?: boolean; kind?: MediaKind }) {
+export function PosterImage({ src, alt, title, byline = '', aspect = '2/3', className = '', priority = false, kind = 'other' }: { src: string | null; alt: string; title: string; byline?: string; aspect?: '2/3' | '1/1'; className?: string; priority?: boolean; kind?: MediaKind }) {
   const [failed, setFailed] = useState(false)
   const ratio = aspect === '1/1' ? 'aspect-square' : 'aspect-[2/3]'
   const showImage = src !== null && src.length > 0 && !failed
@@ -22,7 +22,7 @@ export function PosterImage({ src, alt, title, aspect = '2/3', className = '', p
           onError={() => setFailed(true)}
         />
       ) : (
-        <PosterFallback className="absolute inset-0" kind={kind} title={title} />
+        <FallbackCover className="absolute inset-0" kind={kind} title={title} byline={byline} />
       )}
     </div>
   )

@@ -4,6 +4,7 @@ import { scoreMatch } from './match.js'
 import { fetchJson } from './http.js'
 import { logSample } from './samples.js'
 import { Throttle } from './throttle.js'
+import { googleBooksCover } from './googleBooks.js'
 import { rating, wants, type PosterLookup, type PosterProvider } from './types.js'
 
 const throttle = new Throttle(1000)
@@ -67,7 +68,11 @@ export const openLibrary: PosterProvider = {
     const author = query.author?.trim()
     const options = await optionsFor(query, title, author, signal)
     const first = options[0]
-    if (first === undefined) return null
+    if (first === undefined) {
+      if (!wants(query, 'poster')) return null
+      const cover = await googleBooksCover({ title, author, isbn: query.isbn }, signal)
+      return cover === null ? null : { poster: cover, sourceId: title, confidence: 0.7 }
+    }
     let chosen = first
     let poster: string | undefined
     if (wants(query, 'poster')) {
@@ -77,6 +82,10 @@ export const openLibrary: PosterProvider = {
         poster = url
         chosen = entry
         break
+      }
+      if (poster === undefined) {
+        const cover = await googleBooksCover({ title, author, isbn: query.isbn }, signal)
+        if (cover !== null) poster = cover
       }
     }
     const authors = Array.isArray(chosen.item.row.author_name) ? chosen.item.row.author_name : []

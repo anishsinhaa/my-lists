@@ -36,7 +36,7 @@ export function ListTable({ items, listId, onOpen }: { items: MediaItem[]; listI
           {items.map((item) => (
             <tr key={item.id} className="cursor-pointer border-t border-border" onClick={() => onOpen(item)}>
               <td className="p-2">
-                <PosterImage alt="" className="w-10" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={displayTitle(item.title, item.year)} />
+                <PosterImage alt="" byline={item.creator ?? (item.year === null ? '' : String(item.year))} className="w-10" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={displayTitle(item.title, item.year)} />
               </td>
               <td className="p-2">
                 <span className="inline-flex items-center gap-1">

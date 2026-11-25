@@ -236,7 +236,7 @@ export function TonightModal({ lists, preset, onClose }: {
         ) : shown === null ? null : (
           <div className="space-y-4">
             <div key={shown.id} className={phase === 'spin' ? 'tonight-slot mx-auto w-40' : 'mx-auto w-40'}>
-              <PosterImage alt="" kind={LIST_KIND[shown.listId]} src={thumbnailUrl(shown.poster, 'w342')} title={displayTitle(shown.title, shown.year)} priority />
+              <PosterImage alt="" byline={shown.creator ?? (shown.year === null ? '' : String(shown.year))} kind={LIST_KIND[shown.listId]} src={thumbnailUrl(shown.poster, 'w342')} title={displayTitle(shown.title, shown.year)} priority />
             </div>
             {phase === 'spin' ? <p className="text-center text-sm text-(--ink-muted)">Picking…</p> : (
               <div className="space-y-3">

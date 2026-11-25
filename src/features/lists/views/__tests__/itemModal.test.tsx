@@ -46,7 +46,7 @@ describe('item details', () => {
     expect(screen.getByText('Thriller')).toBeTruthy()
     expect(screen.queryByText('–')).toBeNull()
     expect(screen.queryByText('Franchise')).toBeNull()
-    expect(screen.getByText('Ben Affleck')).toBeTruthy()
+    expect(screen.getAllByText('Ben Affleck').length).toBeGreaterThan(0)
     expect(screen.getByText('7.7')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ title: 'Heat' }))

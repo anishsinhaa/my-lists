@@ -10,6 +10,7 @@ import type { SheetsClient } from '../sheets/client.js'
 import { buildColumnMap, MAIN_ALIASES, PICKS_ALIASES } from '../sheets/headers.js'
 import { writeCells, type CellWrite } from '../sheets/writeCells.js'
 import { WRITE_POLICY } from '../sheets/writeGuard.js'
+import { isbnFromExtras } from './googleBooks.js'
 import { omdbKey } from './http.js'
 import { providerFor } from './resolve.js'
 
@@ -103,8 +104,9 @@ export async function enrichItems(client: SheetsClient, items: PosterFillItem[],
     limiters.set(provider.id, limiter)
     const creatorIndex = picks ? undefined : (map.index as { creator?: number }).creator
     const author = creatorIndex === undefined ? undefined : cellText(row[creatorIndex])
+    const isbn = isbnFromExtras(row, map.extras)
     try {
-      const match = await limiter(() => provider.lookup({ title: item.title, year: item.year, need: stillEmpty, author: author === undefined || author.length === 0 ? undefined : author }))
+      const match = await limiter(() => provider.lookup({ title: item.title, year: item.year, need: stillEmpty, author: author === undefined || author.length === 0 ? undefined : author, isbn }))
       prepared.push({ item, titleKey, stillEmpty, match, outcome: match === null ? 'not_found' : 'ok' })
     } catch {
       prepared.push({ item, titleKey, stillEmpty, match: null, outcome: 'provider_error' })

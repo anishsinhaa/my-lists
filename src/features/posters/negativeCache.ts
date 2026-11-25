@@ -29,5 +29,6 @@ export function markMiss(key: string, now = Date.now()): void {
 }
 
 export function missKey(tab: string, titleKey: string, year: number | null, field: string): string {
-  return `${tab}:${titleKey}:${year ?? ''}:${field}`
+  const revision = tab === 'books' && field === 'poster' ? ':gb1' : ''
+  return `${tab}:${titleKey}:${year ?? ''}:${field}${revision}`
 }

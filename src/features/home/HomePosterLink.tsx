@@ -36,7 +36,7 @@ function PosterPreview({ item, anchor }: { item: MediaItem; anchor: { top: numbe
     >
       <div className="flex items-start gap-2 p-1.5">
         <span className="w-10 shrink-0">
-          <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={displayTitle(item.title, item.year)} />
+          <PosterImage alt="" byline={item.creator ?? (item.year === null ? '' : String(item.year))} kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={displayTitle(item.title, item.year)} />
         </span>
         <div className="min-w-0 space-y-0.5 py-0.5">
           <p className="truncate font-['Cinzel',serif] text-[11px] leading-tight">{displayTitle(item.title, item.year)}</p>
@@ -91,7 +91,7 @@ export function HomePosterLink({ item, href, className = '' }: { item: MediaItem
   return (
     <span ref={anchor} className={className} data-rail-card="true" onMouseEnter={show} onMouseLeave={hide}>
       <Link aria-label={title} className="block" to={href}>
-        <PosterImage alt="" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={title} />
+        <PosterImage alt="" byline={item.creator ?? (item.year === null ? '' : String(item.year))} kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={title} />
       </Link>
       {box === null ? null : <PosterPreview anchor={box} item={item} />}
     </span>

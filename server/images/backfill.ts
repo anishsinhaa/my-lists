@@ -5,6 +5,7 @@ import type { EnrichReportLine } from '../../src/types/settings.js'
 import type { SheetsClient } from '../sheets/client.js'
 import { buildColumnMap, MAIN_ALIASES, type MainField } from '../sheets/headers.js'
 import { writeCells, type CellWrite } from '../sheets/writeCells.js'
+import { isbnFromExtras } from './googleBooks.js'
 import { omdbKey } from './http.js'
 import { providerFor } from './resolve.js'
 import type { PosterMatch } from './types.js'
@@ -32,6 +33,7 @@ interface Job {
   titleKey: string
   year: number | null
   author?: string
+  isbn?: string
   poster: boolean
   rating: boolean
   posterBlank: boolean
@@ -52,12 +54,12 @@ function usesOmdb(tab: ListId): boolean {
   return tab === 'movies' || tab === 'series' || tab === 'anime'
 }
 
-async function lookup(tab: ListId, title: string, year: number | null, author: string | undefined, need: Array<'poster' | 'imdbRating'>): Promise<{ match: PosterMatch | null; error: 'no match' | 'API error' | null }> {
+async function lookup(tab: ListId, title: string, year: number | null, author: string | undefined, isbn: string | undefined, need: Array<'poster' | 'imdbRating'>): Promise<{ match: PosterMatch | null; error: 'no match' | 'API error' | null }> {
   const provider = providerFor(tab)
   if (provider === null) return { match: null, error: 'no match' }
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const match = await provider.lookup({ title, year, author, need })
+      const match = await provider.lookup({ title, year, author, isbn, need })
       return { match, error: match === null ? 'no match' : null }
     } catch {
       if (attempt === 0) continue
@@ -128,6 +130,7 @@ async function backfillTab(
       titleKey: normalizeTitle(title),
       year: parseYear(row[map.index.year ?? -1]),
       author: author.length > 0 ? author : undefined,
+      isbn: isbnFromExtras(row, map.extras),
       poster,
       rating,
       posterBlank,
@@ -156,7 +159,7 @@ async function backfillTab(
     if (job.rating && (omdb || !usesOmdb(tab))) need.push('imdbRating')
     const result = need.length === 0
       ? { match: null, error: null }
-      : await lookup(tab, job.title, job.year, job.author, need)
+      : await lookup(tab, job.title, job.year, job.author, job.isbn, need)
     if (result.error !== null) {
       report.failures.push({ title: job.title, reason: result.error })
       if (job.poster && job.posterBlank) report.posterMissing += 1

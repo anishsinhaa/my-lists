@@ -5,6 +5,7 @@ export interface PosterLookup {
   title: string
   year: number | null
   author?: string
+  isbn?: string
   need: EnrichField[]
 }
 

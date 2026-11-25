@@ -57,3 +57,7 @@ Owner-only endpoints:
 - POST /api/settings/enrich
 
 Later work, not built yet: an accounts registry (`accountId` to owner user and sheet id), loading data and cache keyed by `accountId` instead of the single `GOOGLE_SHEET_ID` / single `getCachedLists` cache, and share links that mint a guest session for a specific `accountId`. `canEdit` and `requireAccountOwner` stay the single gate on every write.
+
+## Google Books covers
+
+Book poster fill still asks Open Library first. When that match has no cover, the server calls the Google Books volumes API (`intitle` plus `inauthor` when an author is present, or `isbn` when the row has an ISBN column). `GOOGLE_BOOKS_API_KEY` is optional and blank by default; the key is appended only when it is set. The chosen `imageLinks` URL is forced to https, `edge=curl` is removed, and `zoom=1` is set. A poster cell is written only when it is empty. A Google Books error is treated as no cover. Book poster misses use a new cache key suffix (`gb1`) so an empty Books poster can be tried again after this source was added. Items that already have a cover are not requested. Guests do not run fill.

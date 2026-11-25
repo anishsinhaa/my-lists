@@ -204,7 +204,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
         {item === null ? <DialogTitle className="sr-only">Item</DialogTitle> : (
           <div className="flex min-h-0 flex-col md:grid md:max-h-[min(92dvh,900px)] md:grid-cols-[minmax(220px,280px)_minmax(0,1fr)]">
             <div className="bg-(--surface) p-4">
-              <PosterImage alt="" className="mx-auto w-full max-w-56 md:max-w-none" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w500')} title={displayTitle(item.title, item.year)} priority />
+              <PosterImage alt="" byline={item.creator ?? (item.year === null ? '' : String(item.year))} className="mx-auto w-full max-w-56 md:max-w-none" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w500')} title={displayTitle(item.title, item.year)} priority />
             </div>
             <div className="min-h-0 space-y-3 overflow-y-auto p-4 pr-12 md:p-5 md:pr-12">
               <div className="flex items-start gap-2">

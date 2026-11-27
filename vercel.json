@@ -1,5 +1,4 @@
 {
-  "_comment": "The rewrite below already serves /movies, /search and the other client routes on refresh.",
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
   "functions": { "api/**/*.ts": { "maxDuration": 30 } },
   "headers": [

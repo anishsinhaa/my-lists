@@ -1,4 +1,4 @@
-import { parseSheetDate, parseUpdatedAt, parseYear } from '../../src/lib/dates.js'
+import { parseDateAdded, parseSheetDate, parseUpdatedAt, parseYear } from '../../src/lib/dates.js'
 import { normalizeTitle, sanitizePosterUrl, splitGenres } from '../../src/lib/normalize.js'
 import { parseRating } from '../../src/lib/rating.js'
 import { statusGroupOf, type ListId, type PicksId } from '../../src/types/lists.js'
@@ -72,6 +72,7 @@ export function mapMainTab(listId: ListId, values: unknown[][]): MapResult<Media
       why: text(cell(row, map.index.why)),
       notes: text(cell(row, map.index.notes)),
       updatedAt: parseUpdatedAt(cell(row, map.index.updatedAt)),
+      dateAdded: parseDateAdded(cell(row, map.index.dateAdded)),
       poster: sanitizePosterUrl(cell(row, map.index.poster)),
       creator: text(cell(row, map.index.creator)) || null,
       franchise: text(cell(row, map.index.franchise)) || null,

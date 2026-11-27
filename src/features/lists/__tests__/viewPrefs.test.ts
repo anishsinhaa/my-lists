@@ -20,6 +20,7 @@ function book(extra: Partial<MediaItem> = {}): MediaItem {
     why: '',
     notes: '',
     updatedAt: null,
+    dateAdded: null,
     poster: null,
     creator: 'Frank Herbert',
     franchise: null,
@@ -69,7 +70,10 @@ describe('view prefs', () => {
     expect(view.view).toBe('grid')
     expect(view.unrated).toBe(false)
     expect(view).not.toHaveProperty('genres')
-    expect(filterBadgeCount({ ...DEFAULT_QUERY, genres: ['Philosophy'], unrated: true, sort: 'year' })).toBe(1)
+    expect(filterBadgeCount({ ...DEFAULT_QUERY, genres: ['Philosophy'], unrated: true, sort: 'year', addedWithin: '30d' })).toBe(2)
+    expect(parseStored({ sortBy: 'nope', filters: { addedWithin: 'forever' } }, 'books').sort).toBe('title')
+    expect(parseStored({ sortBy: 'nope', filters: { addedWithin: 'forever' } }, 'books').addedWithin).toBe('any')
+    expect(parseStored(queryToStored({ ...DEFAULT_QUERY, sort: 'added', addedWithin: '7d' }), 'movies').addedWithin).toBe('7d')
   })
 
   it('persists and restores each list from the hook, and lets the URL win', () => {

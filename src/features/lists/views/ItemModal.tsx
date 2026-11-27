@@ -15,6 +15,13 @@ import type { MediaItem } from '@/types/media'
 import type { ItemPatch } from '../useSaveItem'
 import { StarRating } from './StarRating'
 
+function addedLine(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const label = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }).format(date)
+  return `Added ${label}`
+}
+
 function shown(value: string | number | null | undefined): string | null {
   if (value === null || value === undefined) return null
   const text = parseSheetDate(value).trim()
@@ -228,6 +235,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                     )}
                   </div>
                   <DialogDescription className="sr-only">{displayTitle(item.title, item.year)}</DialogDescription>
+                  {item.dateAdded === null ? null : <p className="mt-1 text-sm text-(--ink-muted)">{addedLine(item.dateAdded)}</p>}
                   {!readOnly && savedId === item.id ? <p aria-live="polite" className="mt-1 inline-flex items-center gap-1 text-sm text-(--accent)"><Check aria-hidden="true" className="size-4" />Saved</p> : null}
                   {onOpenInList ? <button type="button" className="mt-2 min-h-11 text-sm underline" onClick={onOpenInList}>Open in list</button> : null}
                 </div>

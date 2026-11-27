@@ -23,6 +23,17 @@ export function normalizeTitle(value: string): string {
     .trim()
 }
 
+export function sortTitle(title: string): string {
+  return stripTrailingYear(title)
+    .normalize('NFKD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replaceAll('&', 'and')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export function normalizeKey(value: string): string {
   return value.toLowerCase().trim().replace(/\s+/g, ' ')
 }

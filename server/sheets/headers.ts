@@ -1,4 +1,4 @@
-export type MainField = 'title' | 'status' | 'year' | 'genre' | 'why' | 'notes' | 'updatedAt' | 'poster' | 'creator' | 'franchise' | 'myRating' | 'imdbRating' | 'platform' | 'favourite'
+export type MainField = 'title' | 'status' | 'year' | 'genre' | 'why' | 'notes' | 'updatedAt' | 'dateAdded' | 'poster' | 'creator' | 'franchise' | 'myRating' | 'imdbRating' | 'platform' | 'favourite'
 export type PicksField = 'title' | 'because' | 'year' | 'genre' | 'status' | 'why' | 'poster'
 
 const DESCRIPTION = ['description', 'why', 'reason', "notes / why it's on the list", "notes / why it’s on the list", "why it's on the list", "why it's on my list"]
@@ -11,6 +11,7 @@ export const MAIN_ALIASES: Record<MainField, string[]> = {
   why: DESCRIPTION,
   notes: ['notes', 'note', 'my notes'],
   updatedAt: ['updated at', 'updated', 'last updated'],
+  dateAdded: ['date added', 'added', 'added on'],
   poster: ['poster', 'poster url', 'cover'],
   creator: ['director/creator', 'director', 'creator', 'author', 'developer'],
   franchise: ['franchise', 'universe', 'collection'],

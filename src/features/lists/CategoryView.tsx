@@ -19,7 +19,6 @@ import { ItemModal } from './views/ItemModal'
 import { ListTable } from './views/ListTable'
 import { PosterCard } from './views/PosterCard'
 
-const QUERY_NOW = new Date('2026-01-01T00:00:00.000Z')
 
 function LazyBlock({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -100,7 +99,8 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
   const canEdit = useCanEdit()
   const save = useSaveItem()
   const source = shuffled ?? items
-  const visible = useMemo(() => selectItems(listId, source, query, QUERY_NOW), [listId, source, query])
+  const [now] = useState(() => new Date())
+  const visible = useMemo(() => selectItems(listId, source, query, now), [listId, source, query, now])
   const current = useMemo(() => currentItems(listId, visible), [visible, listId])
   const groups = useMemo(() => itemGroups(listId, visible, query.group), [listId, query.group, visible])
   const open = openId === null ? null : items.find((item) => item.id === openId) ?? source.find((item) => item.id === openId) ?? null

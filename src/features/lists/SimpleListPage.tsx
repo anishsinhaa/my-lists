@@ -17,7 +17,6 @@ import { selectItems } from './filters/selectItems'
 import { useListViewPrefs } from './useListViewPrefs'
 
 const EMPTY: MediaItem[] = []
-const QUERY_NOW = new Date('2026-01-01T00:00:00.000Z')
 
 export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | 'curious'> }) {
   const { data, isLoading, error, refetch } = useLists()
@@ -35,7 +34,8 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
   const items = data?.lists[listId] ?? EMPTY
   const ready = data !== undefined && !isLoading
   const { query, commit } = useListViewPrefs(listId, items, ready)
-  const shown = useMemo(() => selectItems(listId, items, query, QUERY_NOW), [items, listId, query])
+  const [now] = useState(() => new Date())
+  const shown = useMemo(() => selectItems(listId, items, query, now), [items, listId, query, now])
   const open = openId === null ? null : items.find((item) => item.id === openId) ?? null
   if (isLoading) return <main className="edge py-4"><Skeletons /></main>
   if (data === undefined) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>

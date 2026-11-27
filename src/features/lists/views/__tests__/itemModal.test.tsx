@@ -27,6 +27,7 @@ function movie(patch: Partial<MediaItem> = {}): MediaItem {
     platform: null,
     extra: { 'date finished': '' },
     ...patch,
+    dateAdded: patch.dateAdded ?? null,
     favourite: patch.favourite ?? false,
   }
 }

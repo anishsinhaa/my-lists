@@ -22,6 +22,7 @@ function movie(partial: Partial<MediaItem> & Pick<MediaItem, 'title' | 'titleKey
     extra: {},
     ...partial,
     notes: partial.notes ?? '',
+    dateAdded: partial.dateAdded ?? null,
     favourite: partial.favourite ?? false,
   }
 }

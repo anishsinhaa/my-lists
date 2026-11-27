@@ -24,6 +24,7 @@ function movie(title: string, extra: Partial<MediaItem> = {}): MediaItem {
     platform: null,
     extra: {},
     ...extra,
+    dateAdded: extra.dateAdded ?? null,
     favourite: extra.favourite ?? false,
   }
 }

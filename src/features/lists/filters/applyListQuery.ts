@@ -1,9 +1,9 @@
 import { matchStatus, shelfOrder } from '@/design/statusConfig'
 import { effectiveRating } from '@/lib/rating'
-import { normalizeTitle } from '@/lib/normalize'
+import { normalizeTitle, sortTitle } from '@/lib/normalize'
 import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
-import type { ListQuery, SortKey } from './listQuery'
+import type { AddedWithin, ListQuery, SortKey } from './listQuery'
 import { isNotStarted, isUnratedStarted } from './unrated'
 
 function statusAllowed(raw: string, selected: string[], listId?: ListId): boolean {
@@ -21,8 +21,27 @@ function chosenRating(item: MediaItem, query: ListQuery): number | null {
   return effectiveRating(item)
 }
 
+function addedStart(now: Date, within: AddedWithin): Date | null {
+  if (within === 'any') return null
+  const start = new Date(now.getTime())
+  if (within === '7d') start.setTime(now.getTime() - 7 * 86_400_000)
+  else if (within === '30d') start.setTime(now.getTime() - 30 * 86_400_000)
+  else if (within === '3m') start.setUTCMonth(start.getUTCMonth() - 3)
+  else start.setUTCMonth(start.getUTCMonth() - 12)
+  return start
+}
+
+function addedInRange(item: MediaItem, within: AddedWithin, now: Date): boolean {
+  const start = addedStart(now, within)
+  if (start === null) return true
+  if (item.dateAdded === null) return false
+  const added = new Date(item.dateAdded)
+  if (Number.isNaN(added.getTime())) return false
+  return added.getTime() >= start.getTime() && added.getTime() <= now.getTime()
+}
+
 function sortValue(item: MediaItem, sort: SortKey, listId?: ListId): number | string | null {
-  if (sort === 'title') return item.titleKey
+  if (sort === 'added') return item.dateAdded
   if (sort === 'year') return item.year
   if (sort === 'status') {
     if (item.status.trim().length === 0) return null
@@ -73,11 +92,18 @@ export function applyListQuery(items: MediaItem[], query: ListQuery, ctx: { now:
     if (query.unrated && !isUnratedStarted(ctx.listId, item)) return false
     if (query.favWant && !(item.favourite && isNotStarted(ctx.listId, item.status))) return false
     if (query.favWatched && !(item.favourite && !isNotStarted(ctx.listId, item.status))) return false
+    if (!addedInRange(item, query.addedWithin, ctx.now)) return false
     return true
   })
   return filtered
     .map((item, index) => ({ item, index }))
     .sort((left, right) => {
+      if (query.sort === 'title') {
+        const compared = sortTitle(left.item.title).localeCompare(sortTitle(right.item.title), 'en', { numeric: true, sensitivity: 'base' })
+        if (compared !== 0) return query.dir === 'asc' ? compared : -compared
+        const year = compareValues(left.item.year, right.item.year, query.dir)
+        return year === 0 ? left.index - right.index : year
+      }
       const compared = compareValues(sortValue(left.item, query.sort, ctx.listId), sortValue(right.item, query.sort, ctx.listId), query.dir)
       return compared === 0 ? left.index - right.index : compared
     })

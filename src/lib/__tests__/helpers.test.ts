@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { parseSheetDate, parseUpdatedAt, parseYear, serialToIso } from '../dates.ts'
-import { normalizeTitle, sanitizePosterUrl, splitGenres } from '../normalize.ts'
+import { parseDateAdded, parseSheetDate, parseUpdatedAt, parseYear, serialToIso } from '../dates.ts'
+import { normalizeTitle, sanitizePosterUrl, sortTitle, splitGenres } from '../normalize.ts'
 import { effectiveRating, externalRatingLabel, parseRating } from '../rating.ts'
 import { PICKS_IDS, PICKS_TARGET, STATUSES } from '../../types/lists.ts'
 import { PICK_STATUS_OPTIONS } from '../../types/picks.ts'
@@ -41,6 +41,15 @@ describe('dates', () => {
     expect(parseUpdatedAt('03/15/2023')).toBe('2023-03-15T00:00:00.000Z')
     expect(parseUpdatedAt('03/04/2023')).toBe('2023-04-03T00:00:00.000Z')
     expect(parseUpdatedAt('2026-11-17 23:39')).toBe('2026-11-17T18:09:00.000Z')
+    expect(parseDateAdded(45000)).toBe('2023-03-15T00:00:00.000Z')
+    expect(parseDateAdded('45000.5')).toBe(parseUpdatedAt(45000.5))
+    expect(parseDateAdded('2026-03-12')).toBe(parseUpdatedAt('2026-03-12'))
+    expect(parseDateAdded('12/03/2026')).toBe(parseUpdatedAt('12/03/2026'))
+    expect(parseDateAdded('2026-11-17 23:39')).toBe('2026-11-17T18:09:00.000Z')
+    expect(parseDateAdded('')).toBeNull()
+    expect(parseDateAdded('nope')).toBeNull()
+    expect(sortTitle('X-Men')).toBe('x men')
+    expect(sortTitle('V for Vendetta')).toBe('v for vendetta')
   })
 
   it('reads a Sheets serial date and leaves real dates and blanks alone', () => {

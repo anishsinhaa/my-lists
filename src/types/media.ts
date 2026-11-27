@@ -12,6 +12,7 @@ export interface MediaItem {
   why: string
   notes: string
   updatedAt: string | null
+  dateAdded: string | null
   poster: string | null
   creator: string | null
   franchise: string | null

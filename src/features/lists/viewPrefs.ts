@@ -4,7 +4,8 @@ import { SMART_VIEWS } from './smart/smartViews'
 import { DEFAULT_QUERY, parseListQuery, type GroupKey, type ListQuery, type RatingBy, type SortKey } from './filters/listQuery'
 
 const VIEWS = ['shelves', 'grid', 'table'] as const
-const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status']
+const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status', 'added']
+const ADDED = ['any', '7d', '30d', '3m', '12m'] as const
 const GROUPS: readonly GroupKey[] = ['none', 'status', 'genre', 'year', 'franchise', 'creator', 'platform']
 const RATING_BY: readonly RatingBy[] = ['best', 'my', 'external']
 const POSTERS = ['any', 'has', 'missing'] as const
@@ -47,6 +48,7 @@ export function filterBadgeCount(query: ListQuery): number {
   if (query.ratingBy !== DEFAULT_QUERY.ratingBy) count += 1
   if (query.smart !== null && query.smart.length > 0) count += 1
   if (query.poster !== 'any') count += 1
+  if (query.addedWithin !== 'any') count += 1
   return count
 }
 
@@ -60,7 +62,7 @@ export function viewIsCustom(query: ListQuery): boolean {
     || query.favWatched
 }
 
-export function clearFiltersPatch(): Pick<ListQuery, 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster'> {
+export function clearFiltersPatch(): Pick<ListQuery, 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'addedWithin'> {
   return {
     statuses: [],
     genres: [],
@@ -73,6 +75,7 @@ export function clearFiltersPatch(): Pick<ListQuery, 'statuses' | 'genres' | 'ye
     ratingBy: 'best',
     smart: null,
     poster: 'any',
+    addedWithin: 'any',
   }
 }
 
@@ -142,6 +145,7 @@ export function parseStored(value: unknown, listId: ListId, catalog: FilterCatal
     ratingBy: oneOf(filters.ratingBy, RATING_BY, 'best'),
     smart,
     poster: oneOf(filters.poster, POSTERS, 'any'),
+    addedWithin: oneOf(filters.addedWithin, ADDED, 'any'),
     unrated: toggles.unrated === true,
     favWant: toggles.favWantTo === true,
     favWatched: toggles.favWatched === true,
@@ -171,6 +175,7 @@ export function queryToStored(query: ListQuery): unknown {
       status: query.statuses,
       smart: query.smart,
       poster: query.poster,
+      addedWithin: query.addedWithin,
     },
   }
 }
@@ -211,6 +216,7 @@ export function applyUrl(base: ListQuery, params: URLSearchParams): ListQuery {
   if (params.has('rby')) next.ratingBy = parsed.ratingBy
   if (params.has('smart')) next.smart = parsed.smart
   if (params.has('poster')) next.poster = parsed.poster
+  if (params.has('added')) next.addedWithin = parsed.addedWithin
   if (params.has('unrated')) next.unrated = parsed.unrated
   if (params.has('favwant')) next.favWant = parsed.favWant
   if (params.has('favwatched')) next.favWatched = parsed.favWatched

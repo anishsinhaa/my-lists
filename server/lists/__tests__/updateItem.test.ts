@@ -106,6 +106,21 @@ describe('updateListItem', () => {
     expect(sheet.rows[1]?.[10]).toBe('aline\nkeep\tthis')
   })
 
+  it('never writes Date added when status, rating, notes and favourite change', async () => {
+    const dated = ['Title', 'Year', 'Status', 'My Rating', 'Updated at', 'Description', 'Date finished', 'Poster', 'IMDb Rating', 'Genre', 'Notes', 'Date added']
+    const ranges: string[] = []
+    const sheet = client([dated, ['Heat', 1995, 'Want to', 8, '', 'a heist', '', '', '', 'Crime', 'old', '2024-01-02 09:00']])
+    const write = sheet.batchUpdateValues.bind(sheet)
+    sheet.batchUpdateValues = async (updates) => {
+      ranges.push(...updates.map((update) => update.range))
+      await write(updates)
+    }
+    const result = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Watched', myRating: 9, notes: 'new note', favourite: true }, now)
+    expect(result.outcome).toBe('written')
+    expect(ranges.every((range) => !/!L\d+$/.test(range))).toBe(true)
+    expect(sheet.rows[1]?.[11]).toBe('2024-01-02 09:00')
+  })
+
   it('reports a missing row and an ambiguous title', async () => {
     const sheet = client([header, ['Heat', 1995, 'Want to', '', '', '', '', '', ''], ['Heat', 1995, 'Want to', '', '', '', '', '', '']])
     expect((await updateListItem(sheet, { listId: 'movies', id: 'movies:missing:1995', title: 'Missing', year: 1995, status: 'Watched', myRating: 8 }, now)).outcome).toBe('not_found')

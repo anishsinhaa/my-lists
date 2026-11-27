@@ -109,6 +109,7 @@ export async function updateListItem(client: SheetsClient, input: ItemUpdate, no
   const finishedCurrent = finishedColumn === undefined ? '' : text(row[finishedColumn.index])
   const becameDone = !DONE.has(currentStatus.toLowerCase()) && DONE.has(nextStatus.toLowerCase())
   const setFinished = becameDone && finishedCurrent.length === 0 && finishedColumn !== undefined
+  // Date added is stamped once on create and must never be part of an update.
   const updates: Array<{ range: string; value: string | number; prior: string | number }> = [
     { range: `'${TAB_NAME[input.listId]}'!${columnLetter(statusIndex)}${rowIndex + 1}`, value: nextStatus, prior: row[statusIndex] === undefined ? '' : row[statusIndex] as string | number },
     { range: `'${TAB_NAME[input.listId]}'!${columnLetter(ratingIndex)}${rowIndex + 1}`, value: input.myRating ?? '', prior: row[ratingIndex] === undefined ? '' : row[ratingIndex] as string | number },

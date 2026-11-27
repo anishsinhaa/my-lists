@@ -22,6 +22,7 @@ function row(partial: Partial<MediaItem> & Pick<MediaItem, 'id' | 'listId' | 'ti
     extra: {},
     ...partial,
     notes: partial.notes ?? '',
+    dateAdded: partial.dateAdded ?? null,
     favourite: partial.favourite ?? false,
   }
 }

@@ -1,6 +1,15 @@
-export type SortKey = 'title' | 'year' | 'rating' | 'myRating' | 'imdbRating' | 'finished' | 'status'
+export type SortKey = 'title' | 'year' | 'rating' | 'myRating' | 'imdbRating' | 'finished' | 'status' | 'added'
 export type GroupKey = 'none' | 'status' | 'genre' | 'year' | 'franchise' | 'creator' | 'platform'
 export type RatingBy = 'best' | 'my' | 'external'
+export type AddedWithin = 'any' | '7d' | '30d' | '3m' | '12m'
+
+export const ADDED_WITHIN_OPTIONS: readonly { value: AddedWithin; label: string }[] = [
+  { value: 'any', label: 'Any' },
+  { value: '7d', label: 'Last 7 days' },
+  { value: '30d', label: 'Last 30 days' },
+  { value: '3m', label: 'Last 3 months' },
+  { value: '12m', label: 'Last 12 months' },
+]
 
 export interface ListQuery {
   view: 'shelves' | 'grid' | 'table'
@@ -19,6 +28,7 @@ export interface ListQuery {
   ratingBy: RatingBy
   smart: string | null
   poster: 'any' | 'has' | 'missing'
+  addedWithin: AddedWithin
   unrated: boolean
   favWant: boolean
   favWatched: boolean
@@ -41,12 +51,13 @@ export const DEFAULT_QUERY: ListQuery = {
   ratingBy: 'best',
   smart: null,
   poster: 'any',
+  addedWithin: 'any',
   unrated: false,
   favWant: false,
   favWatched: false,
 }
 
-export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'unrated' | 'favWant' | 'favWatched'> = {
+export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'addedWithin' | 'unrated' | 'favWant' | 'favWatched'> = {
   q: '',
   statuses: [],
   genres: [],
@@ -59,6 +70,7 @@ export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yea
   ratingBy: 'best',
   smart: null,
   poster: 'any',
+  addedWithin: 'any',
   unrated: false,
   favWant: false,
   favWatched: false,
@@ -77,12 +89,14 @@ export function hasActiveFilters(query: ListQuery): boolean {
     || query.ratingBy !== DEFAULT_QUERY.ratingBy
     || (query.smart !== null && query.smart.length > 0)
     || query.poster !== 'any'
+    || query.addedWithin !== 'any'
     || query.unrated
     || query.favWant
     || query.favWatched
 }
 
-const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status']
+const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status', 'added']
+const ADDED: readonly AddedWithin[] = ['any', '7d', '30d', '3m', '12m']
 const GROUPS: readonly GroupKey[] = ['none', 'status', 'genre', 'year', 'franchise', 'creator', 'platform']
 
 function list(value: string | null): string[] {
@@ -119,6 +133,7 @@ export function parseListQuery(params: URLSearchParams): ListQuery {
     ratingBy: ratingBy === 'my' || ratingBy === 'external' ? ratingBy : 'best',
     smart: params.get('smart'),
     poster: poster === 'has' || poster === 'missing' ? poster : 'any',
+    addedWithin: ADDED.includes(params.get('added') as AddedWithin) ? (params.get('added') as AddedWithin) : 'any',
     unrated: params.get('unrated') === '1',
     favWant: params.get('favwant') === '1',
     favWatched: params.get('favwatched') === '1',
@@ -144,6 +159,7 @@ export function serializeListQuery(query: ListQuery): URLSearchParams {
   if (query.ratingBy !== DEFAULT_QUERY.ratingBy) params.set('rby', query.ratingBy)
   if (query.smart !== null && query.smart.length > 0) params.set('smart', query.smart)
   if (query.poster !== 'any') params.set('poster', query.poster)
+  if (query.addedWithin !== 'any') params.set('added', query.addedWithin)
   if (query.unrated) params.set('unrated', '1')
   if (query.favWant) params.set('favwant', '1')
   if (query.favWatched) params.set('favwatched', '1')

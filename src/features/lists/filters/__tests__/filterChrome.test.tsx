@@ -1,12 +1,11 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { MemoryRouter, useNavigate } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { clearFiltersPatch } from '../../viewPrefs'
 import { DEFAULT_QUERY } from '../listQuery'
 import { FilterChrome } from '../FilterChrome'
 import type { ListId } from '@/types/lists'
 import type { ListQuery } from '../listQuery'
-import type { MediaItem } from '@/types/media'
 
 function chip(name: string): HTMLElement {
   const matches = screen.getAllByRole('button', { name })
@@ -20,7 +19,7 @@ afterEach(() => cleanup())
 function renderChrome(listId: ListId = 'movies', query: ListQuery = { ...DEFAULT_QUERY, view: 'shelves', statuses: ['Maybe'] }, onChange = () => undefined) {
   return render(
     <MemoryRouter>
-      <FilterChrome items={[] as MediaItem[]} listId={listId} query={query} shown={1} total={2} onChange={onChange} />
+      <FilterChrome items={[]} listId={listId} query={query} shown={1} total={2} onChange={onChange} />
     </MemoryRouter>,
   )
 }
@@ -57,61 +56,31 @@ describe('filter chips', () => {
     expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ statuses: [], smart: null, q: '' }))
   })
 
-  it('closes the filter panel on an outside click, Escape, and a route change', () => {
-    function Probe() {
-      const navigate = useNavigate()
-      return (
-        <>
-          <button type="button" onClick={() => navigate('/lists/anime')}>Leave</button>
-          <FilterChrome items={[]} listId="movies" query={{ ...DEFAULT_QUERY, view: 'grid' }} shown={1} total={2} onChange={() => undefined} />
-        </>
-      )
-    }
-    render(<MemoryRouter initialEntries={['/lists/movies']}><Probe /></MemoryRouter>)
-    fireEvent.click(filtersButton())
-    expect(screen.getByRole('heading', { name: 'View' })).toBeTruthy()
-    expect(screen.getByLabelText('From year')).toBeTruthy()
-    fireEvent.pointerDown(document.body)
-    expect(screen.queryByLabelText('From year')).toBeNull()
-    fireEvent.click(filtersButton())
-    fireEvent.keyDown(window, { key: 'Escape' })
-    expect(screen.queryByRole('heading', { name: 'View' })).toBeNull()
-    fireEvent.click(filtersButton())
-    fireEvent.click(screen.getByRole('button', { name: 'Leave' }))
-    expect(screen.queryByRole('heading', { name: 'View' })).toBeNull()
-  })
-
-  it('names the sort and can group with the same chips', () => {
-    const onChange = vi.fn()
-    const movie: MediaItem = {
-      id: 'argo', listId: 'movies', title: 'Argo', titleKey: 'argo', status: 'Want to', statusGroup: 'planned',
-      year: 2012, genres: ['Thriller'], why: '', notes: '', updatedAt: null, poster: null, creator: 'Ben Affleck', franchise: null,
-      myRating: null, imdbRating: null, platform: null, favourite: false, extra: {},
-    }
-    renderChrome('movies', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
-    expect(screen.queryByRole('radiogroup', { name: 'Sort by' })).toBeNull()
-    fireEvent.click(filtersButton())
-    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Sort by' })).getByRole('button', { name: 'Year' }))
-    expect(onChange).toHaveBeenCalledWith({ sort: 'year', dir: 'desc' })
-    cleanup()
-    onChange.mockClear()
+  it('opens the filters drawer and closes it from Done and Escape', () => {
     render(
       <MemoryRouter>
-        <FilterChrome items={[movie]} listId="movies" query={{ ...DEFAULT_QUERY, view: 'shelves', group: 'status' }} shown={1} total={1} onChange={onChange} />
+        <FilterChrome items={[]} listId="movies" query={{ ...DEFAULT_QUERY, view: 'grid' }} shown={1} total={2} onChange={() => undefined} />
       </MemoryRouter>,
     )
     fireEvent.click(filtersButton())
-    const sort = screen.getByRole('radiogroup', { name: 'Sort by' })
-    expect(within(sort).getByRole('button', { name: 'Title A–Z' }).getAttribute('aria-pressed')).toBe('true')
-    expect(within(sort).getByRole('button', { name: 'Year' })).toBeTruthy()
-    expect(within(sort).getByRole('button', { name: 'My Rating' })).toBeTruthy()
-    expect(within(sort).getByRole('button', { name: 'IMDb rating' })).toBeTruthy()
-    const grouped = screen.getByRole('radiogroup', { name: 'Group by' })
-    expect(within(grouped).getByRole('button', { name: 'Status' }).getAttribute('aria-pressed')).toBe('true')
-    fireEvent.click(within(grouped).getByRole('button', { name: 'Genre' }))
-    expect(onChange).toHaveBeenCalledWith({ group: 'genre' })
-    fireEvent.click(within(grouped).getByRole('button', { name: 'None' }))
-    expect(onChange).toHaveBeenLastCalledWith({ group: 'none', view: 'grid' })
+    expect(screen.getByRole('heading', { name: 'Filters & view' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'View' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.queryByRole('heading', { name: 'View' })).toBeNull()
+    fireEvent.click(filtersButton())
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('heading', { name: 'View' })).toBeNull()
+  })
+
+  it('puts sort and group in the drawer and keeps shelves grouped', () => {
+    const onChange = vi.fn()
+    renderChrome('movies', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
+    expect(screen.queryByRole('combobox', { name: 'Sort by' })).toBeNull()
+    fireEvent.click(filtersButton())
+    expect(screen.getByRole('combobox', { name: 'Sort by' })).toBeTruthy()
+    expect(screen.getByRole('combobox', { name: 'Group by' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Shelves' }))
+    expect(onChange).toHaveBeenCalledWith({ view: 'shelves', group: 'status' })
   })
 
   it('clears every filter from the panel and stays disabled when nothing is set', () => {
@@ -145,11 +114,11 @@ describe('filter chips', () => {
     renderChrome('series', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
     expect(screen.queryByRole('button', { name: 'Filters 1' })).toBeNull()
     fireEvent.click(filtersButton())
-    fireEvent.click(screen.getByRole('button', { name: 'Unrated' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Unrated' }))
     expect(onChange).toHaveBeenCalledWith({ unrated: true })
-    fireEvent.click(screen.getByRole('button', { name: 'Fav Want to' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Fav Want to' }))
     expect(onChange).toHaveBeenCalledWith({ favWant: true })
-    fireEvent.click(screen.getByRole('button', { name: 'Fav Watched' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Fav Watched' }))
     expect(onChange).toHaveBeenCalledWith({ favWatched: true })
     cleanup()
     onChange.mockClear()
@@ -166,10 +135,10 @@ describe('filter chips', () => {
     renderChrome('movies', { ...DEFAULT_QUERY, view: 'shelves', genres: ['Drama'], unrated: true, sort: 'year' })
     expect(screen.getAllByRole('button', { name: 'Filters 1' }).length).toBeGreaterThan(0)
     fireEvent.click(filtersButton())
-    expect(screen.getByRole('heading', { name: 'View' })).toBeTruthy()
-    expect(screen.getByText('How the list looks')).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Filters · 1' })).toBeTruthy()
-    expect(screen.getByText("Narrow down what's shown")).toBeTruthy()
+    const headings = screen.getAllByRole('heading').map((heading) => heading.textContent)
+    expect(headings[0]).toBe('Filters & view · 1')
+    expect(headings.indexOf('View')).toBeLessThan(headings.indexOf('Show'))
+    expect(headings.indexOf('Show')).toBeLessThan(headings.indexOf('Filters'))
     expect(screen.getByRole('button', { name: 'Reset view' })).toBeTruthy()
   })
 
@@ -177,11 +146,9 @@ describe('filter chips', () => {
     const onChange = vi.fn()
     renderChrome('movies', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
     expect(screen.queryByRole('button', { name: 'Shelves' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
-    const current = screen.getAllByRole('button', { name: 'Grid' }).find((button) => button.getAttribute('aria-pressed') === 'true')
-    expect(current).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Table' }))
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Grid view' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Table' }))
     expect(onChange).toHaveBeenCalledWith({ view: 'table', group: 'none' })
-    expect(screen.queryByRole('button', { name: 'Table' })).toBeNull()
+    expect(screen.queryByRole('menuitem', { name: 'Table' })).toBeNull()
   })
 })

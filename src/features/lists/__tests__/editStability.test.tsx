@@ -21,6 +21,7 @@ function row(partial: Partial<MediaItem> & Pick<MediaItem, 'id' | 'title'>): Med
     genres: [], why: '', updatedAt: null, poster: null, creator: null, franchise: null, myRating: null, imdbRating: null, platform: null, extra: {},
     ...partial,
     notes: partial.notes ?? '',
+    dateAdded: partial.dateAdded ?? null,
     favourite: partial.favourite ?? false,
   }
 }
@@ -115,7 +116,7 @@ describe('a rating edit stays put', () => {
 describe('sort options', () => {
   it('never offers Updated at', () => {
     const labels = sortOptions('movies', false).map((option) => option.label)
-    expect(labels).toEqual(['Title', 'Year', 'My Rating', 'IMDb rating'])
+    expect(labels).toEqual(['Title', 'Year', 'My Rating', 'IMDb rating', 'Recently added'])
     expect(labels.join(' ')).not.toMatch(/updated/i)
     expect(sortOptions('games', false).map((option) => option.label)).toContain('Metacritic rating')
     expect(sortOptions('books', hasFinishedColumn('books', [])).map((option) => option.label)).toContain('Date finished')

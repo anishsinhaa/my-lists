@@ -24,6 +24,7 @@ function item(partial: Partial<MediaItem> & Pick<MediaItem, 'title' | 'status'>)
     platform: null,
     extra: {},
     ...partial,
+    dateAdded: partial.dateAdded ?? null,
     favourite: partial.favourite ?? false,
   }
 }

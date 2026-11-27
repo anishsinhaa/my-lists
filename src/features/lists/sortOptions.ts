@@ -31,5 +31,6 @@ export function sortOptions(listId: ListId, showFinished: boolean): SortOption[]
     { key: 'imdbRating', label: `${external} rating`, dir: 'desc' },
   ]
   if (showFinished) options.push({ key: 'finished', label: 'Date finished', dir: 'desc' })
+  options.push({ key: 'added', label: 'Recently added', dir: 'desc' })
   return options
 }

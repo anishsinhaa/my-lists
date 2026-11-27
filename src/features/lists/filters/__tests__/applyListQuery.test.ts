@@ -24,6 +24,7 @@ function item(partial: Partial<MediaItem> & Pick<MediaItem, 'title'>): MediaItem
     platform: null,
     extra: {},
     ...partial,
+    dateAdded: partial.dateAdded ?? null,
     favourite: partial.favourite ?? false,
   }
 }
@@ -89,5 +90,39 @@ describe('applyListQuery', () => {
     console.timeEnd('filter-500')
     expect(result).toHaveLength(500)
     expect(result[0]?.title).toBe('T0')
+  })
+
+  it('filters added within with statuses and sorts blanks last', () => {
+    const now = new Date('2026-06-15T00:00:00.000Z')
+    const rows = [
+      item({ title: 'Recent want', status: 'Want to', dateAdded: '2026-06-01T00:00:00.000Z' }),
+      item({ title: 'Recent maybe', status: 'Maybe', dateAdded: '2026-05-20T00:00:00.000Z' }),
+      item({ title: 'Old want', status: 'Want to', dateAdded: '2025-01-01T00:00:00.000Z' }),
+      item({ title: 'Blank want', status: 'Want to', dateAdded: null }),
+      item({ title: 'Recent watched', status: 'Watched', dateAdded: '2026-06-10T00:00:00.000Z' }),
+    ]
+    expect(applyListQuery(rows, { ...DEFAULT_QUERY, addedWithin: '30d', statuses: ['Want to', 'Maybe'] }, { now, listId: 'movies' }).map((entry) => entry.title)).toEqual(['Recent maybe', 'Recent want'])
+    const dated = [
+      item({ title: 'Newer', dateAdded: '2026-02-01T00:00:00.000Z' }),
+      item({ title: 'Older', dateAdded: '2024-02-01T00:00:00.000Z' }),
+      item({ title: 'Blank', dateAdded: null }),
+    ]
+    expect(applyListQuery(dated, { ...DEFAULT_QUERY, sort: 'added', dir: 'desc' }, { now }).map((entry) => entry.title)).toEqual(['Newer', 'Older', 'Blank'])
+    expect(applyListQuery(dated, { ...DEFAULT_QUERY, sort: 'added', dir: 'asc' }, { now }).map((entry) => entry.title)).toEqual(['Older', 'Newer', 'Blank'])
+  })
+
+  it('sorts titles with numbers first and X-Men under X', () => {
+    const rows = [
+      item({ title: 'X-Men', year: 2000 }),
+      item({ title: 'Avatar', year: 2009 }),
+      item({ title: '10 Things I Hate About You', year: 1999 }),
+      item({ title: 'Malcolm X', year: 1992 }),
+    ]
+    expect(applyListQuery(rows, { ...DEFAULT_QUERY, sort: 'title', dir: 'asc' }, { now: new Date('2026-01-01T00:00:00.000Z') }).map((entry) => entry.title)).toEqual([
+      '10 Things I Hate About You',
+      'Avatar',
+      'Malcolm X',
+      'X-Men',
+    ])
   })
 })

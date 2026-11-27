@@ -19,6 +19,7 @@ function movie(): MediaItem {
     why: '',
     notes: '',
     updatedAt: null,
+    dateAdded: null,
     poster: 'https://img.example/heat.jpg',
     creator: 'Michael Mann',
     franchise: null,

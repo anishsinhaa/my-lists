@@ -26,6 +26,7 @@ describe('mapMainTab', () => {
     expect(result.items[0]?.favourite).toBe(false)
     expect(result.items[0]?.creator).toBe('Christopher Nolan')
     expect(result.items[0]?.extra['box office']).toBe('')
+    expect(result.items[0]?.dateAdded).toBeNull()
     expect(result.warnings.some((warning) => warning.code === 'duplicate_title')).toBe(true)
   })
 
@@ -37,6 +38,20 @@ describe('mapMainTab', () => {
     expect(result.columns.imdbRating).toBe(false)
     expect(result.items[0]?.myRating).toBeNull()
     expect(result.items[0]?.imdbRating).toBeNull()
+  })
+
+  it('maps Date added and keeps it out of extra', () => {
+    const result = mapMainTab('movies', [
+      ['Title', 'Date added', 'Date finished'],
+      ['Heat', 45000, '2020-01-02'],
+      ['Dune', '2026-11-17 23:39', ''],
+      ['Blank', '', ''],
+    ])
+    expect(result.items[0]?.dateAdded).toBe('2023-03-15T00:00:00.000Z')
+    expect(result.items[1]?.dateAdded).toBe('2026-11-17T18:09:00.000Z')
+    expect(result.items[2]?.dateAdded).toBeNull()
+    expect(result.items[0]?.extra['date added']).toBeUndefined()
+    expect(result.items[0]?.extra['date finished']).toBe('2020-01-02')
   })
 
   it('maps the legacy why header and keeps date finished as an extra', () => {

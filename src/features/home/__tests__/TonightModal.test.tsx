@@ -12,6 +12,7 @@ function item(partial: Partial<MediaItem> & Pick<MediaItem, 'id' | 'listId' | 't
   return {
     titleKey: partial.title.toLowerCase(), statusGroup: 'planned', year: 2012, genres: ['Thriller'], why: 'Because', notes: '', updatedAt: null,
     poster: null, creator: 'Ben Affleck', franchise: null, myRating: null, imdbRating: null, platform: null, extra: {}, ...partial,
+    dateAdded: partial.dateAdded ?? null,
     favourite: partial.favourite ?? false,
   }
 }

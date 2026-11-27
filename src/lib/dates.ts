@@ -44,6 +44,14 @@ export function formatIstDay(date: Date): string {
   return formatIstStamp(date).slice(0, 10)
 }
 
+export function parseDateAdded(value: unknown): string | null {
+  if (typeof value === 'string' && /^\d+(?:\.\d+)?$/.test(value.trim())) {
+    const serial = Number(value.trim())
+    if (serial >= 20_000 && serial <= 80_000) return parseUpdatedAt(serial)
+  }
+  return parseUpdatedAt(value)
+}
+
 export function parseUpdatedAt(value: unknown): string | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
     const day = serialToIso(value)

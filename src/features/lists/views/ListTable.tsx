@@ -6,6 +6,12 @@ import { externalRatingLabel } from '@/lib/rating'
 import { LIST_KIND, type ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 
+function addedDay(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return '—'
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }).format(date)
+}
+
 function cell(value: string | number | null | undefined) {
   if (value === null || value === undefined) return ''
   const text = String(value).trim()
@@ -23,6 +29,7 @@ export function ListTable({ items, listId, onOpen }: { items: MediaItem[]; listI
             <th className="p-2">Poster</th>
             <th className="p-2">Title</th>
             <th className="p-2">Year</th>
+            <th className="p-2">Date added</th>
             <th className="p-2">Genre</th>
             <th className="p-2">{creator}</th>
             <th className="p-2">Franchise</th>
@@ -45,6 +52,7 @@ export function ListTable({ items, listId, onOpen }: { items: MediaItem[]; listI
                 </span>
               </td>
               <td className="p-2">{cell(item.year)}</td>
+              <td className="p-2">{item.dateAdded === null ? '—' : addedDay(item.dateAdded)}</td>
               <td className="p-2">{cell(item.genres.join(', '))}</td>
               <td className="p-2">{cell(item.creator)}</td>
               <td className="p-2">{cell(item.franchise)}</td>

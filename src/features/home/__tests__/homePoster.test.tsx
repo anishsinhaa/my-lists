@@ -18,6 +18,7 @@ function item(): MediaItem {
     why: 'A first line\nThe rest stays hidden',
     notes: 'Paused at the cliffhanger',
     updatedAt: null,
+    dateAdded: null,
     poster: null,
     creator: null,
     franchise: null,

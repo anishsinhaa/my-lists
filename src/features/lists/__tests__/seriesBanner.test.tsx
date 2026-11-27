@@ -17,6 +17,7 @@ function item(title: string, status: string, poster: string | null): MediaItem {
     why: '',
     notes: '',
     updatedAt: null,
+    dateAdded: null,
     poster,
     creator: null,
     franchise: null,

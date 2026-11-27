@@ -100,14 +100,13 @@ function activeChips(listId: ListId, query: ListQuery): ActiveChip[] {
   return chips
 }
 
-export function FilterChrome({ listId, items, query, shown, total, onChange, onShuffle, layoutOptions }: {
+export function FilterChrome({ listId, items, query, shown, total, onChange, layoutOptions }: {
   listId: ListId
   items: MediaItem[]
   query: ListQuery
   shown: number
   total: number
   onChange: (partial: Partial<ListQuery>) => void
-  onShuffle?: () => void
   layoutOptions?: ReadonlyArray<ListQuery['view']>
 }) {
   const [open, setOpen] = useState(false)
@@ -133,7 +132,6 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
         </button>
         <FiltersDrawer items={items} layoutOptions={layoutOptions} listId={listId} open={open} query={query} returnFocus={filtersRef} shown={shown} total={total} onChange={onChange} onOpenChange={setDrawer} />
         <LayoutToggle options={layoutOptions} view={query.view} onChange={onChange} />
-        {onShuffle !== undefined ? <button type="button" className="h-11 px-3 text-sm" onClick={onShuffle}>Shuffle</button> : null}
       </div>
       {COUNTS_FILTER.has(listId) ? null : <StatusRow items={items} listId={listId} query={query} onChange={onChange} />}
       {chips.length === 0 ? null : (

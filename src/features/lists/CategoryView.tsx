@@ -89,7 +89,6 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
   openItemId?: string | null
   onItemClose?: () => void
 }) {
-  const [shuffled, setShuffled] = useState<MediaItem[] | null>(null)
   const [openId, setOpenId] = useState<string | null>(openItemId)
   const [modalOrder, setModalOrder] = useState<string[] | null>(null)
   const [trackedItem, setTrackedItem] = useState(openItemId)
@@ -99,12 +98,11 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
   }
   const canEdit = useCanEdit()
   const save = useSaveItem()
-  const source = shuffled ?? items
   const [now] = useState(() => new Date())
-  const visible = useMemo(() => selectItems(listId, source, query, now), [listId, source, query, now])
+  const visible = useMemo(() => selectItems(listId, items, query, now), [items, listId, query, now])
   const current = useMemo(() => currentItems(listId, visible), [visible, listId])
   const groups = useMemo(() => itemGroups(listId, visible, query.group), [listId, query.group, visible])
-  const open = openId === null ? null : items.find((item) => item.id === openId) ?? source.find((item) => item.id === openId) ?? null
+  const open = openId === null ? null : items.find((item) => item.id === openId) ?? null
   const modalItems = useMemo(() => {
     if (modalOrder === null) return visible
     const byId = new Map(items.map((item) => [item.id, item]))
@@ -146,7 +144,6 @@ export function CategoryView({ listId, items, query, onChange, enriching, openIt
         shown={visible.length}
         total={items.length}
         onChange={patch}
-        onShuffle={query.view === 'grid' ? () => setShuffled([...items].sort(() => Math.random() - 0.5)) : undefined}
       />
       {query.view === 'shelves' && query.group === 'status' && listId !== 'series' && current.length > 0 ? (
         <section>

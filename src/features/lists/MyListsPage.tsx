@@ -36,8 +36,7 @@ function tilt(event: PointerEvent<HTMLSpanElement>) {
   const rect = node.getBoundingClientRect()
   const x = (event.clientX - rect.left) / rect.width - 0.5
   const y = (event.clientY - rect.top) / rect.height - 0.5
-  const rest = node.dataset.list === 'games' ? -14 : 0
-  node.style.transform = `perspective(1000px) rotateX(${(-y * 6).toFixed(2)}deg) rotateY(${(rest + x * 8).toFixed(2)}deg)`
+  node.style.transform = `perspective(1000px) rotateX(${(-y * 6).toFixed(2)}deg) rotateY(${(x * 8).toFixed(2)}deg)`
   node.style.setProperty('--gloss', `${((x + 0.5) * 100).toFixed(0)}%`)
 }
 
@@ -49,6 +48,23 @@ function ArchiveCard({ listId, items, count, active }: { listId: PortraitId; ite
   const posters = covers(items)
   const inProgress = items.filter((item) => item.statusGroup === 'active').length
   const done = items.filter((item) => item.statusGroup === 'done').length
+  const books = listId === 'books'
+  const card = (
+    <span
+      data-list={listId}
+      className={`archive-card relative block aspect-2/3 w-full ${books ? 'overflow-visible' : 'overflow-hidden'}`}
+      onPointerMove={tilt}
+      onPointerLeave={untilt}
+    >
+      <span className={`absolute grid grid-cols-2 grid-rows-2 ${books ? 'inset-[8px] overflow-hidden shadow-[0_0_0_1px_#c4a574]' : 'inset-0'}`}>
+        {posters.length === 0 ? <span className={`col-span-2 row-span-2 ${listId === 'books' ? 'bg-[#6b3e2a]' : listId === 'anime' ? 'bg-[#fff4d6]' : listId === 'games' ? 'bg-[#100e21]' : listId === 'series' ? 'bg-[#2a1f1a]' : 'bg-[#14110e]'}`} /> : posters.map((item, index) => (
+          <PosterImage key={item.id} alt="" byline={item.creator ?? ''} className={`h-full min-h-0 w-full ${cellClass(posters.length, index)}`} fit="fill" kind={LIST_KIND[listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
+        ))}
+      </span>
+      <span aria-hidden="true" className={`archive-skin archive-skin-${listId}`} />
+      <span aria-hidden="true" className="archive-gloss" />
+    </span>
+  )
   return (
     <Link
       to={`/lists/${listId}`}
@@ -59,20 +75,7 @@ function ArchiveCard({ listId, items, count, active }: { listId: PortraitId; ite
     >
       <span className="archive-face">
         <ListSign listId={listId}>{TAB_NAME[listId]}</ListSign>
-        <span
-          data-list={listId}
-          className="archive-card relative block aspect-2/3 w-full overflow-hidden"
-          onPointerMove={tilt}
-          onPointerLeave={untilt}
-        >
-        <span className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-          {posters.length === 0 ? <span className={`col-span-2 row-span-2 ${listId === 'books' ? 'bg-[#6b3e2a]' : listId === 'anime' ? 'bg-[#fff4d6]' : listId === 'games' ? 'bg-[#100e21]' : listId === 'series' ? 'bg-[#2a1f1a]' : 'bg-[#14110e]'}`} /> : posters.map((item, index) => (
-            <PosterImage key={item.id} alt="" byline={item.creator ?? ''} className={`h-full min-h-0 w-full ${cellClass(posters.length, index)}`} fit="fill" kind={LIST_KIND[listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
-          ))}
-        </span>
-        <span aria-hidden="true" className={`archive-skin archive-skin-${listId}`} />
-        <span aria-hidden="true" className="archive-gloss" />
-        </span>
+        {books ? <span className="archive-book relative mb-7 block w-full">{card}<span aria-hidden="true" className="archive-book-ribbon" /></span> : card}
       </span>
       <span className="w-full text-center text-sm">
         <span className="block">{count} titles{inProgress > 0 ? ` · ${inProgress} in progress` : ''}</span>

@@ -4,7 +4,8 @@ import { useAuth } from '@/features/auth/AuthContext'
 
 export function useLoadingSignal(): boolean {
   const fetching = useIsFetching({ queryKey: ['lists'] })
+  const settings = useIsFetching({ queryKey: ['settings'] })
   const navigation = useNavigation()
   const { status } = useAuth()
-  return fetching > 0 || navigation.state !== 'idle' || status === 'checking'
+  return fetching > 0 || settings > 0 || navigation.state !== 'idle' || status === 'checking'
 }

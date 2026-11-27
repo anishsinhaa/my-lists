@@ -9,12 +9,15 @@ import { Skeletons } from '@/components/common/Skeletons'
 import { BRAND } from '@/config/branding'
 import { Button } from '@/design/Button'
 import { LogoMark } from '@/design/LogoMark'
+import { PosterImage } from '@/components/common/PosterImage'
 import { thumbnailUrl } from '@/design/archive'
 import { useAuth, useCanEdit } from '@/features/auth/AuthContext'
 import { useLists } from '@/features/data/useLists'
 import { usePicksVisibility } from '@/features/settings/useSettings'
 import { DUR, EASE, fadeIn } from '@/themes/motion'
-import { LIST_IDS } from '@/types/lists'
+import { formatRating } from '@/lib/rating'
+import { LIST_IDS, LIST_KIND } from '@/types/lists'
+import { displayTitle } from '@/lib/displayTitle'
 import { WallBoard } from './WallBoard'
 import { GlobalSearch } from './GlobalSearch'
 import { TonightModal } from './TonightModal'
@@ -51,7 +54,7 @@ export function HomePage() {
     <main>
       <section className="edge relative flex min-h-[70vh] w-full flex-col justify-end overflow-hidden py-10">
         <div className="pointer-events-none absolute inset-0 grid grid-cols-6 gap-2 opacity-40 blur-sm" aria-hidden="true">
-          {collage.map((item) => <img key={item.id} alt="" className="h-40 w-full object-cover" src={thumbnailUrl(item.poster, 'w185') ?? ''} />)}
+          {collage.map((item) => <PosterImage key={item.id} alt="" byline={item.creator ?? ''} className="h-40 w-full" fit="fill" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w185')} title={displayTitle(item.title, item.year)} />)}
         </div>
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,#b08d5733,transparent_40%),linear-gradient(to_top,#100e0c,transparent_55%)]" />
         <div className="relative mx-auto w-full max-w-4xl space-y-5">
@@ -92,7 +95,7 @@ export function HomePage() {
       <section className="edge grid w-full gap-4 pb-4 md:grid-cols-12">
         <div className="rounded-md border border-(--brass)/40 p-4 md:col-span-12">
           <p className="font-['Cinzel',serif] text-3xl tabular-nums">{stats.total}</p>
-          <p className="text-sm text-(--ink-muted)">{stats.finished} finished{stats.average === null ? '' : ` · my average ${stats.average}`}</p>
+          <p className="text-sm text-(--ink-muted)">{stats.finished} finished{stats.average === null ? '' : ` · my average ${formatRating(stats.average)}`}</p>
         </div>
         <button type="button" className="rounded-md border border-(--brass)/40 p-4 text-left md:col-span-4" onClick={() => setTonight(true)}>
           <span className="font-['Cinzel',serif]">Pick for tonight</span>

@@ -107,7 +107,7 @@ describe('a rating edit stays put', () => {
     })
     expect(cardTitles()).toEqual(['Alpha', 'Beta'])
     expect(screen.getByRole('heading', { name: 'Beta' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Previous' }).hasAttribute('disabled')).toBe(false)
+    expect(screen.getByRole('button', { name: /Previous/ }).hasAttribute('disabled')).toBe(false)
     expect(top).toBe(640)
     expect(saveItem).toHaveBeenCalled()
   })

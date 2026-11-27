@@ -26,6 +26,10 @@ function inRange(value: number): number | null {
   return Math.round(value * 10) / 10
 }
 
+export function formatRating(value: number): string {
+  return value.toFixed(1)
+}
+
 export function effectiveRating(item: { myRating: number | null; imdbRating: number | null }): number | null {
   return item.myRating ?? item.imdbRating
 }

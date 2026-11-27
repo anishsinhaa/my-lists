@@ -4,9 +4,16 @@ import { FILTER_CONFIG } from './filters/filterConfig'
 import type { GroupKey } from './filters/listQuery'
 
 export function groupOptions(listId: ListId, items: MediaItem[]): { key: GroupKey; label: string }[] {
+  if (listId === 'other' || listId === 'curious') {
+    return [
+      { key: 'none', label: 'No grouping' },
+      { key: 'status', label: 'Status' },
+      { key: 'type', label: 'Type' },
+    ]
+  }
   const config = FILTER_CONFIG[listId]
   const options: { key: GroupKey; label: string }[] = [
-    { key: 'none', label: 'None' },
+    { key: 'none', label: 'No grouping' },
     { key: 'status', label: 'Status' },
   ]
   if (config.show.genre && items.some((item) => item.genres.length > 0)) options.push({ key: 'genre', label: 'Genre' })

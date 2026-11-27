@@ -15,7 +15,7 @@ export function PosterGrid({ items, listId }: { items: MediaItem[]; listId: List
   const { visible, sentinelRef, hasMore } = useInfiniteChunks(items)
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      <div className={listId === 'anime' ? 'grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6' : 'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'}>
         {visible.map((item, index) => <PosterCard key={item.id} index={index} item={item} onOpen={(entry) => setOpenId(entry.id)} />)}
       </div>
       {hasMore ? <div ref={sentinelRef} className="h-8" /> : null}

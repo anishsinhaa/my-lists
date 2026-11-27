@@ -1,8 +1,12 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { MediaItem } from '@/types/media'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BookCard } from '../../cards/BookCard'
+import { MovieCard } from '../../cards/MovieCard'
+import { PosterGrid } from '../PosterGrid'
 import { PosterCard } from '../PosterCard'
+import { SeriesCard } from '../../cards/SeriesCard'
 
 afterEach(cleanup)
 
@@ -62,5 +66,31 @@ describe('book cover hover', () => {
     expect(container.querySelector('[data-spine]')).toBeNull()
     expect(container.innerHTML).not.toContain('clip-path')
     expect(container.innerHTML).not.toContain('rotateY')
+  })
+})
+
+describe('card polish', () => {
+  it('gives a series card one status', () => {
+    const show = movie()
+    show.listId = 'series'
+    show.status = 'Want to'
+    render(<SeriesCard index={0} item={show} />)
+    expect(screen.getAllByText('Want to watch')).toHaveLength(1)
+  })
+
+  it('drops the gold movie border', () => {
+    const { container } = render(<MovieCard index={0} item={movie()} />)
+    expect(container.innerHTML).not.toContain('border-[#d4af37]')
+  })
+
+  it('spaces the anime grid wider than the other lists', () => {
+    const client = new QueryClient()
+    const { container } = render(
+      <QueryClientProvider client={client}>
+        <PosterGrid items={[]} listId="anime" />
+      </QueryClientProvider>,
+    )
+    expect(container.querySelector('.gap-x-6')).toBeTruthy()
+    expect(container.querySelector('.gap-y-8')).toBeTruthy()
   })
 })

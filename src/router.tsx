@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
+import { TopLoadingBar } from '@/components/layout/TopLoadingBar'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
@@ -14,6 +15,7 @@ import { LIST_IDS } from '@/types/lists'
 function AuthLayout() {
   return (
     <AuthProvider>
+      <TopLoadingBar />
       <Outlet />
     </AuthProvider>
   )

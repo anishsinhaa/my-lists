@@ -87,5 +87,7 @@ export function edgeScrollSpeed(pointerX: number, width: number, zone = 0.18): n
 
 export function thumbnailUrl(url: string | null, size: 'w342' | 'w185' | 'w500' = 'w342'): string | null {
   if (url === null || url.length === 0) return null
-  return url.replace('/t/p/w500', `/t/p/${size}`).replace('/t/p/original', `/t/p/${size}`)
+  const sized = url.replace('/t/p/w500', `/t/p/${size}`).replace('/t/p/original', `/t/p/${size}`)
+  if (size === 'w500') return sized
+  return sized.replace(/-L\.jpg(?=($|\?))/, '-M.jpg')
 }

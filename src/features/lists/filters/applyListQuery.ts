@@ -74,6 +74,10 @@ export function applyListQuery(items: MediaItem[], query: ListQuery, ctx: { now:
     if (needle.length > 0 && !item.titleKey.includes(needle) && !normalizeTitle(item.title).includes(needle) && !genreHit) return false
     if (!statusAllowed(item.status, query.statuses, ctx.listId)) return false
     if (query.genres.length > 0 && !query.genres.some((genre) => item.genres.includes(genre))) return false
+    if (query.types.length > 0) {
+      const have = (item.extra['type'] ?? '').trim().toLowerCase()
+      if (!query.types.some((type) => type.trim().toLowerCase() === have)) return false
+    }
     if (query.yearMin !== null || query.yearMax !== null) {
       if (item.year === null) return false
       if (query.yearMin !== null && item.year < query.yearMin) return false

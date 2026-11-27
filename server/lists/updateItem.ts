@@ -39,11 +39,10 @@ function text(value: unknown): string {
   return value === undefined || value === null ? '' : String(value).trim()
 }
 
-function validRating(value: number | null): boolean {
+export function validRating(value: number | null): boolean {
   if (value === null) return true
-  if (value < 0.5 || value > 10) return false
-  const steps = value * 2
-  return Math.abs(steps - Math.round(steps)) < 1e-6
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 10) return false
+  return Math.abs(value * 10 - Math.round(value * 10)) < 1e-6
 }
 
 function cleanNote(value: string): string | null {

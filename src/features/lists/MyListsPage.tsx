@@ -6,11 +6,13 @@ import { ErrorState } from '@/components/common/ErrorState'
 import { PosterSkeletons } from '@/components/common/PosterSkeletons'
 import { Rail } from '@/design/Rail'
 import { ListSign } from '@/features/lists/ListSign'
+import { PosterImage } from '@/components/common/PosterImage'
 import { thumbnailUrl } from '@/design/archive'
+import { displayTitle } from '@/lib/displayTitle'
 import { listCounts } from '@/features/data/selectors'
 import { useLists } from '@/features/data/useLists'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
-import { TAB_NAME } from '@/types/lists'
+import { LIST_KIND, TAB_NAME } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 
 const ORDER = ['movies', 'series', 'anime', 'games', 'books'] as const
@@ -65,7 +67,7 @@ function ArchiveCard({ listId, items, count, active }: { listId: PortraitId; ite
         >
         <span className="absolute inset-0 grid grid-cols-2 grid-rows-2">
           {posters.length === 0 ? <span className={`col-span-2 row-span-2 ${listId === 'books' ? 'bg-[#6b3e2a]' : listId === 'anime' ? 'bg-[#fff4d6]' : listId === 'games' ? 'bg-[#100e21]' : listId === 'series' ? 'bg-[#2a1f1a]' : 'bg-[#14110e]'}`} /> : posters.map((item, index) => (
-            <img key={item.id} alt="" className={`h-full min-h-0 w-full object-cover ${cellClass(posters.length, index)}`} decoding="async" loading="lazy" src={thumbnailUrl(item.poster, 'w342') ?? ''} />
+            <PosterImage key={item.id} alt="" byline={item.creator ?? ''} className={`h-full min-h-0 w-full ${cellClass(posters.length, index)}`} fit="fill" kind={LIST_KIND[listId]} src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
           ))}
         </span>
         <span aria-hidden="true" className={`archive-skin archive-skin-${listId}`} />

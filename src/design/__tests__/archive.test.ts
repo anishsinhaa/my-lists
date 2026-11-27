@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { MediaItem } from '@/types/media'
 import { edgeScrollSpeed, shelfGroups, currentItems, thumbnailUrl, visibleRating } from '../archive'
-import { matchStatus, STATUS_TABLE } from '../statusConfig'
+import { matchStatus, STATUS_TABLE, statusLabel } from '../statusConfig'
 
 function item(partial: Partial<MediaItem> & Pick<MediaItem, 'title' | 'status'>): MediaItem {
   return {
@@ -96,5 +96,20 @@ describe('ratings and rail speed', () => {
     expect(thumbnailUrl(url, 'w342')).toBe('https://image.tmdb.org/t/p/w342/poster.jpg')
     expect(thumbnailUrl(url, 'w185')).toContain('/w185/')
     expect(thumbnailUrl('https://example.com/a.jpg', 'w342')).toBe('https://example.com/a.jpg')
+    const openLibrary = 'https://covers.openlibrary.org/b/id/123-L.jpg'
+    expect(thumbnailUrl(openLibrary, 'w185')).toBe('https://covers.openlibrary.org/b/id/123-M.jpg')
+    expect(thumbnailUrl(openLibrary, 'w342')).toBe('https://covers.openlibrary.org/b/id/123-M.jpg')
+    expect(thumbnailUrl(openLibrary, 'w500')).toBe(openLibrary)
+  })
+
+  it('shows a watch, play, or learn label and keeps the stored value', () => {
+    expect(statusLabel('movies', 'Want to')).toBe('Want to watch')
+    expect(statusLabel('series', 'Want to')).toBe('Want to watch')
+    expect(statusLabel('anime', 'Want to')).toBe('Want to watch')
+    expect(statusLabel('games', 'Want to')).toBe('Want to play')
+    expect(statusLabel('curious', 'Want to')).toBe('Want to learn')
+    expect(statusLabel('movies', 'Watched')).toBe('Watched')
+    expect(statusLabel('movies', '  ')).toBe('No status')
+    expect(matchStatus('movies', 'Want to').value).toBe('Want to')
   })
 })

@@ -2,7 +2,8 @@ import { Heart } from 'lucide-react'
 import { PosterImage } from '@/components/common/PosterImage'
 import { thumbnailUrl } from '@/design/archive'
 import { displayTitle } from '@/lib/displayTitle'
-import { externalRatingLabel } from '@/lib/rating'
+import { externalRatingLabel, formatRating } from '@/lib/rating'
+import { statusLabel } from '@/design/statusConfig'
 import { LIST_KIND, type ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 
@@ -19,7 +20,12 @@ function cell(value: string | number | null | undefined) {
   return text
 }
 
-export function ListTable({ items, listId, onOpen }: { items: MediaItem[]; listId: ListId; onOpen: (item: MediaItem) => void }) {
+export function ListTable({ items, listId, onOpen, extraColumns = [] }: {
+  items: MediaItem[]
+  listId: ListId
+  onOpen: (item: MediaItem) => void
+  extraColumns?: Array<{ key: string; label: string }>
+}) {
   const creator = listId === 'books' ? 'Author' : 'Creator'
   return (
     <div className="overflow-x-auto">
@@ -33,6 +39,7 @@ export function ListTable({ items, listId, onOpen }: { items: MediaItem[]; listI
             <th className="p-2">Genre</th>
             <th className="p-2">{creator}</th>
             <th className="p-2">Franchise</th>
+            {extraColumns.map((column) => <th key={column.key} className="p-2">{column.label}</th>)}
             <th className="p-2">Status</th>
             <th className="p-2">My Rating</th>
             <th className="p-2">{externalRatingLabel(listId)}</th>
@@ -56,9 +63,10 @@ export function ListTable({ items, listId, onOpen }: { items: MediaItem[]; listI
               <td className="p-2">{cell(item.genres.join(', '))}</td>
               <td className="p-2">{cell(item.creator)}</td>
               <td className="p-2">{cell(item.franchise)}</td>
-              <td className="p-2">{cell(item.status)}</td>
-              <td className="p-2">{cell(item.myRating)}</td>
-              <td className="p-2">{cell(item.imdbRating)}</td>
+              {extraColumns.map((column) => <td key={column.key} className="p-2">{cell(item.extra[column.key])}</td>)}
+              <td className="p-2">{statusLabel(listId, item.status)}</td>
+              <td className="p-2">{item.myRating === null ? '' : formatRating(item.myRating)}</td>
+              <td className="p-2">{item.imdbRating === null ? '' : formatRating(item.imdbRating)}</td>
               <td className="max-w-48 truncate p-2" title={item.notes}>{cell(item.notes)}</td>
             </tr>
           ))}

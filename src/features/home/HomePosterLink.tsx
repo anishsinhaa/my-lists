@@ -6,6 +6,7 @@ import { PosterImage } from '@/components/common/PosterImage'
 import { StatusChip } from '@/components/common/StatusChip'
 import { thumbnailUrl, visibleRating } from '@/design/archive'
 import { displayTitle } from '@/lib/displayTitle'
+import { formatRating } from '@/lib/rating'
 import { PREVIEW_DELAY, PREVIEW_HEIGHT, PREVIEW_WIDTH, previewBox } from './previewBox'
 import { LIST_KIND, TAB_NAME } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
@@ -40,13 +41,13 @@ function PosterPreview({ item, anchor }: { item: MediaItem; anchor: { top: numbe
         <div className="min-w-0 space-y-0.5 py-0.5">
           <p className="truncate font-['Cinzel',serif] text-[11px] leading-tight">{displayTitle(item.title, item.year)}</p>
           <p className="truncate text-[10px] text-(--ink-muted)">{item.year ?? 'Year unknown'} · {TAB_NAME[item.listId]}</p>
-          {item.status.trim().length === 0 ? null : <StatusChip size="sm" status={item.status} />}
+          {item.status.trim().length === 0 ? null : <StatusChip listId={item.listId} size="sm" status={item.status} />}
           {item.genres.length === 0 ? null : <p className="truncate text-[10px] text-(--ink-muted)">{item.genres.slice(0, 3).join(' · ')}</p>}
           {rating.my === null && rating.external === null ? null : (
             <p className="truncate text-[10px] leading-tight">
-              {rating.external === null ? null : <span className="text-(--ink-muted)">{rating.externalLabel} {rating.external}</span>}
+              {rating.external === null ? null : <span className="text-(--ink-muted)">{rating.externalLabel} {formatRating(rating.external)}</span>}
               {rating.my === null || rating.external === null ? null : <span className="text-(--ink-muted)"> · </span>}
-              {rating.my === null ? null : <span className="text-[#d7b56a]">My rating {rating.my}</span>}
+              {rating.my === null ? null : <span className="text-[#d7b56a]">My rating {formatRating(rating.my)}</span>}
             </p>
           )}
           {description.length === 0 ? null : <p className="truncate text-[10px] text-(--ink-muted)">{description}</p>}

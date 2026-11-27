@@ -3,7 +3,7 @@ import { ArrowDownWideNarrow, ArrowUpNarrowWide, Calendar, ChevronDown, Eye, Gam
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { StatusGlyph } from '@/design/icons'
-import { matchStatus, shelfOrder } from '@/design/statusConfig'
+import { matchStatus, shelfOrder, statusLabel } from '@/design/statusConfig'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { externalRatingLabel } from '@/lib/rating'
 import type { ListId } from '@/types/lists'
@@ -140,10 +140,11 @@ function swallowOutside(onClose: () => void) {
   }
 }
 
-export function FiltersDrawer({ listId, items, query, shown, total, open, onOpenChange, onChange, returnFocus }: {
+export function FiltersDrawer({ listId, items, query, shown, total, open, onOpenChange, onChange, returnFocus, layoutOptions }: {
   listId: ListId
   items: MediaItem[]
   query: ListQuery
+  layoutOptions?: ReadonlyArray<ListQuery['view']>
   shown: number
   total: number
   open: boolean
@@ -152,6 +153,9 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
   returnFocus: RefObject<HTMLButtonElement | null>
 }) {
   const desktop = useMediaQuery('(min-width: 768px)')
+  const sortLabelId = useId()
+  const groupLabelId = useId()
+  const layoutLabelId = useId()
   const config = FILTER_CONFIG[listId]
   const count = filterBadgeCount(query)
   const sorts = sortOptions(listId, hasFinishedColumn(listId, items))
@@ -167,6 +171,13 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
     return items.some((item) => finishedOn(item) !== null)
   })
   const statuses = statusChoices(listId, items)
+  const typeValues = config.facets?.type === true ? frequent(items.map((item) => {
+    const type = (item.extra['type'] ?? '').trim()
+    return type.length === 0 ? null : type
+  })) : []
+  const directionWord = query.dir === 'asc' ? 'Ascending' : 'Descending'
+  const directionVisible = query.sort === 'title' ? (query.dir === 'asc' ? 'A–Z' : 'Z–A') : directionWord
+  const directionLabel = `Sort direction: ${directionWord}`
   const addedLabel = ADDED_WITHIN_OPTIONS.find((option) => option.value === query.addedWithin)?.label ?? 'Any'
   const close = () => onOpenChange(false)
   const ratingSummary = query.ratingMin !== null ? `${query.ratingMin}+` : query.ratingBy === 'my' ? 'Mine' : query.ratingBy === 'external' ? ratingName : 'Any'
@@ -198,32 +209,42 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-4">
           <section className="space-y-3">
             <h2 className="flex items-center gap-2 font-(--font-display) text-lg"><LayoutGrid aria-hidden="true" className="size-4" />View</h2>
-            <LayoutToggle view={query.view} onChange={onChange} />
-            <div className="flex items-center gap-2">
-              <Select value={query.sort} onValueChange={(value) => {
-                const option = sorts.find((item) => item.key === value)
+            <div className="space-y-1">
+              <label id={layoutLabelId} className="text-xs text-(--ink-muted)">Layout</label>
+              <LayoutToggle labelledBy={layoutLabelId} options={layoutOptions} view={query.view} onChange={onChange} />
+            </div>
+            <div className="space-y-1">
+              <label id={sortLabelId} className="text-xs text-(--ink-muted)">Sort by</label>
+              <div className="flex items-center gap-2">
+                <Select value={query.sort} onValueChange={(value) => {
+                  const option = sorts.find((item) => item.key === value)
+                  if (option === undefined) return
+                  onChange({ sort: option.key, dir: option.dir })
+                }}>
+                  <SelectTrigger aria-labelledby={sortLabelId} className="min-h-11 flex-1"><SelectValue /></SelectTrigger>
+                  <SelectContent className="z-[60] border-(--border) bg-(--surface) text-(--ink)">
+                    {sorts.map((option) => <SelectItem key={option.key} value={option.key}>{option.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <button type="button" aria-label={directionLabel} title={directionLabel} className="inline-flex h-11 items-center gap-1 rounded-md border border-(--brass)/40 px-2 text-xs" onClick={() => onChange({ dir: query.dir === 'asc' ? 'desc' : 'asc' })}>
+                  {query.dir === 'asc' ? <ArrowUpNarrowWide aria-hidden="true" className="size-4" /> : <ArrowDownWideNarrow aria-hidden="true" className="size-4" />}
+                  <span>{directionVisible}</span>
+                </button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label id={groupLabelId} className="text-xs text-(--ink-muted)">Group by</label>
+              <Select value={query.group} onValueChange={(value) => {
+                const option = groups.find((item) => item.key === value)
                 if (option === undefined) return
-                onChange({ sort: option.key, dir: option.dir })
+                onChange(option.key === 'none' && query.view === 'shelves' ? { group: 'none', view: 'grid' } : { group: option.key })
               }}>
-                <SelectTrigger aria-label="Sort by" className="min-h-11 flex-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger aria-labelledby={groupLabelId} className="min-h-11 w-full"><SelectValue /></SelectTrigger>
                 <SelectContent className="z-[60] border-(--border) bg-(--surface) text-(--ink)">
-                  {sorts.map((option) => <SelectItem key={option.key} value={option.key}>{option.label}</SelectItem>)}
+                  {groups.map((option) => <SelectItem key={option.key} value={option.key}>{option.label}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <button type="button" aria-label={query.dir === 'asc' ? 'Sort ascending' : 'Sort descending'} className="inline-flex size-11 items-center justify-center rounded-md border border-(--brass)/40" onClick={() => onChange({ dir: query.dir === 'asc' ? 'desc' : 'asc' })}>
-                {query.dir === 'asc' ? <ArrowUpNarrowWide aria-hidden="true" className="size-4" /> : <ArrowDownWideNarrow aria-hidden="true" className="size-4" />}
-              </button>
             </div>
-            <Select value={query.group} onValueChange={(value) => {
-              const option = groups.find((item) => item.key === value)
-              if (option === undefined) return
-              onChange(option.key === 'none' && query.view === 'shelves' ? { group: 'none', view: 'grid' } : { group: option.key })
-            }}>
-              <SelectTrigger aria-label="Group by" className="min-h-11 w-full"><SelectValue /></SelectTrigger>
-              <SelectContent className="z-[60] border-(--border) bg-(--surface) text-(--ink)">
-                {groups.map((option) => <SelectItem key={option.key} value={option.key}>{option.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
             <button type="button" className="min-h-11 text-sm text-(--ink-muted) disabled:opacity-40" disabled={!viewIsCustom(query)} onClick={() => onChange(resetViewPatch())}>Reset view</button>
           </section>
           <section className="space-y-1">
@@ -235,11 +256,24 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
           <section className="space-y-1">
             <h2 className="mb-1 flex items-center gap-2 font-(--font-display) text-lg"><SlidersHorizontal aria-hidden="true" className="size-4" />Filters</h2>
             {statuses.length > 0 ? (
-              <FilterGroup icon={<Rows3 className="size-4" aria-hidden="true" />} title="Status" summary={joined(query.statuses.map((status) => matchStatus(listId, status).value))} active={query.statuses.length > 0}>
+              <FilterGroup icon={<Rows3 className="size-4" aria-hidden="true" />} title="Status" summary={joined(query.statuses.map((status) => statusLabel(listId, status)))} active={query.statuses.length > 0}>
                 <div className="flex flex-wrap gap-2">
                   {statuses.map((row) => (
-                    <Choice key={row.value} count={row.count} icon={row.icon} listId={listId} pressed={statusOn(listId, query.statuses, row.value)} onClick={() => onChange({ statuses: toggleStatus(listId, query, row.value) })}>{row.value}</Choice>
+                    <Choice key={row.value} count={row.count} icon={row.icon} listId={listId} pressed={statusOn(listId, query.statuses, row.value)} onClick={() => onChange({ statuses: toggleStatus(listId, query, row.value) })}>{statusLabel(listId, row.value)}</Choice>
                   ))}
+                </div>
+              </FilterGroup>
+            ) : null}
+            {typeValues.length > 0 ? (
+              <FilterGroup icon={<Tags className="size-4" aria-hidden="true" />} title="Type" summary={joined(query.types)} active={query.types.length > 0}>
+                <div className="flex flex-wrap gap-2">
+                  {typeValues.map((type) => {
+                    const count = items.filter((item) => (item.extra['type'] ?? '').trim().toLowerCase() === type.toLowerCase()).length
+                    const on = query.types.some((value) => value.toLowerCase() === type.toLowerCase())
+                    return (
+                      <Choice key={type} count={count} listId={listId} pressed={on} onClick={() => onChange({ types: on ? query.types.filter((value) => value.toLowerCase() !== type.toLowerCase()) : [...query.types, type] })}>{type}</Choice>
+                    )
+                  })}
                 </div>
               </FilterGroup>
             ) : null}

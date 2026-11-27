@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { Check, Star } from 'lucide-react'
 import { SegmentedBar } from '@/design/Stat'
 import { StatusGlyph } from '@/design/icons'
-import { matchStatus, shelfOrder, type StatusFamily } from '@/design/statusConfig'
-import { externalRatingLabel } from '@/lib/rating'
+import { matchStatus, shelfOrder, statusLabel, type StatusFamily } from '@/design/statusConfig'
+import { externalRatingLabel, formatRating } from '@/lib/rating'
 import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 import type { ListQuery } from './filters/listQuery'
@@ -73,7 +73,7 @@ export function StatsStrip({ listId, items, query, onChange }: {
             <button key={row.value} type="button" aria-pressed={on} className={`inline-flex min-h-16 min-w-28 flex-col items-start justify-center gap-1 border px-3 py-2 text-left transition-colors duration-200 ${SHAPE[listId]} ${on ? 'border-transparent bg-accent text-(--bg)' : listId === 'books' ? 'border-(--accent) bg-(--surface) text-(--ink) shadow-[inset_0_0_0_1px_var(--accent)]' : 'bg-(--surface) text-(--ink)'}`} onClick={() => toggle(row.value)}>
               <span className="flex items-center gap-1.5 text-sm">
                 <StatusGlyph name={row.icon} />
-                {row.value}
+                {statusLabel(listId, row.value)}
                 {on ? <Check aria-hidden="true" className="size-3.5" /> : null}
               </span>
               <span className="font-(--font-display) text-2xl tabular-nums">{count}</span>
@@ -83,12 +83,12 @@ export function StatsStrip({ listId, items, query, onChange }: {
       </div>
       <div className="flex flex-wrap items-center gap-2 text-sm">
         {stats.myRatedCount > 0 && stats.avgMyRating !== null ? (
-          <span className="inline-flex items-center gap-1"><Star aria-hidden="true" className="size-3.5 text-accent" />{stats.avgMyRating}</span>
+          <span className="inline-flex items-center gap-1"><Star aria-hidden="true" className="size-3.5 text-accent" />{formatRating(stats.avgMyRating)}</span>
         ) : null}
         {stats.externalRatedCount > 0 && stats.avgExternalRating !== null ? (
           <span className="inline-flex items-center gap-1">
             <span className="rounded-sm bg-[#f5c518] px-1 text-[10px] font-bold text-black">{label}</span>
-            {stats.avgExternalRating}
+            {formatRating(stats.avgExternalRating)}
           </span>
         ) : null}
         {stats.topGenres.map((genre) => {
@@ -103,7 +103,7 @@ export function StatsStrip({ listId, items, query, onChange }: {
         <span className="text-xs text-(--ink-muted)">{stats.total} titles</span>
       </div>
       <SegmentedBar
-        segments={rows.map((row) => ({ id: row.value, label: row.value, count: counts.get(row.value) ?? 0, tone: TONE[row.family] }))}
+        segments={rows.map((row) => ({ id: row.value, label: statusLabel(listId, row.value), count: counts.get(row.value) ?? 0, tone: TONE[row.family] }))}
         onSelect={toggle}
       />
     </section>

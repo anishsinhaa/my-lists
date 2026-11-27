@@ -5,6 +5,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { LIST_IDS, PICKS_IDS, TAB_NAME } from '@/types/lists'
 import type { ListsPayload, MediaItem } from '@/types/media'
 import { routes } from '@/router'
+import { listsCache } from '@/services/sheets/listsCache'
 
 function lists(): ListsPayload {
   const book: MediaItem = {
@@ -24,6 +25,12 @@ function ok(data: unknown) {
 
 beforeEach(() => {
   localStorage.clear()
+  class Observer {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  vi.stubGlobal('ResizeObserver', Observer)
   window.matchMedia = ((query: string) => ({
     matches: query.includes('768'), media: query, onchange: null, addListener: () => undefined, removeListener: () => undefined,
     addEventListener: () => undefined, removeEventListener: () => undefined, dispatchEvent: () => false,
@@ -75,5 +82,60 @@ describe('routes', () => {
     mount('/lists/nope')
     await waitFor(() => expect(screen.getByRole('heading', { name: 'No list called “nope”' })).toBeTruthy())
     for (const id of LIST_IDS) expect(screen.getByRole('link', { name: TAB_NAME[id] })).toBeTruthy()
+  })
+
+  it('renders the home footer above the padded content', async () => {
+    mount('/')
+    await waitFor(() => expect(screen.getByRole('contentinfo')).toBeTruthy())
+    expect(document.getElementById('content')?.className).toContain('md:pb-16')
+  })
+
+  it('keeps one loading bar from the auth check through the lists fetch', async () => {
+    listsCache.clear()
+    let releaseMe: (response: Response) => void = () => undefined
+    const me = new Promise<Response>((resolve) => { releaseMe = resolve })
+    let releaseLists: (response: Response) => void = () => undefined
+    const pendingLists = new Promise<Response>((resolve) => { releaseLists = resolve })
+    vi.stubGlobal('fetch', (input: RequestInfo) => {
+      const url = String(input)
+      if (url.includes('/api/auth/me')) return me
+      if (url.includes('/api/lists')) return pendingLists
+      if (url.includes('/api/settings')) return ok({ hardOff: false, picks: { enabled: false, movies: false, series: false, games: false }, effective: { movies: false, series: false, games: false }, lastRun: null })
+      return ok({})
+    })
+    mount('/')
+    const bar = await screen.findByRole('progressbar', { name: 'Loading' })
+    expect(bar.querySelector('.ml-top-bar')).toBeTruthy()
+    releaseMe(new Response(JSON.stringify({ ok: true, data: { user: { id: 'g', username: 'guest', role: 'guest', accountId: 'main' } } }), { status: 200, headers: { 'content-type': 'application/json' } }))
+    await waitFor(() => expect(screen.getByRole('progressbar', { name: 'Loading' })).toBe(bar))
+    releaseLists(new Response(JSON.stringify({ ok: true, data: lists() }), { status: 200, headers: { 'content-type': 'application/json' } }))
+    await waitFor(() => expect(screen.getByRole('contentinfo')).toBeTruthy())
+  })
+
+  it('shows poster skeletons and then the cards on a cold list', async () => {
+    listsCache.clear()
+    let releaseLists: (response: Response) => void = () => undefined
+    const pendingLists = new Promise<Response>((resolve) => { releaseLists = resolve })
+    vi.stubGlobal('fetch', (input: RequestInfo) => {
+      const url = String(input)
+      if (url.includes('/api/auth/me')) return ok({ user: { id: 'g', username: 'guest', role: 'guest', accountId: 'main' } })
+      if (url.includes('/api/lists')) return pendingLists
+      if (url.includes('/api/settings')) return ok({ hardOff: false, picks: { enabled: false, movies: false, series: false, games: false }, effective: { movies: false, series: false, games: false }, lastRun: null })
+      return ok({})
+    })
+    mount('/movies')
+    await waitFor(() => {
+      const skeleton = document.querySelector('[data-slot="skeleton"]')
+      expect(skeleton?.className).toContain('aspect-2/3')
+    })
+    const payload = lists()
+    payload.lists.movies = [{
+      id: 'movies:heat:1995', listId: 'movies', title: 'Heat', titleKey: 'heat', status: 'Watched', statusGroup: 'done',
+      year: 1995, genres: [], why: '', notes: '', updatedAt: null, dateAdded: null, poster: null,
+      creator: null, franchise: null, myRating: null, imdbRating: null, platform: null, favourite: false, extra: {},
+    }]
+    releaseLists(new Response(JSON.stringify({ ok: true, data: payload }), { status: 200, headers: { 'content-type': 'application/json' } }))
+    await waitFor(() => expect(screen.getByRole('button', { name: /Heat/ })).toBeTruthy())
+    expect(document.querySelector('[data-slot="skeleton"]')).toBeNull()
   })
 })

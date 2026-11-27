@@ -11,7 +11,6 @@ import { BottomNav } from './BottomNav'
 import { PageTransition } from './PageTransition'
 import { SearchDock } from '@/features/search/SearchDock'
 import { TopBar } from './TopBar'
-import { TopLoadingBar } from './TopLoadingBar'
 
 function themeFor(pathname: string): ThemeId {
   const listId = /^\/lists\/([^/]+)/.exec(pathname)?.[1] ?? /^\/(movies|series|anime|games|books|other|curious)$/.exec(pathname)?.[1]
@@ -29,7 +28,6 @@ export function AppShell() {
     <ThemeProvider themeId={themeFor(location.pathname)}>
       {online ? null : <p className="bg-(--accent-2) px-3 py-2 text-sm text-(--bg)">You are offline. Showing saved lists.</p>}
       {canEdit ? <EnrichmentRunner /> : null}
-      <TopLoadingBar />
       <TopBar />
       <SearchDock />
       <ErrorBoundary>

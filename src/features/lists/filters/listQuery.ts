@@ -1,5 +1,5 @@
 export type SortKey = 'title' | 'year' | 'rating' | 'myRating' | 'imdbRating' | 'finished' | 'status' | 'added'
-export type GroupKey = 'none' | 'status' | 'genre' | 'year' | 'franchise' | 'creator' | 'platform'
+export type GroupKey = 'none' | 'status' | 'genre' | 'year' | 'franchise' | 'creator' | 'platform' | 'type'
 export type RatingBy = 'best' | 'my' | 'external'
 export type AddedWithin = 'any' | '7d' | '30d' | '3m' | '12m'
 
@@ -19,6 +19,7 @@ export interface ListQuery {
   q: string
   statuses: string[]
   genres: string[]
+  types: string[]
   yearMin: number | null
   yearMax: number | null
   franchise: string | null
@@ -42,6 +43,7 @@ export const DEFAULT_QUERY: ListQuery = {
   q: '',
   statuses: [],
   genres: [],
+  types: [],
   yearMin: null,
   yearMax: null,
   franchise: null,
@@ -57,10 +59,11 @@ export const DEFAULT_QUERY: ListQuery = {
   favWatched: false,
 }
 
-export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'addedWithin' | 'unrated' | 'favWant' | 'favWatched'> = {
+export const CLEARED_FILTERS: Pick<ListQuery, 'q' | 'statuses' | 'genres' | 'types' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'addedWithin' | 'unrated' | 'favWant' | 'favWatched'> = {
   q: '',
   statuses: [],
   genres: [],
+  types: [],
   yearMin: null,
   yearMax: null,
   franchise: null,
@@ -80,6 +83,7 @@ export function hasActiveFilters(query: ListQuery): boolean {
   return query.q.length > 0
     || query.statuses.length > 0
     || query.genres.length > 0
+    || query.types.length > 0
     || query.yearMin !== null
     || query.yearMax !== null
     || (query.franchise !== null && query.franchise.length > 0)
@@ -97,7 +101,7 @@ export function hasActiveFilters(query: ListQuery): boolean {
 
 const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status', 'added']
 const ADDED: readonly AddedWithin[] = ['any', '7d', '30d', '3m', '12m']
-const GROUPS: readonly GroupKey[] = ['none', 'status', 'genre', 'year', 'franchise', 'creator', 'platform']
+const GROUPS: readonly GroupKey[] = ['none', 'status', 'genre', 'year', 'franchise', 'creator', 'platform', 'type']
 
 function list(value: string | null): string[] {
   if (value === null || value.length === 0) return []
@@ -124,6 +128,7 @@ export function parseListQuery(params: URLSearchParams): ListQuery {
     q: params.get('q') ?? '',
     statuses: list(params.get('status')),
     genres: list(params.get('genre')),
+    types: list(params.get('type')),
     yearMin: numberOrNull(params.get('ymin')),
     yearMax: numberOrNull(params.get('ymax')),
     franchise: params.get('franchise'),
@@ -150,6 +155,7 @@ export function serializeListQuery(query: ListQuery): URLSearchParams {
   if (query.q.length > 0) params.set('q', query.q)
   if (query.statuses.length > 0) params.set('status', query.statuses.join(','))
   if (query.genres.length > 0) params.set('genre', query.genres.join(','))
+  if (query.types.length > 0) params.set('type', query.types.join(','))
   if (query.yearMin !== null) params.set('ymin', String(query.yearMin))
   if (query.yearMax !== null) params.set('ymax', String(query.yearMax))
   if (query.franchise !== null && query.franchise.length > 0) params.set('franchise', query.franchise)

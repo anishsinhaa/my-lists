@@ -5,6 +5,7 @@ export type StatusIcon = 'play' | 'pause' | 'check' | 'clock' | 'bookmark' | 'he
 
 export interface StatusDef {
   value: string
+  label?: string
   family: StatusFamily
   icon: StatusIcon
   flavour: string
@@ -13,7 +14,7 @@ export interface StatusDef {
 const movie: StatusDef[] = [
   { value: 'In progress', family: 'active', icon: 'play', flavour: 'Now showing' },
   { value: 'Must watch', family: 'queue', icon: 'spark', flavour: 'On the marquee' },
-  { value: 'Want to', family: 'queue', icon: 'bookmark', flavour: 'Waiting in the lobby' },
+  { value: 'Want to', label: 'Want to watch', family: 'queue', icon: 'bookmark', flavour: 'Waiting in the lobby' },
   { value: 'Maybe', family: 'queue', icon: 'heart', flavour: 'A maybe' },
   { value: 'Watched', family: 'done', icon: 'check', flavour: 'Already screened' },
   { value: 'Dropped', family: 'dropped', icon: 'x', flavour: 'Left the reel' },
@@ -26,7 +27,7 @@ const series: StatusDef[] = [
   { value: 'Rewatch from start', family: 'active', icon: 'play', flavour: 'From the pilot' },
   { value: 'Paused', family: 'parked', icon: 'pause', flavour: 'Set aside' },
   { value: 'On hold', family: 'parked', icon: 'pause', flavour: 'On hold' },
-  { value: 'Want to', family: 'queue', icon: 'bookmark', flavour: 'Queued' },
+  { value: 'Want to', label: 'Want to watch', family: 'queue', icon: 'bookmark', flavour: 'Queued' },
   { value: 'Maybe later', family: 'queue', icon: 'heart', flavour: 'Later' },
   { value: 'Watched', family: 'done', icon: 'check', flavour: 'Finished' },
   { value: 'Dropped', family: 'dropped', icon: 'x', flavour: 'Dropped' },
@@ -37,7 +38,7 @@ const games: StatusDef[] = [
   { value: 'Replay from start', family: 'active', icon: 'play', flavour: 'Another run' },
   { value: 'Paused', family: 'parked', icon: 'pause', flavour: 'Paused' },
   { value: 'On hold', family: 'parked', icon: 'pause', flavour: 'On hold' },
-  { value: 'Want to', family: 'queue', icon: 'bookmark', flavour: 'On the shelf' },
+  { value: 'Want to', label: 'Want to play', family: 'queue', icon: 'bookmark', flavour: 'On the shelf' },
   { value: 'Played', family: 'done', icon: 'check', flavour: 'Played' },
   { value: 'Completed', family: 'done', icon: 'check', flavour: 'Credits rolled' },
   { value: 'Dropped', family: 'dropped', icon: 'x', flavour: 'Dropped' },
@@ -78,6 +79,14 @@ export const CURRENT_STATUS: Record<ListId, string | null> = {
 }
 
 const NONE: StatusDef = { value: 'No status', family: 'none', icon: 'bookmark', flavour: 'Unmarked' }
+
+export function statusLabel(listId: ListId, raw: string): string {
+  const trimmed = raw.trim()
+  if (trimmed.length === 0) return 'No status'
+  if (listId === 'curious' && trimmed.toLowerCase() === 'want to') return 'Want to learn'
+  const matched = matchStatus(listId, trimmed)
+  return matched.label ?? matched.value
+}
 
 export function matchStatus(listId: ListId, raw: string): StatusDef {
   const trimmed = raw.trim()

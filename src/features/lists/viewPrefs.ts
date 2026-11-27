@@ -6,7 +6,7 @@ import { DEFAULT_QUERY, parseListQuery, type GroupKey, type ListQuery, type Rati
 const VIEWS = ['shelves', 'grid', 'table'] as const
 const SORTS: readonly SortKey[] = ['title', 'year', 'rating', 'myRating', 'imdbRating', 'finished', 'status', 'added']
 const ADDED = ['any', '7d', '30d', '3m', '12m'] as const
-const GROUPS: readonly GroupKey[] = ['none', 'status', 'genre', 'year', 'franchise', 'creator', 'platform']
+const GROUPS: readonly GroupKey[] = ['none', 'status', 'genre', 'year', 'franchise', 'creator', 'platform', 'type']
 const RATING_BY: readonly RatingBy[] = ['best', 'my', 'external']
 const POSTERS = ['any', 'has', 'missing'] as const
 
@@ -16,6 +16,7 @@ export interface FilterCatalog {
   franchises: ReadonlySet<string>
   platforms: ReadonlySet<string>
   statuses: ReadonlySet<string>
+  types: ReadonlySet<string>
 }
 
 export function prefsKey(listId: string): string {
@@ -28,18 +29,21 @@ export function catalogFrom(items: MediaItem[]): FilterCatalog {
   const franchises = new Set<string>()
   const platforms = new Set<string>()
   const statuses = new Set<string>()
+  const types = new Set<string>()
   for (const item of items) {
     for (const genre of item.genres) genres.add(genre)
     if (item.creator !== null && item.creator.length > 0) creators.add(item.creator)
     if (item.franchise !== null && item.franchise.length > 0) franchises.add(item.franchise)
     if (item.platform !== null && item.platform.length > 0) platforms.add(item.platform)
     if (item.status.length > 0) statuses.add(item.status)
+    const type = (item.extra['type'] ?? '').trim()
+    if (type.length > 0) types.add(type)
   }
-  return { genres, creators, franchises, platforms, statuses }
+  return { genres, creators, franchises, platforms, statuses, types }
 }
 
 export function filterBadgeCount(query: ListQuery): number {
-  let count = query.statuses.length + query.genres.length
+  let count = query.statuses.length + query.genres.length + query.types.length
   if (query.yearMin !== null || query.yearMax !== null) count += 1
   if (query.creator !== null && query.creator.length > 0) count += 1
   if (query.franchise !== null && query.franchise.length > 0) count += 1
@@ -62,10 +66,11 @@ export function viewIsCustom(query: ListQuery): boolean {
     || query.favWatched
 }
 
-export function clearFiltersPatch(): Pick<ListQuery, 'statuses' | 'genres' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'addedWithin'> {
+export function clearFiltersPatch(): Pick<ListQuery, 'statuses' | 'genres' | 'types' | 'yearMin' | 'yearMax' | 'franchise' | 'creator' | 'platform' | 'ratingMin' | 'ratingBy' | 'smart' | 'poster' | 'addedWithin'> {
   return {
     statuses: [],
     genres: [],
+    types: [],
     yearMin: null,
     yearMax: null,
     franchise: null,
@@ -136,6 +141,7 @@ export function parseStored(value: unknown, listId: ListId, catalog: FilterCatal
     q: '',
     statuses: strings(filters.status).filter((status) => catalog === null || catalog.statuses.has(status)),
     genres: strings(filters.genre).filter((genre) => catalog === null || catalog.genres.has(genre)),
+    types: strings(filters.type).filter((type) => catalog === null || catalog.types.has(type)),
     yearMin: finite(filters.yearMin),
     yearMax: finite(filters.yearMax),
     creator: firstKnown(strings(filters.creator), catalog === null ? null : catalog.creators),
@@ -173,6 +179,7 @@ export function queryToStored(query: ListQuery): unknown {
       ratingMin: query.ratingMin,
       ratingBy: query.ratingBy,
       status: query.statuses,
+      type: query.types,
       smart: query.smart,
       poster: query.poster,
       addedWithin: query.addedWithin,
@@ -185,6 +192,7 @@ export function pruneQuery(query: ListQuery, catalog: FilterCatalog): ListQuery 
     ...query,
     genres: query.genres.filter((genre) => catalog.genres.has(genre)),
     statuses: query.statuses.filter((status) => catalog.statuses.has(status)),
+    types: query.types.filter((type) => catalog.types.has(type)),
     creator: query.creator !== null && catalog.creators.has(query.creator) ? query.creator : null,
     franchise: query.franchise !== null && catalog.franchises.has(query.franchise) ? query.franchise : null,
     platform: query.platform !== null && catalog.platforms.has(query.platform) ? query.platform : null,
@@ -207,6 +215,7 @@ export function applyUrl(base: ListQuery, params: URLSearchParams): ListQuery {
   if (params.has('group')) next.group = parsed.group
   if (params.has('status')) next.statuses = parsed.statuses
   if (params.has('genre')) next.genres = parsed.genres
+  if (params.has('type')) next.types = parsed.types
   if (params.has('ymin')) next.yearMin = parsed.yearMin
   if (params.has('ymax')) next.yearMax = parsed.yearMax
   if (params.has('franchise')) next.franchise = parsed.franchise

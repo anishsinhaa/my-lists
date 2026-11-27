@@ -1,6 +1,6 @@
 import { matchStatus, STATUS_TABLE, type StatusDef } from '@/design/statusConfig'
 import { readJson, writeJson } from '@/lib/storage'
-import { LIST_IDS, type ListId } from '@/types/lists'
+import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 
 export const TONIGHT_KEY = 'ml.tonight.v1'
@@ -8,7 +8,7 @@ export const SHORT_MINUTES = 100
 
 const PICK_LISTS: readonly ListId[] = ['movies', 'series', 'anime', 'games', 'books']
 
-export type TonightCategory = ListId | 'any'
+export type TonightCategory = (typeof PICK_LISTS)[number] | 'any'
 
 export interface TonightChoice {
   category: TonightCategory
@@ -17,25 +17,21 @@ export interface TonightChoice {
   short: boolean
 }
 
-const CATEGORIES = new Set<string>([...LIST_IDS, 'any'])
+const PICK_SET = new Set<string>(PICK_LISTS)
 
 export function isTonightCategory(value: unknown): value is TonightCategory {
-  return typeof value === 'string' && CATEGORIES.has(value)
+  return value === 'any' || (typeof value === 'string' && PICK_SET.has(value))
 }
 
 export function defaultStatuses(category: TonightCategory): string[] {
   if (category === 'movies') return ['Must watch', 'Want to']
   if (category === 'books') return ['Want to buy', 'Bought']
   if (category === 'any') return ['Must watch', 'Want to', 'Want to buy', 'Bought']
-  if (category === 'other' || category === 'curious') return []
   return ['Want to']
 }
 
-export function statusChoices(category: TonightCategory, lists: Record<ListId, MediaItem[]>): StatusDef[] {
+export function statusChoices(category: TonightCategory, _lists: Record<ListId, MediaItem[]>): StatusDef[] {
   if (category === 'any') return uniqueStatuses([...STATUS_TABLE.movies, ...STATUS_TABLE.series, ...STATUS_TABLE.games, ...STATUS_TABLE.books])
-  if (category === 'other' || category === 'curious') {
-    return uniqueStatuses(lists[category].map((item) => matchStatus(category, item.status)).filter((row) => row.value !== 'No status'))
-  }
   return [...STATUS_TABLE[category]]
 }
 
@@ -137,7 +133,9 @@ function sanitizeStatuses(category: TonightCategory, value: unknown, lists: Reco
 
 export function readTonight(lists: Record<ListId, MediaItem[]>, preset?: TonightCategory): TonightChoice {
   const saved = readJson<Partial<TonightChoice>>(TONIGHT_KEY, {})
-  const stored = isTonightCategory(saved.category) ? saved.category : 'movies'
+  const stored: TonightCategory = saved.category === 'other' || saved.category === 'curious'
+    ? 'any'
+    : isTonightCategory(saved.category) ? saved.category : 'movies'
   const category = preset ?? stored
   const statuses = preset === undefined || preset === stored ? sanitizeStatuses(category, saved.statuses, lists) : defaultStatuses(category)
   return { category, statuses, genres: [], short: false }

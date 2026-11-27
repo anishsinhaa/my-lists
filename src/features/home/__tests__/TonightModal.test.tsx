@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { useEffect, type ImgHTMLAttributes, type ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { LIST_IDS, type ListId } from '@/types/lists'
@@ -7,6 +8,26 @@ import type { MediaItem } from '@/types/media'
 import { DEFAULT_QUERY } from '@/features/lists/filters/listQuery'
 import { CategoryView } from '@/features/lists/CategoryView'
 import { TonightModal } from '../TonightModal'
+import { TonightReel } from '../TonightReel'
+
+vi.mock('motion/react', () => {
+  function MotionDiv({ children, onAnimationComplete, ...props }: { children?: ReactNode; onAnimationComplete?: () => void } & Record<string, unknown>) {
+    const spinning = props['data-spinning']
+    useEffect(() => {
+      if (spinning !== 'true') return undefined
+      const timer = window.setTimeout(() => onAnimationComplete?.(), 1800)
+      return () => window.clearTimeout(timer)
+    }, [onAnimationComplete, spinning])
+    return <div>{children}</div>
+  }
+  function MotionImg({ alt, src, className, onLoad, onError }: ImgHTMLAttributes<HTMLImageElement>) {
+    return <img alt={alt ?? ''} className={className} src={src} onError={onError} onLoad={onLoad} />
+  }
+  return {
+    AnimatePresence: ({ children }: { children?: ReactNode }) => children,
+    motion: { div: MotionDiv, img: MotionImg },
+  }
+})
 
 function item(partial: Partial<MediaItem> & Pick<MediaItem, 'id' | 'listId' | 'title' | 'status'>): MediaItem {
   return {
@@ -57,9 +78,11 @@ describe('Tonight modal', () => {
 
   it('starts on Movies with the queue statuses and a match count', () => {
     open()
+    expect(screen.getByRole('dialog').className).toContain('md:h-[min(88dvh,640px)]')
+    expect(screen.getByRole('dialog').className).toContain('md:w-[32rem]')
     expect(screen.getByRole('button', { name: 'Movies' }).getAttribute('aria-pressed')).toBe('true')
     expect(screen.getByRole('button', { name: 'Must watch' }).getAttribute('aria-pressed')).toBe('true')
-    expect(screen.getByRole('button', { name: 'Want to' }).getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByRole('button', { name: 'Want to watch' }).getAttribute('aria-pressed')).toBe('true')
     expect(screen.getByRole('button', { name: 'All' }).getAttribute('aria-pressed')).toBe('false')
     expect(screen.getByText('2 to pick from')).toBeTruthy()
     expect(screen.getByRole('button', { name: /Short/ }).getAttribute('aria-pressed')).toBe('false')
@@ -71,7 +94,7 @@ describe('Tonight modal', () => {
     const random = Math.random
     Math.random = () => 0
     vi.useFakeTimers()
-    const finishSpin = () => act(() => { vi.advanceTimersByTime(120 * 10) })
+    const finishSpin = () => act(() => { vi.advanceTimersByTime(1800) })
     try {
       render(
         <MemoryRouter>
@@ -94,9 +117,33 @@ describe('Tonight modal', () => {
       finishSpin()
       fireEvent.click(screen.getByRole('button', { name: 'Open in list' }))
       expect(screen.getByText(/\/lists\/movies\?item=movies(%3A|:)argo(%3A|:)2012/)).toBeTruthy()
+      expect(screen.getAllByRole('button', { name: 'Close' })).toHaveLength(1)
+      expect(screen.getByRole('dialog').className).toContain('md:h-[min(88dvh,640px)]')
+      expect(screen.getByRole('dialog').className).toContain('md:w-[32rem]')
     } finally {
       vi.useRealTimers()
       Math.random = random
+    }
+  })
+})
+
+describe('tonight reel', () => {
+  it('shows every frame with the winner last and lands once', () => {
+    vi.useFakeTimers()
+    const land = vi.fn()
+    const frames = [
+      item({ id: 'movies:heat:1995', listId: 'movies', title: 'Heat', status: 'Watched' }),
+      item({ id: 'movies:argo:2012', listId: 'movies', title: 'Argo', status: 'Want to' }),
+    ]
+    try {
+      render(<TonightReel frames={frames} spinning onLand={land} />)
+      const titles = screen.getAllByText(/Heat|Argo/).map((node) => node.textContent)
+      expect(titles.at(-1)).toContain('Argo')
+      act(() => { vi.advanceTimersByTime(1800) })
+      expect(land).toHaveBeenCalledTimes(1)
+      expect(land).toHaveBeenCalledWith(expect.objectContaining({ id: 'movies:argo:2012' }))
+    } finally {
+      vi.useRealTimers()
     }
   })
 })

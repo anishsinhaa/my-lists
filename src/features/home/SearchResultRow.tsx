@@ -16,7 +16,7 @@ export function SearchResultRow({ hit, active = false, onSelect, controlId }: { 
           {item.year !== null ? <span>{item.year}</span> : null}
           <span className="rounded-full border border-border px-1.5 py-0.5">{TAB_NAME[hit.listId]}</span>
           {pick ? <span className="rounded-full bg-[#4c1d95] px-1.5 py-0.5 text-[#f5f3ff]">In picks</span> : null}
-          <StatusChip size="sm" status={item.status} />
+          <StatusChip listId={hit.listId} size="sm" status={item.status} />
         </span>
       </span>
     </button>

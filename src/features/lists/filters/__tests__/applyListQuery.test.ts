@@ -137,4 +137,13 @@ describe('applyListQuery', () => {
     expect(run(rows, { sort: 'added', dir: 'desc' })).toEqual(['Amber', 'Beta', 'Alpha', 'Coda', 'Zebra'])
     expect(run(rows, { sort: 'year', dir: 'asc' })).toEqual(['Amber', 'Beta', 'Alpha', 'Coda', 'Zebra'])
   })
+
+  it('filters a curious type together with status', () => {
+    const rows = [
+      item({ title: 'Essay', listId: 'curious', status: 'Want to', extra: { type: 'Essay' } }),
+      item({ title: 'Clip', listId: 'curious', status: 'Want to', extra: { type: 'Video' } }),
+      item({ title: 'Done essay', listId: 'curious', status: 'Done', extra: { type: 'Essay' } }),
+    ]
+    expect(run(rows, { statuses: ['Want to'], types: ['essay'] }, 'curious')).toEqual(['Essay'])
+  })
 })

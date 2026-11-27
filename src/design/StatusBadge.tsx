@@ -1,5 +1,5 @@
 import type { ListId } from '@/types/lists'
-import { matchStatus, type StatusFamily } from './statusConfig'
+import { matchStatus, statusLabel, type StatusFamily } from './statusConfig'
 import { StatusGlyph } from './icons'
 
 const FAMILY: Record<StatusFamily, string> = {
@@ -26,8 +26,8 @@ export function StatusBadge({ listId, status, size = 'sm' }: { listId: ListId; s
   const large = size === 'lg'
   return (
     <span className={`inline-flex max-w-full items-center rounded-full border leading-none backdrop-blur-sm ${tone} ${large ? 'gap-2 px-4 py-2.5 text-base' : 'gap-1 px-2 py-1 text-[11px]'}`}>
-      {matched.family === 'active' ? <span className={`${large ? 'size-2' : 'size-1.5'} animate-pulse rounded-full bg-amber-300 motion-reduce:animate-none`} /> : <StatusGlyph name={matched.icon} className={large ? 'size-5' : 'size-3.5'} />}
-      <span className="truncate">{matched.value}</span>
+      {matched.family === 'active' ? <span className={`${large ? 'size-2' : 'size-1.5'} animate-pulse rounded-full bg-amber-300`} /> : <StatusGlyph name={matched.icon} className={large ? 'size-5' : 'size-3.5'} />}
+      <span className="truncate">{statusLabel(listId, status)}</span>
     </span>
   )
 }

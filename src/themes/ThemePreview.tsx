@@ -1,7 +1,7 @@
 import { CountUp } from '@/components/common/CountUp'
 import { PosterImage } from '@/components/common/PosterImage'
 import { StatusChip } from '@/components/common/StatusChip'
-import { STATUSES } from '@/types/lists'
+import { LIST_IDS, STATUSES, type ListId } from '@/types/lists'
 import type { ThemeId } from '@/types/theme'
 import { THEME_SPECS } from './themeSpecs'
 
@@ -19,7 +19,7 @@ export function ThemePreview() {
             <h2 style={{ fontFamily: spec.fonts.display }}>{spec.label}</h2>
             <p style={{ color: spec.colors.inkMuted }}>{spec.cardStyle}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {SAMPLE_STATUSES.map((status) => <StatusChip key={status || 'empty'} size="sm" status={status} />)}
+              {SAMPLE_STATUSES.map((status) => <StatusChip key={status || 'empty'} listId={(LIST_IDS as readonly string[]).includes(id) ? id as ListId : 'movies'} size="sm" status={status} />)}
             </div>
             <div className="mt-3 flex items-end gap-3">
               <PosterImage alt="" className="w-16" kind="movie" src="https://example.invalid/poster.jpg" title={spec.label} />

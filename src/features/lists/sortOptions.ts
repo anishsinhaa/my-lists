@@ -23,6 +23,12 @@ export function sortChipLabel(option: SortOption, selected: boolean, dir: 'asc' 
 }
 
 export function sortOptions(listId: ListId, showFinished: boolean): SortOption[] {
+  if (listId === 'other' || listId === 'curious') {
+    return [
+      { key: 'title', label: 'Title', dir: 'asc' },
+      { key: 'added', label: 'Recently added', dir: 'desc' },
+    ]
+  }
   const external = externalRatingLabel(listId)
   const options: SortOption[] = [
     { key: 'title', label: 'Title', dir: 'asc' },

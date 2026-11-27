@@ -159,7 +159,7 @@ describe('filters drawer', () => {
         <FilterChrome items={[movie({ title: 'Heat' })]} listId="movies" query={{ ...DEFAULT_QUERY, view: 'shelves', sort: 'year', group: 'status', statuses: ['Want to'], genres: ['Drama'], addedWithin: '30d', yearMin: 2010 }} shown={1} total={1} onChange={onChange} />
       </MemoryRouter>,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Want to' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Want to watch' }))
     fireEvent.click(screen.getByRole('button', { name: 'Remove Drama' }))
     fireEvent.click(screen.getByRole('button', { name: 'Remove Last 30 days' }))
     fireEvent.click(screen.getByRole('button', { name: 'Remove From 2010' }))
@@ -250,5 +250,37 @@ describe('filters drawer', () => {
     const dialog = screen.getByRole('dialog')
     fireEvent.click(within(dialog).getByRole('button', { name: /Status/ }))
     expect(within(dialog).getByRole('button', { name: 'Done 1' })).toBeTruthy()
+  })
+
+  it('stores Want to when the watch label is chosen', () => {
+    const onChange = vi.fn()
+    render(
+      <MemoryRouter>
+        <FilterChrome items={[movie({ title: 'Heat' })]} listId="movies" query={DEFAULT_QUERY} shown={1} total={1} onChange={onChange} />
+      </MemoryRouter>,
+    )
+    fireEvent.click(filtersButton())
+    const dialog = screen.getByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: /^Status/ }))
+    fireEvent.click(within(dialog).getByRole('button', { name: /Want to watch/ }))
+    expect(onChange).toHaveBeenCalledWith({ statuses: ['Want to'] })
+  })
+
+  it('labels sort, group, layout, and direction', () => {
+    const onChange = vi.fn()
+    render(
+      <MemoryRouter>
+        <FilterChrome items={[movie({ title: 'Heat' })]} listId="movies" query={DEFAULT_QUERY} shown={1} total={1} onChange={onChange} />
+      </MemoryRouter>,
+    )
+    fireEvent.click(filtersButton())
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByRole('combobox', { name: 'Sort by' })).toBeTruthy()
+    expect(within(dialog).getByRole('combobox', { name: 'Group by' }).textContent).toContain('No grouping')
+    expect(within(dialog).getByText('Layout')).toBeTruthy()
+    const direction = within(dialog).getByRole('button', { name: 'Sort direction: Ascending' })
+    expect(direction.textContent).toContain('A–Z')
+    fireEvent.click(direction)
+    expect(onChange).toHaveBeenCalledWith({ dir: 'desc' })
   })
 })

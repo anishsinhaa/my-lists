@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { PosterFallback } from '@/components/common/PosterFallback'
+import { FallbackCover } from '@/components/FallbackCover'
+import { PosterImage } from '@/components/common/PosterImage'
 import { effectiveRating } from '@/lib/rating'
 import { LIST_KIND, TAB_NAME, type ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
@@ -41,8 +42,8 @@ export function ListCategoryCard({ listId, count, posters, to, variant, items }:
       <div className="grid h-40 grid-cols-2">
         {(posters.length > 0 ? posters : ['', '', '', '']).slice(0, 4).map((poster, index) => (
           poster.length > 0
-            ? <img key={poster} alt="" className="h-full w-full object-cover" src={poster} />
-            : <PosterFallback key={index} kind={LIST_KIND[listId]} title={TAB_NAME[listId]} />
+            ? <PosterImage key={poster} alt="" className="h-full w-full" fit="fill" kind={LIST_KIND[listId]} src={poster} title={TAB_NAME[listId]} />
+            : <FallbackCover key={index} className="h-full" kind={LIST_KIND[listId]} title={TAB_NAME[listId]} />
         ))}
       </div>
       <div className="p-4">

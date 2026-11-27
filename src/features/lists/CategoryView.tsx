@@ -4,6 +4,7 @@ import { PosterImage } from '@/components/common/PosterImage'
 import { Rail } from '@/design/Rail'
 import { StatusBadge } from '@/design/StatusBadge'
 import { currentItems, thumbnailUrl, type ShelfGroup } from '@/design/archive'
+import { statusLabel } from '@/design/statusConfig'
 import { displayTitle } from '@/lib/displayTitle'
 import { LIST_KIND, type ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
@@ -47,7 +48,7 @@ function GroupBlock({ group, listId, view, onOpen, onSeeAll }: {
   const section = (
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="font-['Cinzel',serif]">{group.status} · {group.total}</h2>
+        <h2 className="font-['Cinzel',serif]">{statusLabel(listId, group.status)} · {group.total}</h2>
         {rail && onSeeAll !== null ? <button type="button" className="min-h-11 px-2 text-sm" onClick={onSeeAll}>See all</button> : null}
       </div>
       {group.flavour.length > 0 ? <p className="text-xs text-(--ink-muted)">{group.flavour}</p> : null}
@@ -64,7 +65,7 @@ function GroupBlock({ group, listId, view, onOpen, onSeeAll }: {
         </div>
       ) : null}
       {rail ? (
-        <Rail align={shown.length === 1 ? 'start' : 'center'} label={group.status}>
+        <Rail align={shown.length === 1 ? 'start' : 'center'} label={statusLabel(listId, group.status)}>
           <AnimatePresence initial={false}>
             {shown.map((item, index) => (
               <motion.div key={item.id} className="w-[clamp(9rem,22cqi,13.5rem)] shrink-0 snap-start" data-rail-card="true" exit={{ opacity: 0 }} initial={false} transition={{ duration: 0.22 }}>

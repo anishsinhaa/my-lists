@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { Eraser, SlidersHorizontal, X } from 'lucide-react'
 import { StatusGlyph } from '@/design/icons'
-import { matchStatus, shelfOrder } from '@/design/statusConfig'
+import { matchStatus, shelfOrder, statusLabel } from '@/design/statusConfig'
 import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 import { SMART_VIEWS } from '../smart/smartViews'
@@ -49,7 +49,7 @@ function StatusRow({ listId, items, query, onChange }: {
     <div role="group" aria-label="Status" className="flex flex-nowrap gap-2 overflow-x-auto py-1 pb-1">
       <Choice listId={listId} pressed={query.statuses.length === 0} onClick={() => onChange({ statuses: [] })}>All</Choice>
       {rows.map((row) => (
-        <Choice key={row.value} count={counts.get(row.value) ?? 0} icon={<StatusGlyph name={row.icon} />} listId={listId} pressed={statusOn(listId, query.statuses, row.value)} onClick={() => onChange({ statuses: toggleStatus(listId, query, row.value) })}>{row.value}</Choice>
+        <Choice key={row.value} count={counts.get(row.value) ?? 0} icon={<StatusGlyph name={row.icon} />} listId={listId} pressed={statusOn(listId, query.statuses, row.value)} onClick={() => onChange({ statuses: toggleStatus(listId, query, row.value) })}>{statusLabel(listId, row.value)}</Choice>
       ))}
     </div>
   )
@@ -68,15 +68,19 @@ function activeChips(listId: ListId, query: ListQuery): ActiveChip[] {
   if (query.favWant) chips.push({ key: 'fav-want', label: 'Fav Want to', clear: { favWant: false } })
   if (query.favWatched) chips.push({ key: 'fav-watched', label: 'Fav Watched', clear: { favWatched: false } })
   for (const status of query.statuses) {
-    const label = matchStatus(listId, status).value
+    const label = statusLabel(listId, status)
+    const stored = matchStatus(listId, status).value
     chips.push({
-      key: `status-${label}`,
+      key: `status-${stored}`,
       label,
-      clear: { statuses: query.statuses.filter((item) => matchStatus(listId, item).value !== label) },
+      clear: { statuses: query.statuses.filter((item) => matchStatus(listId, item).value !== stored) },
     })
   }
   const added = ADDED_WITHIN_OPTIONS.find((option) => option.value === query.addedWithin)
   if (query.addedWithin !== 'any' && added !== undefined) chips.push({ key: 'added', label: added.label, clear: { addedWithin: 'any' } })
+  for (const type of query.types) {
+    chips.push({ key: `type-${type}`, label: type, clear: { types: query.types.filter((item) => item !== type) } })
+  }
   for (const genre of query.genres) {
     chips.push({ key: `genre-${genre}`, label: genre, clear: { genres: query.genres.filter((item) => item !== genre) } })
   }
@@ -96,7 +100,7 @@ function activeChips(listId: ListId, query: ListQuery): ActiveChip[] {
   return chips
 }
 
-export function FilterChrome({ listId, items, query, shown, total, onChange, onShuffle }: {
+export function FilterChrome({ listId, items, query, shown, total, onChange, onShuffle, layoutOptions }: {
   listId: ListId
   items: MediaItem[]
   query: ListQuery
@@ -104,6 +108,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
   total: number
   onChange: (partial: Partial<ListQuery>) => void
   onShuffle?: () => void
+  layoutOptions?: ReadonlyArray<ListQuery['view']>
 }) {
   const [open, setOpen] = useState(false)
   const filtersRef = useRef<HTMLButtonElement>(null)
@@ -111,6 +116,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
   const count = filterBadgeCount(query)
   const custom = viewIsCustom(query)
   const filtersLabel = count > 0 ? `Filters ${count}` : 'Filters'
+  const searchLabel = listId === 'curious' ? 'Search Curious' : listId === 'other' ? 'Search Other' : 'Search this list'
   function setDrawer(next: boolean) {
     setOpen(next)
   }
@@ -118,15 +124,15 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
   return (
     <div className="space-y-2 py-2">
       <div className="flex flex-wrap items-center gap-2">
-        <input id="list-search" value={query.q} onChange={(event) => onChange({ q: event.target.value })} placeholder="Search this list" aria-label="Search this list" className="h-11 w-full min-w-0 flex-1 rounded-md border border-border bg-(--surface) px-3 sm:w-auto sm:min-w-40" />
+        <input id="list-search" value={query.q} onChange={(event) => onChange({ q: event.target.value })} placeholder={searchLabel} aria-label={searchLabel} className="h-11 w-full min-w-0 flex-1 rounded-md border border-border bg-(--surface) px-3 sm:w-auto sm:min-w-40" />
         <button ref={filtersRef} type="button" aria-expanded={open} aria-haspopup="dialog" aria-label={filtersLabel} className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 px-3 text-sm" onClick={() => setDrawer(true)}>
           <SlidersHorizontal aria-hidden="true" className="size-4" />
           Filters
           {count > 0 ? <span className="tabular-nums">{count}</span> : null}
           {custom ? <span aria-hidden="true" data-view-custom="true" className="size-2 rounded-full bg-accent" /> : null}
         </button>
-        <FiltersDrawer items={items} listId={listId} open={open} query={query} returnFocus={filtersRef} shown={shown} total={total} onChange={onChange} onOpenChange={setDrawer} />
-        <LayoutToggle view={query.view} onChange={onChange} />
+        <FiltersDrawer items={items} layoutOptions={layoutOptions} listId={listId} open={open} query={query} returnFocus={filtersRef} shown={shown} total={total} onChange={onChange} onOpenChange={setDrawer} />
+        <LayoutToggle options={layoutOptions} view={query.view} onChange={onChange} />
         {onShuffle !== undefined ? <button type="button" className="h-11 px-3 text-sm" onClick={onShuffle}>Shuffle</button> : null}
       </div>
       {COUNTS_FILTER.has(listId) ? null : <StatusRow items={items} listId={listId} query={query} onChange={onChange} />}
@@ -138,7 +144,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
               <X aria-hidden="true" className="size-3.5" />
             </button>
           ))}
-          <button type="button" className="inline-flex min-h-11 items-center gap-1 px-2 text-sm md:min-h-8" onClick={() => onChange({ statuses: [], genres: [], smart: null, poster: 'any', q: '', yearMin: null, yearMax: null, ratingMin: null, creator: null, franchise: null, platform: null, addedWithin: 'any', unrated: false, favWant: false, favWatched: false })}>
+          <button type="button" className="inline-flex min-h-11 items-center gap-1 px-2 text-sm md:min-h-8" onClick={() => onChange({ statuses: [], genres: [], types: [], smart: null, poster: 'any', q: '', yearMin: null, yearMax: null, ratingMin: null, creator: null, franchise: null, platform: null, addedWithin: 'any', unrated: false, favWant: false, favWatched: false })}>
             <Eraser aria-hidden="true" className="size-4" />
             Clear all
           </button>

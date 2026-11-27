@@ -1,4 +1,5 @@
-import { statusGroupOf, type StatusGroup } from '@/types/lists'
+import { statusLabel } from '@/design/statusConfig'
+import { statusGroupOf, type ListId, type StatusGroup } from '@/types/lists'
 
 const GROUP_CLASS: Record<StatusGroup, string> = {
   done: 'bg-[#14532d] text-[#dcfce7]',
@@ -11,9 +12,10 @@ const GROUP_CLASS: Record<StatusGroup, string> = {
   dropped: 'bg-[#991b1b] text-[#fee2e2]',
 }
 
-export function StatusChip({ status, group, size = 'md' }: { status: string; group?: StatusGroup; size?: 'sm' | 'md' }) {
-  const label = status.trim().length === 0 ? 'No status' : status.trim()
-  const resolved = group ?? statusGroupOf(label === 'No status' ? '' : label)
+export function StatusChip({ listId, status, group, size = 'md' }: { listId: ListId; status: string; group?: StatusGroup; size?: 'sm' | 'md' }) {
+  const raw = status.trim()
+  const label = statusLabel(listId, raw)
+  const resolved = group ?? statusGroupOf(raw)
   const sizing = size === 'sm' ? 'px-1.5 py-0.5 text-[11px]' : 'px-2 py-0.5 text-xs'
   return <span className={`inline-flex max-w-full items-center rounded-full font-medium ${sizing} ${GROUP_CLASS[resolved]}`}>{label}</span>
 }

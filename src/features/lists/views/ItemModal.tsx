@@ -8,11 +8,13 @@ import { STATUS_TABLE } from '@/design/statusConfig'
 import { thumbnailUrl } from '@/design/archive'
 import { parseSheetDate } from '@/lib/dates'
 import { displayTitle } from '@/lib/displayTitle'
-import { externalRatingLabel } from '@/lib/rating'
+import { externalRatingLabel, formatRating } from '@/lib/rating'
+import { statusLabel } from '@/design/statusConfig'
 import type { ThemeId } from '@/types/theme'
 import { LIST_KIND, type ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
 import type { ItemPatch } from '../useSaveItem'
+import { RateDialog } from './RateDialog'
 import { StarRating } from './StarRating'
 
 function addedLine(iso: string): string {
@@ -136,7 +138,7 @@ function StatusMenu({ listId, status, onPick }: { listId: ListId; status: string
             return (
               <button key={entry.value} type="button" aria-pressed={on} className="flex min-h-11 w-full items-center gap-2 rounded-md px-3 text-left text-sm aria-pressed:bg-(--accent) aria-pressed:text-(--bg)" onClick={() => { setOpen(false); if (!on) onPick(entry.value) }}>
                 <StatusGlyph name={entry.icon} />
-                <span className="min-w-0 flex-1">{entry.value}</span>
+                <span className="min-w-0 flex-1">{statusLabel(listId, entry.value)}</span>
                 {on ? <Check aria-hidden="true" className="size-4" /> : null}
               </button>
             )
@@ -165,6 +167,7 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
   readOnly?: boolean
 }) {
   const [savedId, setSavedId] = useState<string | null>(null)
+  const [rateFor, setRateFor] = useState<string | null>(null)
   const index = item === null ? -1 : items.findIndex((entry) => entry.id === item.id)
   const previous = index > 0 ? items[index - 1] : undefined
   const next = index >= 0 && index < items.length - 1 ? items[index + 1] : undefined
@@ -179,13 +182,14 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
     if (item === null) return undefined
     const onKey = (event: KeyboardEvent) => {
       const target = event.target
+      if (rateFor !== null) return
       if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) return
       if (event.key === 'ArrowLeft' && previous !== undefined) onOpen(previous)
       if (event.key === 'ArrowRight' && next !== undefined) onOpen(next)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [item, next, onOpen, previous])
+  }, [item, next, onOpen, previous, rateFor])
 
   function save(patch: ItemPatch) {
     if (item === null || readOnly) return
@@ -195,8 +199,8 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
   }
 
   const finished = shown(item?.extra['date finished'])
-  const external = item === null ? null : shown(item.imdbRating)
   const label = externalRatingLabel(listId)
+  const ratingOpen = item !== null && rateFor === item.id
 
   return (
     <Dialog open={item !== null} onOpenChange={(open) => { if (!open) onClose() }}>
@@ -215,33 +219,37 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
               <PosterImage alt="" byline={item.creator ?? (item.year === null ? '' : String(item.year))} className="mx-auto w-full max-w-56 md:max-w-none" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w500')} title={displayTitle(item.title, item.year)} priority />
             </div>
             <div className="min-h-0 space-y-3 overflow-y-auto p-4 pr-12 md:p-5 md:pr-12">
-              <div className="flex items-start gap-2">
-                <button type="button" aria-label="Previous" className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-(--border) disabled:opacity-30" disabled={previous === undefined} onClick={() => { if (previous !== undefined) onOpen(previous) }}>
+              <div className="flex items-center justify-between gap-2">
+                <button type="button" aria-keyshortcuts="ArrowLeft" aria-label={previous === undefined ? 'Previous' : `Previous: ${displayTitle(previous.title, previous.year)}`} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-(--border) px-2 disabled:opacity-30" disabled={previous === undefined} onClick={() => { if (previous !== undefined) onOpen(previous) }}>
                   <ChevronLeft aria-hidden="true" className="size-5" />
+                  <span className="sr-only md:not-sr-only">Previous</span>
                 </button>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start gap-1">
-                    <DialogTitle className="min-w-0 flex-1 font-(--font-display) text-2xl leading-tight">{displayTitle(item.title, item.year)}</DialogTitle>
-                    {readOnly ? (
-                      item.favourite ? (
-                        <span aria-label="Favourite" className="inline-flex size-11 shrink-0 items-center justify-center">
-                          <Heart aria-hidden="true" className="size-5 fill-(--accent) text-(--accent)" />
-                        </span>
-                      ) : null
-                    ) : (
-                      <button type="button" aria-label="Favourite" aria-pressed={item.favourite} className="inline-flex size-11 shrink-0 items-center justify-center" onClick={() => save({ favourite: !item.favourite })}>
-                        <Heart aria-hidden="true" className={`size-5 ${item.favourite ? 'fill-(--accent) text-(--accent)' : 'text-(--ink-muted)'}`} />
-                      </button>
-                    )}
-                  </div>
-                  <DialogDescription className="sr-only">{displayTitle(item.title, item.year)}</DialogDescription>
-                  {item.dateAdded === null ? null : <p className="mt-1 text-sm text-(--ink-muted)">{addedLine(item.dateAdded)}</p>}
-                  {!readOnly && savedId === item.id ? <p aria-live="polite" className="mt-1 inline-flex items-center gap-1 text-sm text-(--accent)"><Check aria-hidden="true" className="size-4" />Saved</p> : null}
-                  {onOpenInList ? <button type="button" className="mt-2 min-h-11 text-sm underline" onClick={onOpenInList}>Open in list</button> : null}
-                </div>
-                <button type="button" aria-label="Next" className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-(--border) disabled:opacity-30" disabled={next === undefined} onClick={() => { if (next !== undefined) onOpen(next) }}>
+                {items.length > 1 && index >= 0 ? <p aria-live="polite" className="text-sm text-(--ink-muted)">{index + 1} of {items.length}</p> : <span />}
+                <button type="button" aria-keyshortcuts="ArrowRight" aria-label={next === undefined ? 'Next' : `Next: ${displayTitle(next.title, next.year)}`} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-(--border) px-2 disabled:opacity-30" disabled={next === undefined} onClick={() => { if (next !== undefined) onOpen(next) }}>
+                  <span className="sr-only md:not-sr-only">Next</span>
                   <ChevronRight aria-hidden="true" className="size-5" />
                 </button>
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-start gap-1">
+                  <DialogTitle className="min-w-0 flex-1 font-(--font-display) text-2xl leading-tight">{displayTitle(item.title, item.year)}</DialogTitle>
+                  {readOnly ? (
+                    item.favourite ? (
+                      <span aria-label="Favourite" className="inline-flex size-11 shrink-0 items-center justify-center">
+                        <Heart aria-hidden="true" className="size-5 fill-(--accent) text-(--accent)" />
+                      </span>
+                    ) : null
+                  ) : (
+                    <button type="button" aria-label="Favourite" aria-pressed={item.favourite} className="inline-flex size-11 shrink-0 items-center justify-center" onClick={() => save({ favourite: !item.favourite })}>
+                      <Heart aria-hidden="true" className={`size-5 ${item.favourite ? 'fill-(--accent) text-(--accent)' : 'text-(--ink-muted)'}`} />
+                    </button>
+                  )}
+                </div>
+                <DialogDescription className="sr-only">{displayTitle(item.title, item.year)}</DialogDescription>
+                <div className="mt-2"><StatusBadge listId={listId} size="sm" status={item.status} /></div>
+                {item.dateAdded === null ? null : <p className="mt-1 text-sm text-(--ink-muted)">{addedLine(item.dateAdded)}</p>}
+                {!readOnly && savedId === item.id ? <p aria-live="polite" className="mt-1 inline-flex items-center gap-1 text-sm text-(--accent)"><Check aria-hidden="true" className="size-4" />Saved</p> : null}
+                {onOpenInList ? <button type="button" className="mt-2 min-h-11 text-sm underline" onClick={onOpenInList}>Open in list</button> : null}
               </div>
               {shown(item.why) === null ? null : <TextBlock label="About">{item.why}</TextBlock>}
               <DetailGrid rows={[
@@ -249,8 +257,8 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                 { label: creatorLabel(listId), value: item.creator },
                 { label: 'Franchise', value: item.franchise },
                 { label: 'Platform', value: listId === 'games' ? item.platform : null },
-                { label, value: external },
-                { label: 'My rating', value: item.myRating },
+                { label, value: item.imdbRating === null ? null : `${formatRating(item.imdbRating)} / 10` },
+                { label: 'My rating', value: item.myRating === null ? null : `${formatRating(item.myRating)} / 10` },
                 { label: 'Date finished', value: finished },
               ]} />
               {item.genres.length === 0 ? null : (
@@ -258,7 +266,12 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                   {item.genres.map((genre) => <span key={genre} className="rounded-full border border-(--border) px-2 py-0.5 text-xs">{genre}</span>)}
                 </div>
               )}
-              {readOnly ? null : <StarRating value={item.myRating} onChange={(myRating) => save({ myRating })} />}
+              {readOnly ? null : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <StarRating value={item.myRating} onChange={(myRating) => save({ myRating })} />
+                  <button type="button" className="min-h-11 px-2 text-sm underline-offset-2 hover:underline" onClick={() => setRateFor(item.id)}>{item.myRating === null ? 'Rate' : 'Edit rating'}</button>
+                </div>
+              )}
               {readOnly ? (
                 item.notes.trim().length === 0 ? null : <TextBlock label="My notes">{item.notes}</TextBlock>
               ) : (
@@ -267,6 +280,15 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
               {readOnly ? <StatusBadge listId={listId} size="lg" status={item.status} /> : <StatusMenu key={`${item.id}-status`} listId={listId} status={item.status} onPick={(status) => save({ status })} />}
             </div>
           </div>
+        )}
+        {item === null ? null : (
+          <RateDialog
+            open={ratingOpen}
+            theme={theme}
+            value={item.myRating}
+            onCancel={() => setRateFor(null)}
+            onSave={(myRating) => { setRateFor(null); save({ myRating }) }}
+          />
         )}
       </DialogContent>
     </Dialog>

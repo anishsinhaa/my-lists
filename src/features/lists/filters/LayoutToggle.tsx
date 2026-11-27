@@ -7,10 +7,16 @@ const OPTIONS: ReadonlyArray<readonly [ListQuery['view'], LucideIcon, string, st
   ['table', Table2, 'Table', 'Table view'],
 ]
 
-export function LayoutToggle({ view, onChange }: { view: ListQuery['view']; onChange: (partial: Partial<ListQuery>) => void }) {
+export function LayoutToggle({ view, onChange, options, labelledBy }: {
+  view: ListQuery['view']
+  onChange: (partial: Partial<ListQuery>) => void
+  options?: ReadonlyArray<ListQuery['view']>
+  labelledBy?: string
+}) {
+  const shown = options === undefined ? OPTIONS : OPTIONS.filter(([value]) => options.includes(value))
   return (
-    <div role="radiogroup" aria-label="Layout" className="flex gap-1">
-      {OPTIONS.map(([value, Icon, name, label]) => (
+    <div role="radiogroup" aria-label={labelledBy === undefined ? 'Layout' : undefined} aria-labelledby={labelledBy} className="flex gap-1">
+      {shown.map(([value, Icon, name, label]) => (
         <button
           key={value}
           type="button"

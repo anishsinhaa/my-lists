@@ -48,8 +48,9 @@ describe('item details', () => {
     expect(screen.queryByText('–')).toBeNull()
     expect(screen.queryByText('Franchise')).toBeNull()
     expect(screen.getAllByText('Ben Affleck').length).toBeGreaterThan(0)
-    expect(screen.getByText('7.7')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('7.7 / 10')).toBeTruthy()
+    expect(screen.getByText('1 of 2')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: /Next/ }))
     expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ title: 'Heat' }))
   })
 
@@ -123,6 +124,15 @@ describe('item details', () => {
     expect(screen.queryByRole('button', { name: 'Add a note, e.g. on Season 3' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Favourite' })).toBeNull()
     expect(screen.getByText('A quiet note')).toBeTruthy()
+    expect(screen.getAllByText('Want to watch').length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('shows the watch label and saves the stored Want to value', () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    render(<ItemModal item={movie({ status: 'Watched' })} items={[movie({ status: 'Watched' })]} listId="movies" onClose={() => undefined} onOpen={() => undefined} onSave={onSave} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Change status' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Want to watch' }))
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ status: 'Watched' }), { status: 'Want to' })
   })
 
   it('marks a favourite in the table', () => {

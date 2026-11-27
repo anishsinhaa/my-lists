@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookOpen, Clapperboard, Gamepad2, Layers, Sparkles, Tv, X, type LucideIcon } from 'lucide-react'
-import { PosterImage } from '@/components/common/PosterImage'
 import { Button } from '@/design/Button'
 import { StatusBadge } from '@/design/StatusBadge'
 import { StatusGlyph } from '@/design/icons'
-import { thumbnailUrl } from '@/design/archive'
+import { matchStatus, statusLabel } from '@/design/statusConfig'
 import { displayTitle } from '@/lib/displayTitle'
-import { LIST_KIND, TAB_NAME, type ListId } from '@/types/lists'
+import { externalRatingLabel, formatRating } from '@/lib/rating'
+import type { ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
+import { TonightReel } from './TonightReel'
 import {
   categoryHasRuntime,
   categoryItems,
@@ -45,10 +46,22 @@ function creatorLabel(listId: ListId): string {
   return 'Creator'
 }
 
+function tonightLabel(category: TonightCategory, value: string): string {
+  if (category !== 'any') return statusLabel(category, value)
+  const homes = ['movies', 'series', 'anime', 'games', 'books'] as const
+  for (const id of homes) {
+    const matched = matchStatus(id, value)
+    if (matched.value.toLowerCase() === value.trim().toLowerCase() && matched.family !== 'none') return matched.label ?? matched.value
+  }
+  return value
+}
+
 function ResultMeta({ item }: { item: MediaItem }) {
   const parts = [
     item.year === null ? null : String(item.year),
     item.creator === null || item.creator.trim().length === 0 ? null : `${creatorLabel(item.listId)}: ${item.creator}`,
+    item.myRating === null ? null : `My rating ${formatRating(item.myRating)}`,
+    item.imdbRating === null ? null : `${externalRatingLabel(item.listId)} ${formatRating(item.imdbRating)}`,
   ].filter((part) => part !== null)
   if (parts.length === 0) return null
   return <p className="text-sm text-(--ink-muted)">{parts.join(' · ')}</p>
@@ -64,9 +77,8 @@ export function TonightModal({ lists, preset, onClose }: {
   const [choice, setChoice] = useState<TonightChoice>(initial)
   const [phase, setPhase] = useState<'choose' | 'spin' | 'result'>('choose')
   const [spot, setSpot] = useState<MediaItem | null>(null)
-  const [frame, setFrame] = useState<MediaItem | null>(null)
+  const [frames, setFrames] = useState<MediaItem[] | null>(null)
   const [lastId, setLastId] = useState<string | null>(null)
-  const timer = useRef<number | null>(null)
   const panel = useRef<HTMLDivElement>(null)
   const closeRef = useRef(onClose)
 
@@ -75,9 +87,6 @@ export function TonightModal({ lists, preset, onClose }: {
   const genres = useMemo(() => topGenres(rows), [rows])
   const showRuntime = useMemo(() => categoryHasRuntime(rows), [rows])
   const matches = useMemo(() => tonightMatches(lists, { ...choice, short: showRuntime && choice.short }), [lists, choice, showRuntime])
-  const chips = preset === 'other' || preset === 'curious'
-    ? [{ id: preset, label: TAB_NAME[preset], icon: Layers }, ...CATEGORY_CHIPS]
-    : CATEGORY_CHIPS
 
   useEffect(() => {
     closeRef.current = onClose
@@ -96,7 +105,6 @@ export function TonightModal({ lists, preset, onClose }: {
     return () => {
       document.body.style.overflow = previous
       window.removeEventListener('keydown', onKey)
-      if (timer.current !== null) window.clearInterval(timer.current)
     }
   }, [])
 
@@ -125,33 +133,20 @@ export function TonightModal({ lists, preset, onClose }: {
   function land(winner: MediaItem) {
     setLastId(winner.id)
     setSpot(winner)
-    setFrame(winner)
     setPhase('result')
   }
 
   function pick() {
     const winner = choosePick(matches, lastId)
     if (winner === null) return
+    const nextFrames = matches.length < 2 ? [winner] : spinFrames(matches, winner)
+    setFrames(nextFrames)
+    setSpot(winner)
     if (matches.length < 2) {
       land(winner)
       return
     }
-    const frames = spinFrames(matches, winner)
-    if (timer.current !== null) window.clearInterval(timer.current)
     setPhase('spin')
-    setFrame(frames[0] ?? winner)
-    let index = 0
-    timer.current = window.setInterval(() => {
-      index += 1
-      const next = frames[index]
-      if (next === undefined) {
-        if (timer.current !== null) window.clearInterval(timer.current)
-        timer.current = null
-        land(winner)
-        return
-      }
-      setFrame(next)
-    }, 120)
   }
 
   function openInList(item: MediaItem) {
@@ -159,8 +154,8 @@ export function TonightModal({ lists, preset, onClose }: {
     void navigate(itemHref(item))
   }
 
-  const shown = phase === 'spin' ? frame : spot
   const countLabel = `${matches.length} to pick from`
+  const reelFrames = frames ?? (spot === null ? null : [spot])
 
   return (
     <div className="fixed inset-0 z-50 flex bg-black/70 md:items-center md:justify-center md:p-4" onClick={onClose}>
@@ -170,7 +165,7 @@ export function TonightModal({ lists, preset, onClose }: {
         aria-modal="true"
         aria-labelledby="tonight-title"
         tabIndex={-1}
-        className="flex h-dvh w-full flex-col overflow-y-auto bg-(--bg) p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-(--ink) outline-none md:h-auto md:max-h-[min(92dvh,760px)] md:max-w-lg md:rounded-(--radius) md:border md:border-(--brass) md:shadow-xl"
+        className="flex h-dvh w-full flex-col bg-(--bg) p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-(--ink) outline-none md:h-[min(88dvh,640px)] md:w-[32rem] md:rounded-(--radius) md:border md:border-(--brass) md:shadow-xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-3 flex items-start justify-between gap-3">
@@ -178,11 +173,11 @@ export function TonightModal({ lists, preset, onClose }: {
           <button type="button" aria-label="Close" className="inline-flex size-11 shrink-0 items-center justify-center" onClick={onClose}><X aria-hidden="true" className="size-5" /></button>
         </div>
         {phase === 'choose' ? (
-          <div className="space-y-4">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
             <fieldset className="space-y-2">
               <legend className="text-xs tracking-wide text-(--ink-muted)">Category</legend>
               <div className="flex flex-wrap gap-2">
-                {chips.map((entry) => {
+                {CATEGORY_CHIPS.map((entry) => {
                   const Icon = entry.icon
                   const on = choice.category === entry.id
                   return (
@@ -203,7 +198,7 @@ export function TonightModal({ lists, preset, onClose }: {
                   return (
                     <button key={status.value} type="button" aria-pressed={on} className={chipClass(on)} onClick={() => toggleStatus(status.value)}>
                       <StatusGlyph name={status.icon} />
-                      {status.value}
+                      {tonightLabel(choice.category, status.value)}
                     </button>
                   )
                 })}
@@ -229,38 +224,35 @@ export function TonightModal({ lists, preset, onClose }: {
             <p aria-live="polite" className="text-sm text-(--ink-muted)">{countLabel}</p>
             <Button disabled={matches.length === 0} onClick={pick}>Pick</Button>
           </div>
-        ) : shown === null ? null : (
-          <div className="space-y-4">
-            <div key={shown.id} className={phase === 'spin' ? 'tonight-slot mx-auto w-40' : 'mx-auto w-40'}>
-              <PosterImage alt="" byline={shown.creator ?? (shown.year === null ? '' : String(shown.year))} kind={LIST_KIND[shown.listId]} src={thumbnailUrl(shown.poster, 'w342')} title={displayTitle(shown.title, shown.year)} priority />
-            </div>
-            {phase === 'spin' ? <p className="text-center text-sm text-(--ink-muted)">Picking…</p> : (
+        ) : spot === null || reelFrames === null ? null : (
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
+            <TonightReel frames={reelFrames} spinning={phase === 'spin'} onLand={land} />
+            {phase === 'spin' ? <p className="sr-only" aria-live="polite">Picking…</p> : (
               <div className="space-y-3">
-                <h3 className="font-(--font-display) text-3xl leading-tight">{displayTitle(shown.title, shown.year)}</h3>
-                <ResultMeta item={shown} />
-                {shown.status.trim().length === 0 ? null : <StatusBadge listId={shown.listId} status={shown.status} />}
-                {shown.genres.length === 0 ? null : (
+                <h3 className="font-(--font-display) text-3xl leading-tight">{displayTitle(spot.title, spot.year)}</h3>
+                <ResultMeta item={spot} />
+                {spot.status.trim().length === 0 ? null : <StatusBadge listId={spot.listId} status={spot.status} />}
+                {spot.genres.length === 0 ? null : (
                   <div className="flex flex-wrap gap-1.5">
-                    {shown.genres.map((genre) => <span key={genre} className="rounded-full border border-(--border) px-2 py-0.5 text-xs">{genre}</span>)}
+                    {spot.genres.map((genre) => <span key={genre} className="rounded-full border border-(--border) px-2 py-0.5 text-xs">{genre}</span>)}
                   </div>
                 )}
-                {shown.why.trim().length === 0 ? null : (
+                {spot.why.trim().length === 0 ? null : (
                   <div className="space-y-1">
                     <p className="text-xs tracking-wide text-(--ink-muted)">About</p>
-                    <p className="text-base">{shown.why}</p>
+                    <p className="text-base">{spot.why}</p>
                   </div>
                 )}
-                {shown.notes.trim().length === 0 ? null : (
+                {spot.notes.trim().length === 0 ? null : (
                   <div className="space-y-1">
                     <p className="text-xs tracking-wide text-(--ink-muted)">My notes</p>
-                    <p className="text-base">{shown.notes}</p>
+                    <p className="text-base">{spot.notes}</p>
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={pick}>Pick another</Button>
                   <Button variant="ghost" onClick={() => setPhase('choose')}>Change filters</Button>
-                  <Button variant="ghost" onClick={() => openInList(shown)}>Open in list</Button>
-                  <Button variant="ghost" aria-label="Close" onClick={onClose}><X aria-hidden="true" className="size-4" /></Button>
+                  <Button variant="ghost" onClick={() => openInList(spot)}>Open in list</Button>
                 </div>
               </div>
             )}

@@ -51,7 +51,7 @@
   from { transform: translateX(-120%); }
   to { transform: translateX(280%); }
 }
-.ml-top-bar { width: 40%; height: 100%; background: var(--accent); animation: ml-top-bar 1.1s ease-in-out infinite; }
+.ml-top-bar { width: 40%; height: 100%; background: #d7b56a; box-shadow: 0 0 8px #d7b56a99; animation: ml-top-bar 1.1s ease-in-out infinite; }
 
 .grain { position: relative; }
 .grain::after { content: ""; pointer-events: none; position: absolute; inset: 0; opacity: 0.06; background-image: radial-gradient(#ffffff22 0.5px, transparent 0.5px); background-size: 3px 3px; }
@@ -81,7 +81,7 @@
 .marquee-bulbs { background-image: radial-gradient(circle, #ffe08a 2px, #6b5420 3px, transparent 4px); background-size: 16px 16px; background-repeat: repeat-x; }
 .marquee-bulbs { animation: bulb-chase 1.4s linear infinite; }
 @keyframes bulb-chase { to { background-position: 16px 0; } }
-.game-box { transform: perspective(800px) rotateY(var(--tilt-y, -16deg)) rotateX(var(--tilt-x, 0deg)); transform-style: preserve-3d; transition: transform 120ms linear; }
+.game-box { transform: perspective(800px) rotateY(var(--tilt-y, -6deg)) rotateX(var(--tilt-x, 0deg)); transform-style: preserve-3d; transition: transform 120ms linear; }
 .other-row { transition: transform 180ms ease; }
 .curious-row { transition: background-color 180ms ease, box-shadow 180ms ease; }
 .other-row:hover { transform: translateX(8px); }
@@ -156,7 +156,7 @@
 .series-cabinet { display: flex; flex-direction: column; gap: 0.55rem; padding: 1.65rem 0.7rem 0.7rem; border-radius: 1.1rem 1.1rem 0.7rem 0.7rem; background-color: #6b4423; background-image: repeating-linear-gradient(90deg, #00000026 0 2px, transparent 2px 7px), repeating-linear-gradient(#5a3418, #8a5a32 2px, #3e2412 4px); box-shadow: inset 0 0 0 3px #3e2412, 0 12px 24px #00000055; }
 .series-screen { position: relative; height: 11.5rem; min-height: 9.5rem; overflow: hidden; border-radius: 1.4rem; border: 8px solid #1a2426; background: #071314; box-shadow: inset 0 0 36px #f4b86066, 0 0 18px #f4b86033; }
 .series-reel { display: flex; height: 100%; width: max-content; animation: series-reel 42s linear infinite; }
-.series-reel img { height: 100%; width: 11rem; flex: 0 0 11rem; object-fit: cover; }
+.series-reel > * { height: 100%; width: 11rem; flex: 0 0 11rem; }
 .series-bars { display: flex; height: 100%; min-height: 9.5rem; }
 .series-bars span:nth-child(1) { flex: 1; background: #f3ead8; }
 .series-bars span:nth-child(2) { flex: 1; background: #f4b860; }
@@ -188,5 +188,3 @@
 @media (min-width: 768px) {
   .series-screen { height: 13rem; }
 }
-.tonight-slot { animation: tonight-slot 140ms var(--ease); }
-@keyframes tonight-slot { from { transform: translateY(18%); opacity: 0.35; } to { transform: none; opacity: 1; } }

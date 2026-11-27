@@ -39,6 +39,7 @@ export function focusGroup(group: GroupKey, label: string, loose: boolean): Part
   if (group === 'creator') return { ...flat, creator: label }
   if (group === 'franchise') return { ...flat, franchise: label }
   if (group === 'platform') return { ...flat, platform: label }
+  if (group === 'type') return { ...flat, types: [label] }
   if (group === 'year') {
     const start = Number(label.slice(0, 4))
     if (!Number.isFinite(start)) return null
@@ -53,6 +54,7 @@ function emptyLabel(listId: ListId, group: GroupKey): string {
   if (group === 'franchise') return `No ${config.franchiseLabel.toLowerCase()}`
   if (group === 'platform') return 'No platform'
   if (group === 'year') return 'No year'
+  if (group === 'type') return 'No type'
   return 'No genre'
 }
 
@@ -62,5 +64,9 @@ function keysFor(item: MediaItem, group: GroupKey, empty: string): string[] {
   if (group === 'creator') return item.creator !== null && item.creator.length > 0 ? [item.creator] : [empty]
   if (group === 'franchise') return item.franchise !== null && item.franchise.length > 0 ? [item.franchise] : [empty]
   if (group === 'platform') return item.platform !== null && item.platform.length > 0 ? [item.platform] : [empty]
+  if (group === 'type') {
+    const type = (item.extra['type'] ?? '').trim()
+    return type.length > 0 ? [type] : [empty]
+  }
   return [empty]
 }

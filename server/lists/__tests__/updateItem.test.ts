@@ -90,8 +90,22 @@ describe('updateListItem', () => {
     expect(half.outcome).toBe('written')
     expect(sheet.rows[1]?.[3]).toBe(7.5)
     const step = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: 7.2 }, now)
-    expect(step.outcome).toBe('invalid')
-    expect(sheet.rows[1]?.[3]).toBe(7.5)
+    expect(step.outcome).toBe('written')
+    expect(sheet.rows[1]?.[3]).toBe(7.2)
+  })
+
+  it('accepts any one-decimal rating from 0 to 10', async () => {
+    const sheet = client([header, ['Heat', 1995, 'Want to', '', '', '', '', '', '']])
+    for (const value of [7.3, 0, 10]) {
+      const result = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: value }, now)
+      expect(result.outcome).toBe('written')
+      expect(sheet.rows[1]?.[3]).toBe(value)
+    }
+    for (const value of [7.25, -1, 10.1, Number.NaN]) {
+      const result = await updateListItem(sheet, { listId: 'movies', id: 'movies:heat:1995', title: 'Heat', year: 1995, status: 'Want to', myRating: value }, now)
+      expect(result.outcome).toBe('invalid')
+    }
+    expect(sheet.rows[1]?.[3]).toBe(10)
   })
 
   it('strips control characters from a note and rejects one longer than 2000 characters', async () => {

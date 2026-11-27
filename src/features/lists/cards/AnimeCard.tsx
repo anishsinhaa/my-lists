@@ -10,9 +10,9 @@ export function AnimeCard({ item, index, onOpen }: PosterCardProps) {
     <button type="button" className={`block w-full cursor-pointer text-left transition-transform hover:rotate-0 ${tilt}`} onClick={() => onOpen?.(item)}>
       <span className="relative block border-[3px] border-(--ink) shadow-[5px_5px_0_var(--ink)]">
         <PosterImage alt="" byline={item.creator ?? (item.year === null ? '' : String(item.year))} kind="anime" src={item.poster} title={displayTitle(item.title, item.year)} />
-        <span className="absolute top-2 left-2 -rotate-6"><StatusChip size="sm" status={item.status} /></span>
+        <span className="absolute top-2 left-2 max-w-[calc(100%-1rem)] truncate"><StatusChip listId="anime" size="sm" status={item.status} /></span>
       </span>
-      <CardCaption item={item} />
+      <CardCaption clamp item={item} />
     </button>
   )
 }

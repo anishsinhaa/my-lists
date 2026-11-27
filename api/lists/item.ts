@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getEnv } from '../../server/config/env.js'
 import { resetListsCache } from '../../server/sheets/cache.js'
 import { createSheetsClient } from '../../server/sheets/client.js'
-import { updateListItem, type ItemUpdate } from '../../server/lists/updateItem.js'
+import { updateListItem, validRating, type ItemUpdate } from '../../server/lists/updateItem.js'
 import { fail, methodGuard, ok } from '../../server/http/respond.js'
 import { requireAccountOwner } from '../../server/auth/permissions.js'
 import { LIST_IDS } from '../../src/types/lists.js'
@@ -13,7 +13,7 @@ function isUpdate(body: unknown): body is ItemUpdate {
   const rating = record.myRating
   const note = record.notes ?? record.why
   const favourite = record.favourite
-  return typeof record.listId === 'string' && (LIST_IDS as readonly string[]).includes(record.listId) && typeof record.id === 'string' && typeof record.title === 'string' && (typeof record.year === 'number' || record.year === null) && typeof record.status === 'string' && (rating === null || typeof rating === 'number') && (note === undefined || typeof note === 'string') && (favourite === undefined || typeof favourite === 'boolean')
+  return typeof record.listId === 'string' && (LIST_IDS as readonly string[]).includes(record.listId) && typeof record.id === 'string' && typeof record.title === 'string' && (typeof record.year === 'number' || record.year === null) && typeof record.status === 'string' && (rating === null || (typeof rating === 'number' && validRating(rating))) && (note === undefined || typeof note === 'string') && (favourite === undefined || typeof favourite === 'boolean')
 }
 
 async function item(req: VercelRequest, res: VercelResponse): Promise<void> {

@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Check } from 'lucide-react'
+import { PosterImage } from '@/components/common/PosterImage'
 import { StatusGlyph } from '@/design/icons'
 import { thumbnailUrl } from '@/design/archive'
-import { matchStatus, shelfOrder } from '@/design/statusConfig'
+import { matchStatus, shelfOrder, statusLabel } from '@/design/statusConfig'
+import { displayTitle } from '@/lib/displayTitle'
 import { computeStats } from './stats/computeStats'
 import type { ListQuery } from './filters/listQuery'
 import type { MediaItem } from '@/types/media'
@@ -77,7 +79,7 @@ export function SeriesSet({ items, query, onChange, note }: {
     return (
       <button key={row.value} type="button" aria-pressed={on} data-status={row.value} className={`series-channel ${TONE[row.value.toLowerCase()] ?? 'series-tone-amber'} ${on ? 'is-on' : ''}`} onClick={() => toggle(row.value)}>
         <StatusGlyph name={row.icon} />
-        <span className="min-w-0">{row.value}</span>
+        <span className="min-w-0">{statusLabel('series', row.value)}</span>
         {on ? <Check aria-hidden="true" className="size-3.5 shrink-0" /> : null}
         <span className="tabular-nums">{count}</span>
       </button>
@@ -93,7 +95,7 @@ export function SeriesSet({ items, query, onChange, note }: {
           {reel.length > 0 ? (
             <div className="series-reel" style={{ animationDuration: `${Math.max(24, (reel.length / 2) * 2.6)}s` }}>
               {reel.map((item, index) => (
-                <img key={`${item.id}-${index}`} alt="" src={thumbnailUrl(item.poster, 'w342') ?? ''} />
+                <PosterImage key={`${item.id}-${index}`} alt="" byline={item.creator ?? ''} className="h-full w-44 shrink-0" fit="fill" kind="series" src={thumbnailUrl(item.poster, 'w342')} title={displayTitle(item.title, item.year)} />
               ))}
             </div>
           ) : (

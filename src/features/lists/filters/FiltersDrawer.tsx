@@ -250,8 +250,8 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
           <section className="space-y-1">
             <h2 className="flex items-center gap-2 font-(--font-display) text-lg"><Eye aria-hidden="true" className="size-4" />Show</h2>
             <FilterSwitch label="Unrated" pressed={query.unrated} onClick={() => onChange({ unrated: !query.unrated })} />
-            <FilterSwitch label="Fav Want to" pressed={query.favWant} onClick={() => onChange({ favWant: !query.favWant })} />
-            <FilterSwitch label="Fav Watched" pressed={query.favWatched} onClick={() => onChange({ favWatched: !query.favWatched })} />
+            <FilterSwitch label={`Favourite ${listId === 'books' ? 'Want to read' : statusLabel(listId, 'Want to')}`} pressed={query.favWant} onClick={() => onChange({ favWant: !query.favWant })} />
+            <FilterSwitch label={`Favourite ${statusLabel(listId, 'Watched')}`} pressed={query.favWatched} onClick={() => onChange({ favWatched: !query.favWatched })} />
           </section>
           <section className="space-y-1">
             <h2 className="mb-1 flex items-center gap-2 font-(--font-display) text-lg"><SlidersHorizontal aria-hidden="true" className="size-4" />Filters</h2>

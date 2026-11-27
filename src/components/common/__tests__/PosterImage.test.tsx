@@ -26,6 +26,14 @@ describe('PosterImage', () => {
     expect(screen.getByText('Dune')).toBeTruthy()
   })
 
+  it('drops the fallback title after a real cover loads', () => {
+    const { container } = render(<PosterImage alt="" src="https://img.example/argo.jpg" title="Argo" />)
+    const img = container.querySelector('img')
+    if (!(img instanceof HTMLImageElement)) throw new Error('missing image')
+    load(img, 300)
+    expect(screen.queryByText('Argo')).toBeNull()
+  })
+
   it('keeps the fallback visible while a real cover is still loading', () => {
     const { container } = render(<PosterImage alt="" src="https://img.example/heat.jpg" title="Heat" />)
     expect(screen.getByText('Heat')).toBeTruthy()

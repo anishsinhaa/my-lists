@@ -24,13 +24,14 @@ export function PosterImage({ src, alt, title, byline = '', aspect = '2/3', clas
   }
   const ratio = fit === 'fill' ? 'h-full w-full' : aspect === '1/1' ? 'aspect-square' : 'aspect-[2/3]'
   const showImage = src !== null && src.length > 0 && !failed
+  const showFallback = !(loaded && !failed)
   return (
-    <div className={`relative overflow-hidden bg-(--surface-2) ${ratio} ${className}`}>
-      <FallbackCover className="absolute inset-0" kind={kind} title={title} byline={byline} />
+    <div className={`relative isolate overflow-hidden bg-(--surface-2) ${ratio} ${className}`}>
+      {showFallback ? <FallbackCover className="absolute inset-0 z-0" kind={kind} title={title} byline={byline} /> : null}
       {showImage ? (
         <motion.img
           alt={alt}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 z-10 h-full w-full object-cover"
           decoding="async"
           initial={{ opacity: 0 }}
           animate={{ opacity: loaded ? 1 : 0 }}

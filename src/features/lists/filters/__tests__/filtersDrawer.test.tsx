@@ -283,4 +283,28 @@ describe('filters drawer', () => {
     fireEvent.click(direction)
     expect(onChange).toHaveBeenCalledWith({ dir: 'desc' })
   })
+
+  it('names the favourite toggles from each list and still stores the flag', () => {
+    const onChange = vi.fn()
+    const labels: Array<['movies' | 'games' | 'books', string]> = [
+      ['movies', 'Favourite Want to watch'],
+      ['games', 'Favourite Want to play'],
+      ['books', 'Favourite Want to read'],
+    ]
+    for (const [listId, want] of labels) {
+      cleanup()
+      onChange.mockClear()
+      render(
+        <MemoryRouter>
+          <FilterChrome items={[movie({ title: 'Heat', listId })]} listId={listId} query={DEFAULT_QUERY} shown={1} total={1} onChange={onChange} />
+        </MemoryRouter>,
+      )
+      fireEvent.click(filtersButton())
+      const dialog = screen.getByRole('dialog')
+      expect(within(dialog).getByRole('switch', { name: want })).toBeTruthy()
+      expect(within(dialog).getByRole('switch', { name: 'Favourite Watched' })).toBeTruthy()
+      fireEvent.click(within(dialog).getByRole('switch', { name: want }))
+      expect(onChange).toHaveBeenCalledWith({ favWant: true })
+    }
+  })
 })

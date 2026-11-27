@@ -67,10 +67,11 @@ export function FallbackCover({ title, byline = '', className = '' }: { title: s
   const from = pair?.[0] ?? COVER_PAIRS[0][0]
   const to = pair?.[1] ?? COVER_PAIRS[0][1]
   const ink = coverTextColor(from, to)
+  const position = className.includes('absolute') ? '' : 'relative'
   return (
     <div
       data-palette={palette}
-      className={`relative flex h-full w-full items-center justify-center overflow-hidden px-4 text-center ${className}`}
+      className={`${position} flex h-full w-full items-center justify-center overflow-hidden px-4 text-center ${className}`}
       style={{ backgroundImage: `linear-gradient(165deg, ${from}, ${to})`, color: ink, textShadow: ink === COVER_LIGHT ? '0 1px 2px rgb(0 0 0 / 0.45)' : undefined }}
     >
       <span aria-hidden="true" data-sheen="true" className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(120deg, rgba(255,255,255,.12), transparent 40%)' }} />

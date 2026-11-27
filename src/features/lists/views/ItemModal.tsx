@@ -214,22 +214,12 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
         }}
       >
         {item === null ? <DialogTitle className="sr-only">Item</DialogTitle> : (
-          <div className="flex min-h-0 flex-col md:grid md:max-h-[min(92dvh,900px)] md:grid-cols-[minmax(220px,280px)_minmax(0,1fr)]">
-            <div className="bg-(--surface) p-4">
+          <div className="flex h-[min(92dvh,900px)] max-h-[92dvh] min-h-0 flex-col">
+            <div className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(220px,280px)_minmax(0,1fr)] md:overflow-hidden">
+            <div className="shrink-0 bg-(--surface) p-4 md:overflow-y-auto">
               <PosterImage alt="" byline={item.creator ?? (item.year === null ? '' : String(item.year))} className="mx-auto w-full max-w-56 md:max-w-none" kind={LIST_KIND[item.listId]} src={thumbnailUrl(item.poster, 'w500')} title={displayTitle(item.title, item.year)} priority />
             </div>
-            <div className="min-h-0 space-y-3 overflow-y-auto p-4 pr-12 md:p-5 md:pr-12">
-              <div className="flex items-center justify-between gap-2">
-                <button type="button" aria-keyshortcuts="ArrowLeft" aria-label={previous === undefined ? 'Previous' : `Previous: ${displayTitle(previous.title, previous.year)}`} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-(--border) px-2 disabled:opacity-30" disabled={previous === undefined} onClick={() => { if (previous !== undefined) onOpen(previous) }}>
-                  <ChevronLeft aria-hidden="true" className="size-5" />
-                  <span className="sr-only md:not-sr-only">Previous</span>
-                </button>
-                {items.length > 1 && index >= 0 ? <p aria-live="polite" className="text-sm text-(--ink-muted)">{index + 1} of {items.length}</p> : <span />}
-                <button type="button" aria-keyshortcuts="ArrowRight" aria-label={next === undefined ? 'Next' : `Next: ${displayTitle(next.title, next.year)}`} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-(--border) px-2 disabled:opacity-30" disabled={next === undefined} onClick={() => { if (next !== undefined) onOpen(next) }}>
-                  <span className="sr-only md:not-sr-only">Next</span>
-                  <ChevronRight aria-hidden="true" className="size-5" />
-                </button>
-              </div>
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 pr-12 md:p-5 md:pr-12">
               <div className="min-w-0">
                 <div className="flex items-start gap-1">
                   <DialogTitle className="min-w-0 flex-1 font-(--font-display) text-2xl leading-tight">{displayTitle(item.title, item.year)}</DialogTitle>
@@ -278,6 +268,18 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                 <NotesEditor key={item.id} value={item.notes} onSave={(notes) => save({ notes })} />
               )}
               {readOnly ? <StatusBadge listId={listId} size="lg" status={item.status} /> : <StatusMenu key={`${item.id}-status`} listId={listId} status={item.status} onPick={(status) => save({ status })} />}
+            </div>
+            </div>
+            <div className="flex shrink-0 items-center justify-between gap-2 border-t border-(--border) bg-(--bg) px-4 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+              <button type="button" aria-keyshortcuts="ArrowLeft" aria-label={previous === undefined ? 'Previous' : `Previous: ${displayTitle(previous.title, previous.year)}`} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-(--border) px-2 disabled:opacity-30" disabled={previous === undefined} onClick={() => { if (previous !== undefined) onOpen(previous) }}>
+                <ChevronLeft aria-hidden="true" className="size-5" />
+                <span className="sr-only md:not-sr-only">Previous</span>
+              </button>
+              {items.length > 1 && index >= 0 ? <p aria-live="polite" className="text-sm text-(--ink-muted)">{index + 1} of {items.length}</p> : <span />}
+              <button type="button" aria-keyshortcuts="ArrowRight" aria-label={next === undefined ? 'Next' : `Next: ${displayTitle(next.title, next.year)}`} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-(--border) px-2 disabled:opacity-30" disabled={next === undefined} onClick={() => { if (next !== undefined) onOpen(next) }}>
+                <span className="sr-only md:not-sr-only">Next</span>
+                <ChevronRight aria-hidden="true" className="size-5" />
+              </button>
             </div>
           </div>
         )}

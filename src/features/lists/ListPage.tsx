@@ -3,10 +3,9 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Skeletons } from '@/components/common/Skeletons'
 import { useLists } from '@/features/data/useLists'
-import { readJson, writeJson } from '@/lib/storage'
 import { LIST_IDS, type ListId } from '@/types/lists'
 import { usePosterFill } from '@/features/posters/usePosterFill'
-import { parseListQuery, serializeListQuery, type ListQuery } from './filters/listQuery'
+import { useListViewPrefs } from './useListViewPrefs'
 import { ListHeader } from './ListHeader'
 import { SimpleListPage } from './SimpleListPage'
 import { TonightButton, TonightModal } from '@/features/home/TonightModal'
@@ -29,16 +28,8 @@ function MainList({ listId }: { listId: ListId }) {
   const enrich = usePosterFill(listId)
   const [tonight, setTonight] = useState(false)
   const [params, setParams] = useSearchParams()
-  const stored = readJson<'shelves' | 'grid' | 'table'>(`ml.view.${listId}`, 'grid')
-  const query = parseListQuery(params)
-  if (!params.has('view')) {
-    query.view = stored
-    if (!params.has('group')) query.group = stored === 'shelves' ? 'status' : 'none'
-  }
-  const update = (next: ListQuery) => {
-    writeJson(`ml.view.${listId}`, next.view)
-    setParams(serializeListQuery(next), { replace: true })
-  }
+  const ready = data !== undefined && !isLoading
+  const { query, commit } = useListViewPrefs(listId, data?.lists[listId] ?? [], ready)
   const openItemId = params.get('item')
   function closeItem() {
     if (!params.has('item')) return
@@ -57,7 +48,7 @@ function MainList({ listId }: { listId: ListId }) {
         <div className="min-w-0 flex-1">{listId === 'series' ? null : <ListHeader enriching={enriching} listId={listId} poster={poster} />}</div>
         <TonightButton onClick={() => setTonight(true)} />
       </div>
-      <CategoryView enriching={enriching} items={items} listId={listId} openItemId={openItemId} query={query} onChange={update} onItemClose={closeItem} />
+      <CategoryView enriching={enriching} items={items} listId={listId} openItemId={openItemId} query={query} onChange={commit} onItemClose={closeItem} />
       {tonight && data !== undefined ? <TonightModal lists={data.lists} preset={listId} onClose={() => setTonight(false)} /> : null}
     </main>
   )

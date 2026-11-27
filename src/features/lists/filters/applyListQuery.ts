@@ -105,7 +105,11 @@ export function applyListQuery(items: MediaItem[], query: ListQuery, ctx: { now:
         return year === 0 ? left.index - right.index : year
       }
       const compared = compareValues(sortValue(left.item, query.sort, ctx.listId), sortValue(right.item, query.sort, ctx.listId), query.dir)
-      return compared === 0 ? left.index - right.index : compared
+      if (compared !== 0) return compared
+      const titled = sortTitle(left.item.title).localeCompare(sortTitle(right.item.title), 'en', { numeric: true, sensitivity: 'base' })
+      if (titled !== 0) return titled
+      const year = compareValues(left.item.year, right.item.year, 'asc')
+      return year === 0 ? left.index - right.index : year
     })
     .map((entry) => entry.item)
 }

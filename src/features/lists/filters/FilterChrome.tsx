@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, Eraser, LayoutGrid, Rows3, SlidersHorizontal, Table2, X } from 'lucide-react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { useMemo, useRef, useState } from 'react'
+import { Eraser, SlidersHorizontal, X } from 'lucide-react'
 import { StatusGlyph } from '@/design/icons'
 import { matchStatus, shelfOrder } from '@/design/statusConfig'
 import type { ListId } from '@/types/lists'
@@ -9,10 +8,10 @@ import { SMART_VIEWS } from '../smart/smartViews'
 import { filterBadgeCount, viewIsCustom } from '../viewPrefs'
 import { Choice } from './choice'
 import { FiltersDrawer } from './FiltersDrawer'
+import { LayoutToggle } from './LayoutToggle'
 import { ADDED_WITHIN_OPTIONS, type ListQuery } from './listQuery'
 
 const COUNTS_FILTER = new Set<ListId>(['movies', 'series', 'anime', 'games'])
-const VIEWS = [['shelves', Rows3, 'Shelves'], ['grid', LayoutGrid, 'Grid'], ['table', Table2, 'Table']] as const
 
 function statusOn(listId: ListId, selected: string[], value: string): boolean {
   const canonical = matchStatus(listId, value).value
@@ -53,56 +52,6 @@ function StatusRow({ listId, items, query, onChange }: {
         <Choice key={row.value} count={counts.get(row.value) ?? 0} icon={<StatusGlyph name={row.icon} />} listId={listId} pressed={statusOn(listId, query.statuses, row.value)} onClick={() => onChange({ statuses: toggleStatus(listId, query, row.value) })}>{row.value}</Choice>
       ))}
     </div>
-  )
-}
-
-function ViewMenu({ view, custom, onChange }: { view: ListQuery['view']; custom: boolean; onChange: (partial: Partial<ListQuery>) => void }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const current = VIEWS.find(([value]) => value === view) ?? VIEWS[1]
-  const Icon = current[1]
-  useEffect(() => {
-    if (!open) return undefined
-    const stop = (event: Event) => {
-      const target = event.target
-      if (!(target instanceof Element)) return
-      if (ref.current?.contains(target) === true || target.closest('[data-slot="dropdown-menu-content"]') !== null) return
-      event.preventDefault()
-      event.stopPropagation()
-      setOpen(false)
-      if (event.type !== 'pointerdown') return
-      const swallowClick = (click: Event) => {
-        click.preventDefault()
-        click.stopPropagation()
-      }
-      document.addEventListener('click', swallowClick, { capture: true, once: true })
-    }
-    document.addEventListener('pointerdown', stop, true)
-    document.addEventListener('click', stop, true)
-    return () => {
-      document.removeEventListener('pointerdown', stop, true)
-      document.removeEventListener('click', stop, true)
-    }
-  }, [open])
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <div ref={ref} className="contents">
-      <DropdownMenuTrigger aria-label={`${current[2]} view`} className="inline-flex h-11 items-center gap-1.5 rounded-md border border-(--brass)/40 bg-(--surface) px-2.5 text-sm">
-        <Icon aria-hidden="true" className="size-4" />
-        <span className="hidden md:inline">{current[2]}</span>
-        {custom ? <span aria-hidden="true" data-view-custom="true" className="size-2 rounded-full bg-accent" /> : null}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-(--bg) text-(--ink)">
-        {VIEWS.map(([value, ItemIcon, name]) => (
-          <DropdownMenuItem key={value} className="min-h-11" onSelect={() => { if (view !== value) onChange({ view: value, group: value === 'shelves' ? 'status' : 'none' }) }}>
-            <ItemIcon aria-hidden="true" className="size-4" />
-            <span className="min-w-0 flex-1">{name}</span>
-            {view === value ? <Check aria-hidden="true" className="size-4" /> : null}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-      </div>
-    </DropdownMenu>
   )
 }
 
@@ -177,7 +126,7 @@ export function FilterChrome({ listId, items, query, shown, total, onChange, onS
           {custom ? <span aria-hidden="true" data-view-custom="true" className="size-2 rounded-full bg-accent" /> : null}
         </button>
         <FiltersDrawer items={items} listId={listId} open={open} query={query} returnFocus={filtersRef} shown={shown} total={total} onChange={onChange} onOpenChange={setDrawer} />
-        <ViewMenu custom={custom} view={query.view} onChange={onChange} />
+        <LayoutToggle view={query.view} onChange={onChange} />
         {onShuffle !== undefined ? <button type="button" className="h-11 px-3 text-sm" onClick={onShuffle}>Shuffle</button> : null}
       </div>
       {COUNTS_FILTER.has(listId) ? null : <StatusRow items={items} listId={listId} query={query} onChange={onChange} />}

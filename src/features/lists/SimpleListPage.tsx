@@ -6,7 +6,7 @@ import { useSaveItem } from '@/features/lists/useSaveItem'
 import { ItemModal } from '@/features/lists/views/ItemModal'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
-import { Skeletons } from '@/components/common/Skeletons'
+import { PosterSkeletons } from '@/components/common/PosterSkeletons'
 import { StatusChip } from '@/components/common/StatusChip'
 import { useLists } from '@/features/data/useLists'
 import { displayTitle } from '@/lib/displayTitle'
@@ -37,7 +37,7 @@ export function SimpleListPage({ listId }: { listId: Extract<ListId, 'other' | '
   const [now] = useState(() => new Date())
   const shown = useMemo(() => selectItems(listId, items, query, now), [items, listId, query, now])
   const open = openId === null ? null : items.find((item) => item.id === openId) ?? null
-  if (isLoading) return <main className="edge py-4"><Skeletons /></main>
+  if (isLoading) return <main className="edge py-4"><PosterSkeletons /></main>
   if (data === undefined) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
   return (
     <main className="edge w-full space-y-3 overflow-x-clip py-4">

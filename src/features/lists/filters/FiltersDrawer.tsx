@@ -1,5 +1,5 @@
-import { useEffect, useId, useState, type ReactNode, type RefObject } from 'react'
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, Calendar, ChevronDown, Eye, Gamepad2, Layers, LayoutGrid, Rows3, SlidersHorizontal, Sparkles, Star, Table2, Tags, UserRound, X } from 'lucide-react'
+import { useId, useState, type ReactNode, type RefObject } from 'react'
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, Calendar, ChevronDown, Eye, Gamepad2, Layers, LayoutGrid, Rows3, SlidersHorizontal, Sparkles, Star, Tags, UserRound, X } from 'lucide-react'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { StatusGlyph } from '@/design/icons'
@@ -13,11 +13,11 @@ import { hasFinishedColumn, sortOptions } from '../sortOptions'
 import { finishedOn, SMART_VIEWS } from '../smart/smartViews'
 import { clearFiltersPatch, filterBadgeCount, resetViewPatch, viewIsCustom } from '../viewPrefs'
 import { Choice } from './choice'
+import { LayoutToggle } from './LayoutToggle'
 import { FILTER_CONFIG } from './filterConfig'
 import { ADDED_WITHIN_OPTIONS, type ListQuery, type RatingBy } from './listQuery'
 
 const KEPT_VIEWS = new Set(['nolan', 'marvel', 'top-rated', 'recent'])
-const VIEWS = [['shelves', Rows3, 'Shelves'], ['grid', LayoutGrid, 'Grid'], ['table', Table2, 'Table']] as const
 
 function frequent(values: Array<string | null>): string[] {
   const counts = new Map<string, number>()
@@ -56,6 +56,8 @@ function toggleStatus(listId: ListId, query: ListQuery, value: string): string[]
   return [...query.statuses, canonical]
 }
 
+// Status appears when the list has a shelf vocabulary or any item carries a status.
+// Other has neither until a row has one; that value then shows up through the extra branch.
 function statusChoices(listId: ListId, items: MediaItem[]): { value: string; count: number; icon: ReactNode }[] {
   const counts = new Map<string, number>()
   for (const item of items) {
@@ -121,16 +123,20 @@ function swallowOutside(onClose: () => void) {
     event.preventDefault()
     event.detail.originalEvent.preventDefault()
     event.detail.originalEvent.stopPropagation()
-    let closed = false
-    const finish = (follow: Event) => {
+    onClose()
+    const swallow = (follow: Event) => {
       follow.preventDefault()
       follow.stopPropagation()
-      if (closed) return
-      closed = true
-      onClose()
     }
-    window.addEventListener('pointerup', finish, { capture: true, once: true })
-    window.addEventListener('click', finish, { capture: true, once: true })
+    window.addEventListener('pointerup', swallow, { capture: true, once: true })
+    window.addEventListener('click', swallow, { capture: true, once: true })
+    // Dialog defers this callback until the click, so the listeners above miss
+    // the event that is already underway. Drop any that did not run before the
+    // next task, or they swallow an unrelated click later.
+    queueMicrotask(() => {
+      window.removeEventListener('pointerup', swallow, true)
+      window.removeEventListener('click', swallow, true)
+    })
   }
 }
 
@@ -163,28 +169,6 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
   const statuses = statusChoices(listId, items)
   const addedLabel = ADDED_WITHIN_OPTIONS.find((option) => option.value === query.addedWithin)?.label ?? 'Any'
   const close = () => onOpenChange(false)
-  useEffect(() => {
-    if (!open) return undefined
-    const stop = (event: Event) => {
-      const target = event.target
-      if (!(target instanceof Element) || target.closest('[data-slot="sheet-overlay"]') === null) return
-      event.preventDefault()
-      event.stopPropagation()
-      if (event.type !== 'pointerdown') return
-      onOpenChange(false)
-      const swallowClick = (click: Event) => {
-        click.preventDefault()
-        click.stopPropagation()
-      }
-      document.addEventListener('click', swallowClick, { capture: true, once: true })
-    }
-    document.addEventListener('pointerdown', stop, true)
-    document.addEventListener('click', stop, true)
-    return () => {
-      document.removeEventListener('pointerdown', stop, true)
-      document.removeEventListener('click', stop, true)
-    }
-  }, [open, onOpenChange])
   const ratingSummary = query.ratingMin !== null ? `${query.ratingMin}+` : query.ratingBy === 'my' ? 'Mine' : query.ratingBy === 'external' ? ratingName : 'Any'
 
   return (
@@ -198,10 +182,10 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
         }}
         onPointerDownOutside={swallowOutside(close)}
         className={desktop
-          ? 'h-dvh w-[min(460px,100vw)] max-w-none gap-0 overflow-hidden bg-(--bg) p-0 text-(--ink) sm:max-w-none'
-          : 'max-h-[calc(100dvh-env(safe-area-inset-top)-8px)] w-full gap-0 overflow-hidden rounded-t-2xl bg-(--bg) p-0 text-(--ink)'}
+          ? 'z-50 h-dvh w-[min(460px,100vw)] max-w-none gap-0 overflow-hidden bg-(--bg) p-0 text-(--ink) sm:max-w-none'
+          : 'z-50 max-h-[90dvh] w-full gap-0 overflow-hidden rounded-t-2xl bg-(--bg) p-0 text-(--ink)'}
       >
-        <div className="shrink-0">
+        <div className="shrink-0 bg-(--bg)">
           {desktop ? null : <div className="flex justify-center pt-2" aria-hidden="true"><span className="h-1.5 w-10 rounded-full bg-(--border)" /></div>}
           <SheetHeader className="flex-row items-center justify-between space-y-0 border-b border-(--border) px-4 py-3">
             <div>
@@ -214,14 +198,7 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-4">
           <section className="space-y-3">
             <h2 className="flex items-center gap-2 font-(--font-display) text-lg"><LayoutGrid aria-hidden="true" className="size-4" />View</h2>
-            <div role="radiogroup" aria-label="Layout" className="flex flex-wrap gap-2">
-              {VIEWS.map(([value, Icon, name]) => (
-                <button key={value} type="button" aria-pressed={query.view === value} className={`inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3 text-sm ${query.view === value ? 'border-transparent bg-accent text-(--bg)' : 'border-(--brass)/40 bg-(--surface)'}`} onClick={() => { if (query.view !== value) onChange({ view: value, group: value === 'shelves' ? 'status' : 'none' }) }}>
-                  <Icon aria-hidden="true" className="size-4" />
-                  {name}
-                </button>
-              ))}
-            </div>
+            <LayoutToggle view={query.view} onChange={onChange} />
             <div className="flex items-center gap-2">
               <Select value={query.sort} onValueChange={(value) => {
                 const option = sorts.find((item) => item.key === value)
@@ -229,7 +206,7 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
                 onChange({ sort: option.key, dir: option.dir })
               }}>
                 <SelectTrigger aria-label="Sort by" className="min-h-11 flex-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[60] border-(--border) bg-(--surface) text-(--ink)">
                   {sorts.map((option) => <SelectItem key={option.key} value={option.key}>{option.label}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -243,7 +220,7 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
               onChange(option.key === 'none' && query.view === 'shelves' ? { group: 'none', view: 'grid' } : { group: option.key })
             }}>
               <SelectTrigger aria-label="Group by" className="min-h-11 w-full"><SelectValue /></SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[60] border-(--border) bg-(--surface) text-(--ink)">
                 {groups.map((option) => <SelectItem key={option.key} value={option.key}>{option.label}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -369,7 +346,7 @@ export function FiltersDrawer({ listId, items, query, shown, total, open, onOpen
             </FilterGroup>
           </section>
         </div>
-        <SheetFooter className={`shrink-0 flex-row items-center justify-between gap-3 border-t border-(--border) bg-(--bg) px-4 py-3 ${desktop ? '' : 'pb-[max(0.75rem,env(safe-area-inset-bottom))]'}`}>
+        <SheetFooter className={`shrink-0 flex-row items-center justify-between gap-3 border-t border-(--border) bg-(--bg) px-4 py-3 ${desktop ? '' : 'pb-[env(safe-area-inset-bottom)]'}`}>
           <p className="text-sm text-(--ink-muted)">Showing {shown} of {total}</p>
           <div className="flex items-center gap-2">
             <button type="button" className="min-h-11 px-2 text-sm text-(--ink-muted) disabled:opacity-40" disabled={count === 0} onClick={() => onChange(clearFiltersPatch())}>Clear filters</button>

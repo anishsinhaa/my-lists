@@ -1,31 +1,35 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { canEdit as accountCanEdit, DEFAULT_ACCOUNT_ID, type AuthUser } from '@/types/auth'
 import { apiFetch } from '@/services/http/apiFetch'
 import { authService } from '@/services/auth/localTokenAuthService'
+import { fetchLists } from '@/services/sheets/listsApi'
 import { listsCache } from '@/services/sheets/listsCache'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const lastForbidden = useRef(0)
+  const generation = useRef(0)
   const [user, setUser] = useState<AuthUser | null>(null)
   const [status, setStatus] = useState<AuthContextValue['status']>('checking')
 
   useEffect(() => {
     localStorage.removeItem('ml.auth.v1')
+    const gen = generation.current
     let cancelled = false
-    apiFetch<{ user: AuthUser }>('/api/auth/me')
+    apiFetch<{ user: AuthUser }>('/api/auth/me', undefined, { probe: true, timeoutMs: 10_000 })
       .then((data) => {
-        if (cancelled) return
+        if (cancelled || generation.current !== gen) return
         setUser(data.user)
         setStatus('authenticated')
       })
       .catch(() => {
-        if (cancelled) return
+        if (cancelled || generation.current !== gen) return
         setUser(null)
         setStatus('anonymous')
       })
@@ -38,11 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const onUnauthorized = () => {
       setUser(null)
       setStatus('anonymous')
-      void navigate('/login', { replace: true })
+      if (location.pathname === '/login') return
+      void navigate('/login', { replace: true, state: { from: location.pathname + location.search } })
     }
     window.addEventListener('ml:unauthorized', onUnauthorized)
     return () => window.removeEventListener('ml:unauthorized', onUnauthorized)
-  }, [navigate])
+  }, [location.pathname, location.search, navigate])
 
   useEffect(() => {
     const onForbidden = () => {
@@ -61,17 +66,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     status,
     canEdit: editable,
     async login(username, password) {
+      generation.current += 1
       const session = await authService.login(username, password)
       setUser(session.user)
       setStatus('authenticated')
+      void queryClient.prefetchQuery({ queryKey: ['lists'], queryFn: () => fetchLists() })
     },
     async continueAsGuest() {
+      generation.current += 1
       const session = await authService.guest()
       setUser(session.user)
       setStatus('authenticated')
+      void queryClient.prefetchQuery({ queryKey: ['lists'], queryFn: () => fetchLists() })
     },
     logout() {
-      authService.logout()
+      generation.current += 1
+      void authService.logout()
       listsCache.clear()
       queryClient.clear()
       setUser(null)

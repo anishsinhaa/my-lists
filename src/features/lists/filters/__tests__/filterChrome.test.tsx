@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { clearFiltersPatch } from '../../viewPrefs'
@@ -79,7 +79,7 @@ describe('filter chips', () => {
     fireEvent.click(filtersButton())
     expect(screen.getByRole('combobox', { name: 'Sort by' })).toBeTruthy()
     expect(screen.getByRole('combobox', { name: 'Group by' })).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Shelves' }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('radio', { name: 'Shelves view' }))
     expect(onChange).toHaveBeenCalledWith({ view: 'shelves', group: 'status' })
   })
 
@@ -142,13 +142,13 @@ describe('filter chips', () => {
     expect(screen.getByRole('button', { name: 'Reset view' })).toBeTruthy()
   })
 
-  it('switches the view from one menu and closes it', () => {
+  it('switches layout from the toolbar toggle', () => {
     const onChange = vi.fn()
     renderChrome('movies', { ...DEFAULT_QUERY, view: 'grid' }, onChange)
-    expect(screen.queryByRole('button', { name: 'Shelves' })).toBeNull()
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Grid view' }))
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Table' }))
+    expect(screen.getByRole('radio', { name: 'Grid view' }).getAttribute('aria-checked')).toBe('true')
+    fireEvent.click(screen.getByRole('radio', { name: 'Table view' }))
     expect(onChange).toHaveBeenCalledWith({ view: 'table', group: 'none' })
-    expect(screen.queryByRole('menuitem', { name: 'Table' })).toBeNull()
+    fireEvent.click(screen.getByRole('radio', { name: 'Shelves view' }))
+    expect(onChange).toHaveBeenCalledWith({ view: 'shelves', group: 'status' })
   })
 })

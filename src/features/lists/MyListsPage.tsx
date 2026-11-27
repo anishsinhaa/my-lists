@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import curiousSeal from '@/assets/wax-seal-curious.png'
 import otherSeal from '@/assets/wax-seal-other.png'
 import { ErrorState } from '@/components/common/ErrorState'
-import { Skeletons } from '@/components/common/Skeletons'
+import { PosterSkeletons } from '@/components/common/PosterSkeletons'
 import { Rail } from '@/design/Rail'
 import { ListSign } from '@/features/lists/ListSign'
 import { thumbnailUrl } from '@/design/archive'
@@ -29,7 +29,7 @@ function cellClass(count: number, index: number): string {
 }
 
 function tilt(event: PointerEvent<HTMLSpanElement>) {
-  if (event.pointerType !== 'mouse' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  if (event.pointerType !== 'mouse') return
   const node = event.currentTarget
   const rect = node.getBoundingClientRect()
   const x = (event.clientX - rect.left) / rect.width - 0.5
@@ -111,7 +111,7 @@ export function MyListsPage() {
     return () => observer.disconnect()
   }, [desktop, data])
 
-  if (isLoading) return <main className="edge py-4"><Skeletons /></main>
+  if (isLoading) return <main className="edge py-4"><PosterSkeletons /></main>
   if (data === undefined) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
   const counts = listCounts(data)
   const cards = (mobileActive: boolean) => ORDER.map((id, index) => (

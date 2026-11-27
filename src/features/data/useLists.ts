@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { useAuth } from '@/features/auth/AuthContext'
 import { fetchLists } from '@/services/sheets/listsApi'
 import { listsCache } from '@/services/sheets/listsCache'
 import type { PosterFillResult } from '@/types/api'
@@ -30,7 +31,10 @@ function applyWritten(item: MediaItem, result: PosterFillResult, year: number | 
 
 export function useLists() {
   const queryClient = useQueryClient()
-  const cached = listsCache.load()
+  const { user } = useAuth()
+  const userId = user?.id ?? ''
+  const [cached] = useState(() => listsCache.load(userId))
+  const storedAt = cached === null ? undefined : listsCache.savedAt() ?? undefined
   const query = useQuery({
     queryKey: ['lists'],
     queryFn: () => fetchLists(),
@@ -40,14 +44,13 @@ export function useLists() {
     refetchOnReconnect: true,
     retry: 2,
     initialData: cached ?? undefined,
-    initialDataUpdatedAt: cached === null ? undefined : 0,
-    placeholderData: cached ?? undefined,
-    refetchOnMount: 'always',
+    initialDataUpdatedAt: storedAt,
+    refetchOnMount: true,
   })
 
   useEffect(() => {
-    if (query.data !== undefined) listsCache.save(query.data)
-  }, [query.data])
+    if (query.data !== undefined && userId.length > 0) listsCache.save(query.data, userId)
+  }, [query.data, userId])
 
   useEffect(() => {
     if (query.error instanceof Error && query.data !== undefined) toast.error(query.error.message)
@@ -62,7 +65,7 @@ export function useLists() {
     refetch: async () => {
       const data = await fetchLists({ refresh: true })
       queryClient.setQueryData(['lists'], data)
-      listsCache.save(data)
+      listsCache.save(data, userId)
       return data
     },
   }

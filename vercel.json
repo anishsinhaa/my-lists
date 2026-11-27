@@ -1,4 +1,5 @@
 {
+  "_comment": "The rewrite below already serves /movies, /search and the other client routes on refresh.",
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
   "functions": { "api/**/*.ts": { "maxDuration": 30 } },
   "headers": [
@@ -7,7 +8,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://image.tmdb.org https://*.rawg.io https://covers.openlibrary.org https://cdn.myanimelist.net; connect-src 'self' https://api.themoviedb.org https://api.rawg.io https://www.omdbapi.com https://openlibrary.org https://api.jikan.moe"
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://image.tmdb.org https://*.rawg.io https://covers.openlibrary.org https://archive.org https://*.archive.org https://cdn.myanimelist.net https://books.google.com https://*.googleusercontent.com; connect-src 'self' https://api.themoviedb.org https://api.rawg.io https://www.omdbapi.com https://openlibrary.org https://api.jikan.moe"
         },
         { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },

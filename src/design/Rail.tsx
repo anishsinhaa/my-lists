@@ -36,9 +36,8 @@ export function Rail({ label, children, align = 'center' }: { label: string; chi
   useEffect(() => {
     const node = scroller.current
     if (node === null) return undefined
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const fine = window.matchMedia('(pointer: fine)').matches
-    if (reduced || !fine) return undefined
+    if (!fine) return undefined
     const tick = () => {
       if (speed.current !== 0 && !hovering.current && overflowRef.current) node.scrollLeft += speed.current
       if (speed.current === 0 || !overflowRef.current) {
@@ -69,7 +68,7 @@ export function Rail({ label, children, align = 'center' }: { label: string; chi
   }, [])
 
   function nudge(direction: number) {
-    scroller.current?.scrollBy({ left: direction * 280, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+    scroller.current?.scrollBy({ left: direction * 280, behavior: 'smooth' })
   }
 
   return (

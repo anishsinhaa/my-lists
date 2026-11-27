@@ -4,12 +4,12 @@ import { AuthProvider } from '@/features/auth/AuthProvider'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
 import { RequireOwner } from '@/features/auth/RequireOwner'
+import { NotFoundPage } from '@/features/errors/NotFoundPage'
 import { HomePage } from '@/features/home/HomePage'
-import { ShelfPage } from '@/features/home/ShelfPage'
+import { ListAlias } from '@/features/lists/ListAlias'
 import { ListPage } from '@/features/lists/ListPage'
 import { MyListsPage } from '@/features/lists/MyListsPage'
-import { PicksPage } from '@/features/picks/PicksPage'
-import { SettingsPage } from '@/features/settings/SettingsPage'
+import { LIST_IDS } from '@/types/lists'
 
 function AuthLayout() {
   return (
@@ -23,11 +23,23 @@ function kitLoader() {
   return import('@/features/dev/KitPage').then((module) => ({ Component: module.KitPage }))
 }
 
-function NotFound() {
-  return <main className="p-6"><h1 className="text-2xl font-semibold">Not found</h1></main>
+function settingsLoader() {
+  return import('@/features/settings/SettingsPage').then((module) => ({ Component: module.SettingsPage }))
 }
 
-export const router = createBrowserRouter([
+function picksLoader() {
+  return import('@/features/picks/PicksPage').then((module) => ({ Component: module.PicksPage }))
+}
+
+function shelfLoader() {
+  return import('@/features/home/ShelfPage').then((module) => ({ Component: module.ShelfPage }))
+}
+
+function searchLoader() {
+  return import('@/features/search/SearchPage').then((module) => ({ Component: module.SearchPage }))
+}
+
+export const routes = [
   {
     element: <AuthLayout />,
     children: [
@@ -39,15 +51,18 @@ export const router = createBrowserRouter([
             element: <AppShell />,
             children: [
               { path: '/', element: <HomePage /> },
-              { path: '/shelf/:tileId', element: <ShelfPage /> },
+              { path: '/shelf/:tileId', lazy: shelfLoader },
               { path: '/lists', element: <MyListsPage /> },
               { path: '/lists/:listId', element: <ListPage /> },
+              { path: '/search', lazy: searchLoader },
+              // Short links stay on refresh because vercel.json rewrites /((?!api/).*) to /index.html.
+              ...LIST_IDS.map((listId) => ({ path: `/${listId}`, element: <ListAlias listId={listId} /> })),
               { element: <RequireOwner />, children: [
-                { path: '/picks', element: <PicksPage /> },
-                { path: '/settings', element: <SettingsPage /> },
+                { path: '/picks', lazy: picksLoader },
+                { path: '/settings', lazy: settingsLoader },
               ] },
               ...(import.meta.env.DEV ? [{ path: '/dev/kit', lazy: kitLoader }] : []),
-              { path: '*', element: <NotFound /> },
+              { path: '*', element: <NotFoundPage /> },
             ],
           },
         ],
@@ -55,4 +70,6 @@ export const router = createBrowserRouter([
       { path: '*', element: <Navigate to="/login" replace /> },
     ],
   },
-])
+]
+
+export const router = createBrowserRouter(routes)

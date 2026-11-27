@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Eye } from 'lucide-react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { BRAND } from '@/config/branding'
@@ -8,29 +8,71 @@ import { LogoMark } from '@/design/LogoMark'
 import { ApiError } from '@/services/http/apiFetch'
 import { useAuth } from './AuthContext'
 
+function safeFrom(state: unknown): string {
+  const from = typeof state === 'object' && state !== null && 'from' in state ? state.from : undefined
+  if (typeof from !== 'string') return '/'
+  if (!from.startsWith('/') || from.startsWith('//') || from.startsWith('/login')) return '/'
+  return from
+}
+
 export function LoginPage() {
   const { status, user, login, continueAsGuest } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const destination = safeFrom(location.state)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [guestError, setGuestError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [guesting, setGuesting] = useState(false)
+  const [slowGuest, setSlowGuest] = useState(false)
   const [guestOff, setGuestOff] = useState(false)
 
-  if (status === 'authenticated' && user?.role === 'owner') return <Navigate to="/" replace />
+  useEffect(() => {
+    if (!guesting) return undefined
+    const timer = window.setTimeout(() => setSlowGuest(true), 5000)
+    return () => window.clearTimeout(timer)
+  }, [guesting])
+
+  if (status === 'authenticated' && user?.role === 'owner') return <Navigate to={destination} replace />
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSubmitting(true)
     setError(null)
+    setGuestError(false)
     try {
       await login(username, password)
+      void navigate(destination, { replace: true })
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Login failed')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function runGuest() {
+    setGuesting(true)
+    setSlowGuest(false)
+    setError(null)
+    setGuestError(false)
+    void continueAsGuest()
+      .then(() => navigate(destination, { replace: true }))
+      .catch((caught: unknown) => {
+        setGuestError(true)
+        if (caught instanceof ApiError && caught.code === 'feature_disabled') {
+          setGuestOff(true)
+          setGuestError(false)
+          setError('Guest mode is off.')
+          return
+        }
+        setError(caught instanceof Error ? caught.message : 'Could not open a guest session')
+      })
+      .finally(() => {
+        setGuesting(false)
+        setSlowGuest(false)
+      })
   }
 
   return (
@@ -52,36 +94,19 @@ export function LoginPage() {
             <Input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
           {error !== null ? <p className="text-sm text-destructive">{error}</p> : null}
-          <Button type="submit" className="w-full" disabled={submitting || status === 'checking'}>
+          {guestError ? <button type="button" className="min-h-11 text-sm underline" onClick={runGuest}>Try again</button> : null}
+          <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? 'Signing in…' : 'Sign in'}
           </Button>
           {guestOff ? null : (
             <>
               <p className="text-center text-xs text-(--ink-muted)">or</p>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                disabled={guesting || status === 'checking'}
-                onClick={() => {
-                  setGuesting(true)
-                  setError(null)
-                  void continueAsGuest()
-                    .then(() => navigate('/', { replace: true }))
-                    .catch((caught: unknown) => {
-                      if (caught instanceof ApiError && caught.code === 'feature_disabled') {
-                        setGuestOff(true)
-                        setError('Guest mode is off.')
-                        return
-                      }
-                      setError(caught instanceof Error ? caught.message : 'Could not open a guest session')
-                    })
-                    .finally(() => setGuesting(false))
-                }}
-              >
+              <Button type="button" variant="outline" className="w-full" disabled={guesting} onClick={runGuest}>
                 <Eye aria-hidden="true" className="size-4" />
                 {guesting ? 'Opening…' : 'Continue as guest'}
               </Button>
+              <p aria-live="polite" className="text-center text-xs text-(--ink-muted)">{guesting ? 'Opening…' : ''}</p>
+              {guesting && slowGuest ? <p className="text-center text-xs text-(--ink-muted)">Waking the server up…</p> : null}
               <p className="text-center text-xs text-(--ink-muted)">View only. Nothing can be changed.</p>
             </>
           )}

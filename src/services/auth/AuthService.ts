@@ -5,5 +5,6 @@ export type { AuthSession, AuthUser }
 export interface AuthService {
   login(username: string, password: string): Promise<AuthSession>
   guest(): Promise<AuthSession>
-  logout(): void
+  logout(): Promise<void>
+  clearLocal(): void
 }

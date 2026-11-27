@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 export function CountUp({ value, durationMs = 600 }: { value: number; durationMs?: number }) {
-  const reduce = useMediaQuery('(prefers-reduced-motion: reduce)')
   const [shown, setShown] = useState(value)
 
   useEffect(() => {
-    if (reduce || durationMs <= 0) {
+    if (durationMs <= 0) {
       setShown(value)
       return
     }
@@ -18,7 +16,7 @@ export function CountUp({ value, durationMs = 600 }: { value: number; durationMs
       if (progress < 1) frame = requestAnimationFrame(tick)
     })
     return () => cancelAnimationFrame(frame)
-  }, [durationMs, reduce, value])
+  }, [durationMs, value])
 
   return <span>{shown}</span>
 }

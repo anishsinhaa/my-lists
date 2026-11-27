@@ -125,4 +125,16 @@ describe('applyListQuery', () => {
       'X-Men',
     ])
   })
+
+  it('breaks non-title ties alphabetically and keeps blank dates last', () => {
+    const rows = [
+      item({ title: 'Coda', dateAdded: null, year: 2000 }),
+      item({ title: 'Alpha', dateAdded: null, year: 2000 }),
+      item({ title: 'Beta', dateAdded: '2026-01-01T00:00:00.000Z', year: 1990 }),
+      item({ title: 'Zebra', dateAdded: null, year: 2010 }),
+      item({ title: 'Amber', dateAdded: '2026-01-01T00:00:00.000Z', year: 1990 }),
+    ]
+    expect(run(rows, { sort: 'added', dir: 'desc' })).toEqual(['Amber', 'Beta', 'Alpha', 'Coda', 'Zebra'])
+    expect(run(rows, { sort: 'year', dir: 'asc' })).toEqual(['Amber', 'Beta', 'Alpha', 'Coda', 'Zebra'])
+  })
 })

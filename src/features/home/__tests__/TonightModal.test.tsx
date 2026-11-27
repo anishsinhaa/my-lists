@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { LIST_IDS, type ListId } from '@/types/lists'
 import type { MediaItem } from '@/types/media'
@@ -70,6 +70,8 @@ describe('Tonight modal', () => {
   it('picks without repeating, then can change filters and open the list', () => {
     const random = Math.random
     Math.random = () => 0
+    vi.useFakeTimers()
+    const finishSpin = () => act(() => { vi.advanceTimersByTime(120 * 10) })
     try {
       render(
         <MemoryRouter>
@@ -79,17 +81,21 @@ describe('Tonight modal', () => {
       )
       fireEvent.click(screen.getByRole('button', { name: 'All' }))
       fireEvent.click(screen.getByRole('button', { name: 'Pick' }))
+      finishSpin()
       expect(screen.getByRole('heading', { name: 'Argo' })).toBeTruthy()
       expect(screen.getByText('About')).toBeTruthy()
       expect(screen.getByText('Because')).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: 'Pick another' }))
+      finishSpin()
       expect(screen.getByRole('heading', { name: 'Heat' })).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: 'Change filters' }))
       expect(screen.getByText('3 to pick from')).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: 'Pick' }))
+      finishSpin()
       fireEvent.click(screen.getByRole('button', { name: 'Open in list' }))
       expect(screen.getByText(/\/lists\/movies\?item=movies(%3A|:)argo(%3A|:)2012/)).toBeTruthy()
     } finally {
+      vi.useRealTimers()
       Math.random = random
     }
   })

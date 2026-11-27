@@ -35,10 +35,6 @@ const CATEGORY_CHIPS: { id: TonightCategory; label: string; icon: LucideIcon }[]
   { id: 'any', label: 'Any', icon: Layers },
 ]
 
-function reducedMotion(): boolean {
-  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
-}
-
 function chipClass(on: boolean): string {
   return `inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-sm ${on ? 'border-transparent bg-(--accent) text-(--bg)' : 'border-(--border) bg-(--surface) text-(--ink)'}`
 }
@@ -136,7 +132,7 @@ export function TonightModal({ lists, preset, onClose }: {
   function pick() {
     const winner = choosePick(matches, lastId)
     if (winner === null) return
-    if (reducedMotion() || matches.length < 2) {
+    if (matches.length < 2) {
       land(winner)
       return
     }

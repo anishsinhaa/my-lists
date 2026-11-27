@@ -1,6 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
+import { ThemeProvider } from '@/themes/ThemeProvider'
 import { FilterChrome } from '../FilterChrome'
 import { DEFAULT_QUERY } from '../listQuery'
 import type { MediaItem } from '@/types/media'
@@ -36,7 +37,33 @@ function filtersButton(): HTMLElement {
   return button
 }
 
-afterEach(() => cleanup())
+function setMedia(matches: boolean) {
+  window.matchMedia = ((query: string) => ({
+    matches,
+    media: query,
+    onchange: null,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    dispatchEvent: () => false,
+  })) as typeof window.matchMedia
+}
+
+async function settleSheet() {
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)) })
+}
+
+function openOverlay(): HTMLElement {
+  const overlay = document.querySelector('[data-slot="sheet-overlay"]')
+  if (!(overlay instanceof HTMLElement)) throw new Error('Missing overlay')
+  return overlay
+}
+
+afterEach(() => {
+  cleanup()
+  delete document.body.dataset.theme
+})
 
 describe('filters drawer', () => {
   it('opens as a dialog, shows the three sections, and returns focus', async () => {
@@ -61,7 +88,7 @@ describe('filters drawer', () => {
     expect(document.activeElement).toBe(filtersButton())
   })
 
-  it('closes from the backdrop without clicking the card or changing the query', () => {
+  it('closes from the backdrop without clicking the card or changing the query', async () => {
     const openCard = vi.fn()
     const onChange = vi.fn()
     render(
@@ -71,8 +98,8 @@ describe('filters drawer', () => {
       </MemoryRouter>,
     )
     fireEvent.click(filtersButton())
-    const overlay = document.querySelector('[data-slot="sheet-overlay"]')
-    if (!(overlay instanceof HTMLElement)) throw new Error('Missing overlay')
+    await settleSheet()
+    const overlay = openOverlay()
     fireEvent.pointerDown(overlay)
     fireEvent.click(overlay)
     expect(openCard).not.toHaveBeenCalled()
@@ -80,22 +107,20 @@ describe('filters drawer', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
-  it('closes the view menu on an outside click without click-through', () => {
-    const openCard = vi.fn()
+  it('uses a layout toggle of radios', () => {
+    const onChange = vi.fn()
     render(
       <MemoryRouter>
-        <button type="button" onClick={openCard}>Open card</button>
-        <FilterChrome items={[]} listId="movies" query={DEFAULT_QUERY} shown={0} total={0} onChange={() => undefined} />
+        <FilterChrome items={[]} listId="movies" query={DEFAULT_QUERY} shown={0} total={0} onChange={onChange} />
       </MemoryRouter>,
     )
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Grid view' }))
-    expect(screen.getByRole('menuitem', { name: 'Table' })).toBeTruthy()
-    const card = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Open card')
-    if (card === undefined) throw new Error('Missing card')
-    fireEvent.pointerDown(card)
-    fireEvent.click(card)
-    expect(screen.queryByRole('menuitem', { name: 'Table' })).toBeNull()
-    expect(openCard).not.toHaveBeenCalled()
+    const grid = screen.getByRole('radio', { name: 'Grid view' })
+    expect(grid.getAttribute('aria-checked')).toBe('true')
+    expect(screen.getByRole('radio', { name: 'Shelves view' }).getAttribute('aria-checked')).toBe('false')
+    fireEvent.click(screen.getByRole('radio', { name: 'Shelves view' }))
+    expect(onChange).toHaveBeenCalledWith({ view: 'shelves', group: 'status' })
+    fireEvent.click(screen.getByRole('radio', { name: 'Table view' }))
+    expect(onChange).toHaveBeenCalledWith({ view: 'table', group: 'none' })
   })
 
   it('keeps filter groups collapsed until they have a selection and searches long lists', () => {
@@ -149,5 +174,81 @@ describe('filters drawer', () => {
     expect(cleared.group).toBeUndefined()
     expect(cleared.statuses).toEqual([])
     expect(cleared.addedWithin).toBe('any')
+  })
+
+  it('mirrors the theme onto body and the portalled drawer', () => {
+    const view = render(
+      <ThemeProvider themeId="books">
+        <MemoryRouter>
+          <FilterChrome items={[movie({ title: 'Heat' })]} listId="books" query={DEFAULT_QUERY} shown={1} total={1} onChange={() => undefined} />
+        </MemoryRouter>
+      </ThemeProvider>,
+    )
+    expect(document.body.dataset.theme).toBe('books')
+    fireEvent.click(filtersButton())
+    const content = document.querySelector('[data-slot="sheet-content"]')
+    expect(content?.closest('[data-theme]')).toBeTruthy()
+    view.unmount()
+    expect(document.body.dataset.theme).toBeUndefined()
+  })
+
+  it('closes a touch on the phone backdrop without clicking the card', async () => {
+    setMedia(false)
+    const openCard = vi.fn()
+    render(
+      <MemoryRouter>
+        <button type="button" onClick={openCard}>Open card</button>
+        <FilterChrome items={[movie({ title: 'Heat' })]} listId="movies" query={DEFAULT_QUERY} shown={1} total={1} onChange={() => undefined} />
+      </MemoryRouter>,
+    )
+    fireEvent.click(filtersButton())
+    await settleSheet()
+    const content = document.querySelector('[data-slot="sheet-content"]')
+    expect(content?.className).toContain('max-h-[90dvh]')
+    const overlay = openOverlay()
+    fireEvent.pointerDown(overlay, { pointerType: 'touch' })
+    fireEvent.click(overlay)
+    expect(openCard).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('closes a mouse click on the desktop backdrop without clicking the card', async () => {
+    setMedia(true)
+    const openCard = vi.fn()
+    render(
+      <MemoryRouter>
+        <button type="button" onClick={openCard}>Open card</button>
+        <FilterChrome items={[movie({ title: 'Heat' })]} listId="movies" query={DEFAULT_QUERY} shown={1} total={1} onChange={() => undefined} />
+      </MemoryRouter>,
+    )
+    fireEvent.click(filtersButton())
+    await settleSheet()
+    const content = document.querySelector('[data-slot="sheet-content"]')
+    expect(content?.className).toContain('h-dvh')
+    const overlay = openOverlay()
+    fireEvent.pointerDown(overlay, { pointerType: 'mouse' })
+    fireEvent.click(overlay)
+    expect(openCard).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('shows Other statuses only when an item carries one', () => {
+    render(
+      <MemoryRouter>
+        <FilterChrome items={[]} listId="other" query={DEFAULT_QUERY} shown={0} total={0} onChange={() => undefined} />
+      </MemoryRouter>,
+    )
+    fireEvent.click(filtersButton())
+    expect(within(screen.getByRole('dialog')).queryByRole('button', { name: /^Status/ })).toBeNull()
+    cleanup()
+    render(
+      <MemoryRouter>
+        <FilterChrome items={[movie({ title: 'Note', listId: 'other', status: 'Done' })]} listId="other" query={DEFAULT_QUERY} shown={1} total={1} onChange={() => undefined} />
+      </MemoryRouter>,
+    )
+    fireEvent.click(filtersButton())
+    const dialog = screen.getByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: /Status/ }))
+    expect(within(dialog).getByRole('button', { name: 'Done 1' })).toBeTruthy()
   })
 })

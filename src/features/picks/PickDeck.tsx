@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import { EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useLists } from '@/features/data/useLists'
 import { PICK_STATUS_OPTIONS, PICK_SWIPE_MAP } from '@/types/picks'
 import type { PicksId } from '@/types/lists'
@@ -10,7 +9,6 @@ import { PickCard } from './PickCard'
 import { usePicksQueue } from './usePicksQueue'
 
 export function PickDeck({ picksId }: { picksId: PicksId }) {
-  const reduce = useMediaQuery('(prefers-reduced-motion: reduce)')
   const { data } = useLists()
   const queue = usePicksQueue(picksId)
   const swipe = PICK_SWIPE_MAP[picksId]
@@ -33,7 +31,7 @@ export function PickDeck({ picksId }: { picksId: PicksId }) {
     <div className="space-y-4">
       <div className="relative mx-auto max-w-sm">
         {queue.upcoming.slice().reverse().map((item) => <div key={item.id} className="absolute inset-x-3 top-2 opacity-60"><PickCard item={item} /></div>)}
-        <motion.div drag={reduce ? false : true} dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} onDragEnd={(_, info) => {
+        <motion.div drag dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} onDragEnd={(_, info) => {
           if (info.offset.x > 120 || info.velocity.x > 500) queue.act({ type: 'status', status: swipe.right })
           else if (info.offset.y < -120 || info.velocity.y < -500) queue.act({ type: 'status', status: swipe.up })
           else if (info.offset.x < -120 || info.velocity.x < -500) queue.act({ type: 'skip' })

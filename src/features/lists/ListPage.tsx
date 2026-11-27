@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { ErrorState } from '@/components/common/ErrorState'
-import { Skeletons } from '@/components/common/Skeletons'
+import { PosterSkeletons } from '@/components/common/PosterSkeletons'
+import { NotFoundPage } from '@/features/errors/NotFoundPage'
 import { useLists } from '@/features/data/useLists'
 import { LIST_IDS, type ListId } from '@/types/lists'
 import { usePosterFill } from '@/features/posters/usePosterFill'
@@ -11,14 +12,10 @@ import { SimpleListPage } from './SimpleListPage'
 import { TonightButton, TonightModal } from '@/features/home/TonightModal'
 import { CategoryView } from './CategoryView'
 
-function NotFound() {
-  return <main className="p-6"><h1 className="text-2xl">Not found</h1></main>
-}
-
 export function ListPage() {
   const params = useParams()
   const listId = LIST_IDS.find((id) => id === params.listId)
-  if (listId === undefined) return <NotFound />
+  if (listId === undefined) return <NotFoundPage kind="list" />
   if (listId === 'other' || listId === 'curious') return <SimpleListPage listId={listId} />
   return <MainList listId={listId} />
 }
@@ -38,7 +35,7 @@ function MainList({ listId }: { listId: ListId }) {
     setParams(next, { replace: true })
   }
   const items = data?.lists[listId] ?? []
-  if (isLoading) return <main className="edge py-4"><Skeletons count={12} /></main>
+  if (isLoading) return <main className="edge py-4"><PosterSkeletons count={12} /></main>
   if (data === undefined) return <main className="edge py-4"><ErrorState message={error instanceof Error ? error.message : 'Could not load lists'} onRetry={() => void refetch()} /></main>
   const poster = items.find((item) => item.poster !== null)?.poster
   const enriching = enrich.running ? `Enriching ${enrich.done}/${enrich.done + enrich.pending}` : undefined

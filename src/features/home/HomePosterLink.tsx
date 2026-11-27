@@ -24,15 +24,14 @@ function PosterPreview({ item, anchor }: { item: MediaItem; anchor: { top: numbe
   const description = firstLine(item.why)
   const notes = item.notes.trim()
   const place = previewBox(anchor, { width: PREVIEW_WIDTH, height: PREVIEW_HEIGHT }, { width: window.innerWidth, height: window.innerHeight })
-  const reduce = matches('(prefers-reduced-motion: reduce)')
   return createPortal(
     <motion.div
       data-testid="poster-preview"
       className="pointer-events-none fixed z-[80] overflow-hidden rounded-md border border-(--brass)/50 bg-[#17130f] text-[#f4ead8] shadow-[0_12px_24px_#00000088]"
       style={{ top: place.top, left: place.left, width: PREVIEW_WIDTH }}
-      initial={reduce ? false : { opacity: 0, scale: 0.96 }}
+      initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: reduce ? 0 : 0.16 }}
+      transition={{ duration: 0.16 }}
     >
       <div className="flex items-start gap-2 p-1.5">
         <span className="w-10 shrink-0">

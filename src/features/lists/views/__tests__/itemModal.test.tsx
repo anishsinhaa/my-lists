@@ -1,8 +1,17 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { MediaItem } from '@/types/media'
 import { ItemModal } from '../ItemModal'
 import { ListTable } from '../ListTable'
+
+beforeAll(() => {
+  class Observer {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  vi.stubGlobal('ResizeObserver', Observer)
+})
 
 afterEach(cleanup)
 
@@ -49,6 +58,9 @@ describe('item details', () => {
     expect(screen.queryByText('Franchise')).toBeNull()
     expect(screen.getAllByText('Ben Affleck').length).toBeGreaterThan(0)
     expect(screen.getByText('7.7 / 10')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Rate exactly' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Edit rating' })).toBeNull()
     expect(screen.getByText('1 of 2')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: /Next/ }))
     expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ title: 'Heat' }))
@@ -63,8 +75,11 @@ describe('item details', () => {
     unmount()
     onSave.mockClear()
     render(<ItemModal item={movie({ myRating: 8 })} items={[movie({ myRating: 8 })]} listId="movies" onClose={() => undefined} onOpen={() => undefined} onSave={onSave} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Clear rating' }))
+    expect(screen.getByRole('button', { name: 'Edit' }).parentElement?.textContent).toBe('8.0 / 10 · Edit · Clear')
+    fireEvent.click(screen.getByRole('button', { name: /^Clear$/ }))
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ myRating: 8 }), { myRating: null })
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
+    expect(screen.getByRole('dialog', { name: 'Rate' })).toBeTruthy()
   })
 
   it('previews a half star on hover and saves it', () => {

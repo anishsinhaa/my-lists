@@ -17,6 +17,8 @@ import type { ItemPatch } from '../useSaveItem'
 import { RateDialog } from './RateDialog'
 import { StarRating } from './StarRating'
 
+const ratingLink = 'text-(--ink-muted) underline-offset-2 hover:text-(--accent) hover:underline focus-visible:text-(--accent) focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent)'
+
 function addedLine(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return ''
@@ -257,9 +259,15 @@ export function ItemModal({ item, items, listId, onClose, onOpen, onSave, onOpen
                 </div>
               )}
               {readOnly ? null : (
-                <div className="flex flex-wrap items-center gap-2">
+                <div>
                   <StarRating value={item.myRating} onChange={(myRating) => save({ myRating })} />
-                  <button type="button" className="min-h-11 px-2 text-sm underline-offset-2 hover:underline" onClick={() => setRateFor(item.id)}>{item.myRating === null ? 'Rate' : 'Edit rating'}</button>
+                  <p className="mt-1.5 text-left text-xs text-(--ink-muted)">
+                    {item.myRating === null ? (
+                      <button type="button" className={ratingLink} onClick={() => setRateFor(item.id)}>Rate exactly</button>
+                    ) : (
+                      <>{formatRating(item.myRating)} / 10 · <button type="button" className={ratingLink} onClick={() => setRateFor(item.id)}>Edit</button> · <button type="button" className={ratingLink} onClick={() => save({ myRating: null })}>Clear</button></>
+                    )}
+                  </p>
                 </div>
               )}
               {readOnly ? (

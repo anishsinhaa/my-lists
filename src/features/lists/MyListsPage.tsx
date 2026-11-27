@@ -75,7 +75,7 @@ function ArchiveCard({ listId, items, count, active }: { listId: PortraitId; ite
     >
       <span className="archive-face">
         <ListSign listId={listId}>{TAB_NAME[listId]}</ListSign>
-        {books ? <span className="archive-book relative mb-7 block w-full">{card}<span aria-hidden="true" className="archive-book-ribbon" /></span> : card}
+        {books ? <span className="archive-book relative block w-full">{card}<span aria-hidden="true" className="archive-book-ribbon" /></span> : card}
       </span>
       <span className="w-full text-center text-sm">
         <span className="block">{count} titles{inProgress > 0 ? ` · ${inProgress} in progress` : ''}</span>

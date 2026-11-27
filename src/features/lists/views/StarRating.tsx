@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Star, X } from 'lucide-react'
+import { Star } from 'lucide-react'
 
 function same(left: number | null, right: number): boolean {
   return left !== null && Math.abs(left - right) < 0.01
@@ -52,11 +52,6 @@ export function StarRating({ value, onChange, readOnly = false }: { value: numbe
           )
         })}
       </div>
-      {!readOnly && value !== null ? (
-        <button type="button" aria-label="Clear rating" className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-(--ink-muted)" onClick={() => { setHover(null); setBurst(null); onChange?.(null) }}>
-          <X aria-hidden="true" className="size-4" />
-        </button>
-      ) : null}
     </div>
   )
 }
